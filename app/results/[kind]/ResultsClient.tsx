@@ -1,13 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SearchAnimation } from "@/components/SearchAnimation";
-import { PhoneResults, EmailResults } from "@/components/ResultsCard";
+import { Stage1PhoneMap } from "./Stage1PhoneMap";
+import { Stage2OwnerInfo } from "./Stage2OwnerInfo";
+import { Stage3EmailCapture } from "./Stage3EmailCapture";
+import { Stage4Paywall } from "./Stage4Paywall";
+import { Stage5Payment } from "./Stage5Payment";
+import { Stage6Success } from "./Stage6Success";
 import type { PhoneLookupResult } from "@/lib/phone";
 import type { EmailLookupResult } from "@/lib/email";
 
-type PhoneState = { status: "idle" | "loading" | "done" | "error"; data?: PhoneLookupResult };
-type EmailState = { status: "idle" | "loading" | "done" | "error"; data?: EmailLookupResult };
+type Stage =
+  | "phoneMap" // stage 1, phone only
+  | "owner" // stage 2
+  | "emailCapture" // stage 3
+  | "paywall" // stage 4
+  | "payment" // stage 5
+  | "success"; // stage 6
 
 export function ResultsClient({
   kind,
@@ -18,38 +27,31 @@ export function ResultsClient({
   query: string;
   defaultCountry: string;
 }) {
-  const [animationDone, setAnimationDone] = useState(false);
-  const [phone, setPhone] = useState<PhoneState>({ status: "idle" });
-  const [email, setEmail] = useState<EmailState>({ status: "idle" });
+  const initialStage: Stage = kind === "phone" ? "phoneMap" : "owner";
+  const [stage, setStage] = useState<Stage>(initialStage);
+  const [phone, setPhone] = useState<PhoneLookupResult | null>(null);
+  const [email, setEmail] = useState<EmailLookupResult | null>(null);
+  const [captured, setCaptured] = useState<string>("");
 
+  // Fire the real backend lookup up-front so results are ready when the
+  // animation naturally lands.
   useEffect(() => {
     let cancelled = false;
     async function run() {
-      try {
-        if (kind === "phone") {
-          setPhone({ status: "loading" });
-          const r = await fetch("/api/search/phone", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ phone: query, defaultCountry }),
-          });
-          const j: PhoneLookupResult = await r.json();
-          if (!cancelled) setPhone({ status: "done", data: j });
-        } else {
-          setEmail({ status: "loading" });
-          const r = await fetch("/api/search/email", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ email: query }),
-          });
-          const j: EmailLookupResult = await r.json();
-          if (!cancelled) setEmail({ status: "done", data: j });
-        }
-      } catch {
-        if (!cancelled) {
-          if (kind === "phone") setPhone({ status: "error" });
-          else setEmail({ status: "error" });
-        }
+      if (kind === "phone") {
+        const r = await fetch("/api/search/phone", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ phone: query, defaultCountry }),
+        });
+        if (!cancelled) setPhone(await r.json());
+      } else {
+        const r = await fetch("/api/search/email", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email: query }),
+        });
+        if (!cancelled) setEmail(await r.json());
       }
     }
     run();
@@ -58,33 +60,76 @@ export function ResultsClient({
     };
   }, [kind, query, defaultCountry]);
 
-  const dataReady =
-    kind === "phone" ? phone.status === "done" : email.status === "done";
-
-  if (!animationDone || !dataReady) {
-    return (
-      <SearchAnimation
-        kind={kind}
-        query={query}
-        onDone={() => setAnimationDone(true)}
-      />
-    );
+  // Wait for the phone data before starting stage 1
+  if (kind === "phone" && !phone) {
+    return <FullPageSpinner />;
+  }
+  if (kind === "email" && !email) {
+    return <FullPageSpinner />;
   }
 
+  const today = new Date().toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 animate-fade-in">
-      <div className="mb-6">
-        <div className="text-xs uppercase tracking-wide text-ink-400">Search complete</div>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          {kind === "phone" ? "Phone lookup result" : "Email lookup result"}
-        </h1>
-      </div>
-      {kind === "phone" && phone.data ? (
-        <PhoneResults result={phone.data} />
+    <>
+      {stage === "phoneMap" && phone ? (
+        <Stage1PhoneMap result={phone} onDone={() => setStage("owner")} />
       ) : null}
-      {kind === "email" && email.data ? (
-        <EmailResults result={email.data} />
+
+      {stage === "owner" ? (
+        <Stage2OwnerInfo
+          kind={kind}
+          query={query}
+          onDone={() => setStage("emailCapture")}
+        />
       ) : null}
-    </section>
+
+      {stage === "emailCapture" ? (
+        <Stage3EmailCapture
+          query={query}
+          displayDate={today}
+          onContinue={(e) => {
+            setCaptured(e);
+            setStage("paywall");
+          }}
+        />
+      ) : null}
+
+      {stage === "paywall" ? (
+        <Stage4Paywall
+          query={query}
+          email={captured}
+          onContinue={() => setStage("payment")}
+        />
+      ) : null}
+
+      {stage === "payment" ? (
+        <Stage5Payment
+          query={query}
+          email={captured}
+          onPaid={() => setStage("success")}
+        />
+      ) : null}
+
+      {stage === "success" ? (
+        kind === "phone" && phone ? (
+          <Stage6Success kind="phone" query={query} phone={phone} email={null} />
+        ) : email ? (
+          <Stage6Success kind="email" query={query} phone={null} email={email} />
+        ) : null
+      ) : null}
+    </>
+  );
+}
+
+function FullPageSpinner() {
+  return (
+    <div className="grid min-h-[60vh] place-items-center">
+      <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-brand-600/25 border-t-brand-600" />
+    </div>
   );
 }
