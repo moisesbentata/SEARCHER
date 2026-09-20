@@ -1,4 +1,4 @@
-import { SearchEntry } from "@/components/SearchEntry";
+import HomePage from "@/app/page";
 import { brand } from "@/lib/brand";
 
 export const metadata = {
@@ -7,13 +7,6 @@ export const metadata = {
     "Identify unknown callers and find the information connected to any phone number.",
 };
 
-export default function PhoneSearchPage() {
-  return (
-    <SearchEntry
-      kind="phone"
-      title="Reverse Phone"
-      titleHighlight="Lookup"
-      subtitle="Identify unknown callers and find the information connected to any phone number, using publicly available data from trusted sources."
-    />
-  );
+export default function PhoneLookupPage() {
+  return <HomePage />;
 }
