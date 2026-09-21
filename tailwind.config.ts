@@ -5,18 +5,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Deep green — matches the ClarityCheck logo/accents
+        // Trust-inducing sky blue — the ClarityCheck green replaced with a
+        // lighter, more institutional blue (finance / banking / medical vibe)
         brand: {
-          50: "#ecfdf5",
-          100: "#d1fae5",
-          200: "#a7f3d0",
-          300: "#6ee7b7",
-          400: "#34d399",
-          500: "#10b981",
-          600: "#0d9668",
-          700: "#0f7a55",
-          800: "#0f5f44",
-          900: "#0d4a37",
+          50: "#f0f9ff",
+          100: "#e0f2fe",
+          200: "#bae6fd",
+          300: "#7dd3fc",
+          400: "#38bdf8",
+          500: "#0ea5e9",
+          600: "#0284c7",
+          700: "#0369a1",
+          800: "#075985",
+          900: "#0c4a6e",
         },
         // Royal blue for the primary CTA button
         accent: {

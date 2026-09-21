@@ -6,12 +6,12 @@ export function WorldMapBg({ countryCode }: { countryCode?: string }) {
 
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[720px] overflow-hidden">
-      {/* Soft radial vignette in brand-green */}
+      {/* Soft radial vignette in brand-blue */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 40%, transparent 70%)",
+            "radial-gradient(circle at 50% 30%, rgba(14, 165, 233, 0.12) 0%, rgba(14, 165, 233, 0.04) 40%, transparent 70%)",
         }}
       />
       {/* Grid pattern */}
@@ -24,12 +24,12 @@ export function WorldMapBg({ countryCode }: { countryCode?: string }) {
       >
         <defs>
           <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="1" fill="#10b981" fillOpacity="0.12" />
+            <circle cx="1" cy="1" r="1" fill="#0ea5e9" fillOpacity="0.12" />
           </pattern>
           <radialGradient id="spot" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#0f7a55" stopOpacity="0.35" />
-            <stop offset="60%" stopColor="#0f7a55" stopOpacity="0.15" />
-            <stop offset="100%" stopColor="#0f7a55" stopOpacity="0" />
+            <stop offset="0%" stopColor="#0369a1" stopOpacity="0.35" />
+            <stop offset="60%" stopColor="#0369a1" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#0369a1" stopOpacity="0" />
           </radialGradient>
         </defs>
         <rect x="0" y="0" width="400" height="720" fill="url(#dots)" />
@@ -41,7 +41,7 @@ export function WorldMapBg({ countryCode }: { countryCode?: string }) {
           cy={spotX.cy}
           r="60"
           fill="none"
-          stroke="#0f7a55"
+          stroke="#0369a1"
           strokeOpacity="0.4"
           strokeWidth="1.5"
           strokeDasharray="4 6"
@@ -50,7 +50,7 @@ export function WorldMapBg({ countryCode }: { countryCode?: string }) {
           cx={spotX.cx}
           cy={spotX.cy}
           r="16"
-          fill="#0f7a55"
+          fill="#0369a1"
           fillOpacity="0.75"
         />
       </svg>
