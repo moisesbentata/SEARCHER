@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { geoEqualEarth, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 // countries-110m.json ships with the public-domain "world-atlas" package
@@ -163,7 +163,18 @@ const REGIONS: Region[] = [
 
 const WIDTH = 900;
 const HEIGHT = 500;
-const ROTATE_MS = 3200;
+
+// Map every country id → the region it belongs to (if any). Used so hovering
+// any country in a region lights up the whole region at once.
+const COUNTRY_TO_REGION: Record<string, number> = (() => {
+  const m: Record<string, number> = {};
+  REGIONS.forEach((r, i) => {
+    r.countries.forEach((id) => {
+      m[id] = i;
+    });
+  });
+  return m;
+})();
 
 // Precompute d3-geo projection once
 const projection = geoEqualEarth()
@@ -178,13 +189,9 @@ const countriesFC = feature(
 ) as FeatureCollection<Geometry, { name?: string }>;
 
 export function WorldCoverageMap() {
-  const [idx, setIdx] = useState(0);
+  // Start with North America highlighted so the map is never blank on load.
+  const [idx, setIdx] = useState<number>(0);
   const region = REGIONS[idx];
-
-  useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % REGIONS.length), ROTATE_MS);
-    return () => clearInterval(t);
-  }, []);
 
   const paths = useMemo(() => {
     return countriesFC.features
@@ -196,11 +203,12 @@ export function WorldCoverageMap() {
       })
       .map((f: Feature) => {
         const id = String((f as unknown as { id?: string | number }).id ?? "");
-        const active = region.countries.has(id.padStart(3, "0"));
+        const padded = id.padStart(3, "0");
+        const regionIdx = COUNTRY_TO_REGION[padded];
         const d = pathGen(f);
-        return { id, d, active };
+        return { id: padded, d, regionIdx };
       });
-  }, [region]);
+  }, []);
 
   return (
     <div className="relative w-full">
@@ -211,20 +219,27 @@ export function WorldCoverageMap() {
         aria-label="World coverage map"
       >
         <g>
-          {paths.map((p) =>
-            p.d ? (
+          {paths.map((p) => {
+            if (!p.d) return null;
+            const inRegion = p.regionIdx !== undefined;
+            const active = p.regionIdx === idx;
+            return (
               <path
                 key={p.id}
                 d={p.d}
-                fill={p.active ? "#0284c7" : "#e0f2fe"}
+                fill={active ? "#0284c7" : "#e0f2fe"}
                 stroke="#ffffff"
                 strokeWidth={0.6}
                 style={{
-                  transition: "fill 500ms ease",
+                  transition: "fill 250ms ease",
+                  cursor: inRegion ? "pointer" : "default",
+                }}
+                onMouseEnter={() => {
+                  if (inRegion) setIdx(p.regionIdx as number);
                 }}
               />
-            ) : null,
-          )}
+            );
+          })}
         </g>
       </svg>
 
