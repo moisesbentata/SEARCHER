@@ -112,12 +112,20 @@ export function HeroIllustration() {
 
         {/* Check badge floating on top-right corner */}
         <g transform="translate(430, 250)">
-          {/* Sparkle rays */}
-          <g stroke="#38bdf8" strokeWidth="3" strokeLinecap="round">
-            <line x1="30" y1="-10" x2="30" y2="-20" />
-            <line x1="55" y1="10" x2="65" y2="5" />
-            <line x1="10" y1="10" x2="0" y2="5" />
-            <line x1="48" y1="-6" x2="56" y2="-14" />
+          {/* Sparkle rays — 5 short strokes evenly fanned around the top of
+              the badge, all starting just outside the circle and extending
+              outward for a clean "shine" burst */}
+          <g stroke="#38bdf8" strokeWidth="2.6" strokeLinecap="round">
+            {/* straight up */}
+            <line x1="30" y1="-2" x2="30" y2="-13" />
+            {/* upper-right diagonal */}
+            <line x1="53" y1="7" x2="61" y2="-1" />
+            {/* right */}
+            <line x1="62" y1="30" x2="73" y2="30" />
+            {/* upper-left diagonal */}
+            <line x1="7" y1="7" x2="-1" y2="-1" />
+            {/* left */}
+            <line x1="-2" y1="30" x2="-13" y2="30" />
           </g>
           <circle cx="30" cy="30" r="26" fill="url(#badge)" />
           <path
