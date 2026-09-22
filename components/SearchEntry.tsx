@@ -44,6 +44,7 @@ export function SearchEntry({
   const [submitting, setSubmitting] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [countryQuery, setCountryQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const country = countryEntry(countryCode)!;
@@ -74,10 +75,40 @@ export function SearchEntry({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = value.trim();
+
     if (!trimmed) {
+      setError(
+        kind === "phone"
+          ? "Please enter a phone number."
+          : "Please enter an email address.",
+      );
       inputRef.current?.focus();
       return;
     }
+
+    if (kind === "phone") {
+      if (!trimmed.startsWith("+")) {
+        setError("The number must start with a country code, e.g. +1, +44, +34.");
+        inputRef.current?.focus();
+        return;
+      }
+      const parsed = parsePhoneNumberFromString(trimmed);
+      if (!parsed || !parsed.isValid()) {
+        setError(
+          "That doesn't look like a valid phone number. Double-check the country code and digits.",
+        );
+        inputRef.current?.focus();
+        return;
+      }
+    } else if (kind === "email") {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) {
+        setError("That doesn't look like a valid email address.");
+        inputRef.current?.focus();
+        return;
+      }
+    }
+
+    setError(null);
     setSubmitting(true);
     const params = new URLSearchParams({ q: trimmed });
     if (kind === "phone") params.set("cc", countryCode);
@@ -193,11 +224,19 @@ export function SearchEntry({
             inputRef={inputRef}
             country={country}
             value={value}
-            onValueChange={setValue}
+            onValueChange={(v) => {
+              setValue(v);
+              if (error) setError(null);
+            }}
             onCountryChange={setCountryCode}
+            invalid={Boolean(error)}
           />
         ) : (
-          <label className="block cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500">
+          <label
+            className={`block cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500 ${
+              error ? "ring-2 ring-rose-400 focus-within:ring-rose-500" : ""
+            }`}
+          >
             <span className="pointer-events-none block text-xs font-medium text-ink-500">
               Email address
             </span>
@@ -208,11 +247,36 @@ export function SearchEntry({
               autoComplete="off"
               placeholder="name@example.com"
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={(e) => {
+                setValue(e.target.value);
+                if (error) setError(null);
+              }}
               className="mt-1 block w-full bg-transparent text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
             />
           </label>
         )}
+
+        {error ? (
+          <div
+            role="alert"
+            className="flex items-start gap-2 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="mt-0.5 h-4 w-4 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+            <span>{error}</span>
+          </div>
+        ) : null}
 
         <button
           type="submit"
@@ -245,12 +309,14 @@ function PhoneInput({
   value,
   onValueChange,
   onCountryChange,
+  invalid,
 }: {
   inputRef: React.RefObject<HTMLInputElement>;
   country: { code: string; name: string; dial: string; flag: string };
   value: string;
   onValueChange: (v: string) => void;
   onCountryChange: (cc: string) => void;
+  invalid?: boolean;
 }) {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     // Whitelist: leading +, digits, spaces. Drop everything else so pasting
@@ -304,7 +370,11 @@ function PhoneInput({
   }
 
   return (
-    <label className="block cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500">
+    <label
+      className={`block cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500 ${
+        invalid ? "ring-2 ring-rose-400 focus-within:ring-rose-500" : ""
+      }`}
+    >
       <span className="pointer-events-none block text-xs font-medium text-ink-500">
         Phone Number
       </span>
@@ -319,6 +389,7 @@ function PhoneInput({
         onKeyDown={handleKeyDown}
         className="mt-1 block w-full bg-transparent text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
         aria-label={`Phone number in ${country.name}`}
+        aria-invalid={invalid ? "true" : undefined}
       />
     </label>
   );
