@@ -40,13 +40,25 @@ export function SearchEntry({
   const router = useRouter();
   const countries = useMemo(() => countryList(), []);
   const [countryCode, setCountryCode] = useState("US");
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(kind === "phone" ? "+1 " : "");
   const [submitting, setSubmitting] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [countryQuery, setCountryQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const country = countryEntry(countryCode)!;
+
+  // When the user picks a country from the dropdown, reset the input to that
+  // country's +CC prefix so they can start typing digits right after.
+  function selectCountry(cc: string) {
+    const entry = countryEntry(cc);
+    if (!entry) return;
+    setCountryCode(cc);
+    setValue(entry.dial + " ");
+    setCountryOpen(false);
+    setCountryQuery("");
+    inputRef.current?.focus();
+  }
 
   const filteredCountries = useMemo(() => {
     const q = countryQuery.trim().toLowerCase();
@@ -157,12 +169,7 @@ export function SearchEntry({
                     <li key={c.code}>
                       <button
                         type="button"
-                        onClick={() => {
-                          setCountryCode(c.code);
-                          setCountryOpen(false);
-                          setCountryQuery("");
-                          inputRef.current?.focus();
-                        }}
+                        onClick={() => selectCountry(c.code)}
                         className={`flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-ink-900/[0.04] ${
                           c.code === countryCode ? "bg-brand-50 text-brand-800" : ""
                         }`}
@@ -190,8 +197,8 @@ export function SearchEntry({
             onCountryChange={setCountryCode}
           />
         ) : (
-          <label className="block">
-            <span className="pointer-events-none block px-4 pt-3 text-xs font-medium text-ink-500">
+          <label className="block cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500">
+            <span className="pointer-events-none block text-xs font-medium text-ink-500">
               Email address
             </span>
             <input
@@ -202,7 +209,7 @@ export function SearchEntry({
               placeholder="name@example.com"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              className="-mt-1 block w-full rounded-xl bg-ink-900/[0.04] px-4 pb-3 text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="mt-1 block w-full bg-transparent text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
             />
           </label>
         )}
@@ -245,65 +252,74 @@ function PhoneInput({
   onValueChange: (v: string) => void;
   onCountryChange: (cc: string) => void;
 }) {
-  // `value` holds only the raw national digits (no + or CC, no spaces).
-  // The displayed string is derived via libphonenumber-js's AsYouType so it
-  // formats in real time for the selected country.
-  const display = formatNational(value, country.code);
-
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const raw = e.target.value;
-
-    // Full international paste: "+44 20 7946 0958" or "+34 612345678".
-    // Try to parse it and pull the country + national number out.
-    if (raw.trim().startsWith("+")) {
-      const parsed = parsePhoneNumberFromString(raw);
-      if (parsed && parsed.country) {
-        onCountryChange(parsed.country);
-        onValueChange(parsed.nationalNumber);
-        return;
-      }
+    // Whitelist: leading +, digits, spaces. Drop everything else so pasting
+    // "call me at +44 (20) 7946-0958" reduces to "+44 20 79460958" instantly.
+    let raw = e.target.value;
+    // Only one leading "+" allowed; any subsequent + is stripped.
+    raw = raw.replace(/[^\d+\s]/g, "");
+    if (raw.startsWith("+")) {
+      raw = "+" + raw.slice(1).replace(/\+/g, "");
+    } else {
+      raw = raw.replace(/\+/g, "");
     }
 
-    // Strip everything that isn't a digit
-    const digits = raw.replace(/\D+/g, "");
-    onValueChange(digits);
+    // Format with AsYouType. If the string starts with +, it auto-detects the
+    // country; if not, we fall back to formatting for the currently-selected
+    // country so digits still get local spacing.
+    const ay = raw.startsWith("+")
+      ? new AsYouType()
+      : new AsYouType(country.code as CountryCode);
+    const formatted = ay.input(raw);
+
+    // Country auto-switch: if AsYouType figured out a country from the
+    // typed +CC prefix and it's different from what's currently selected,
+    // update the dropdown (and thus the flag).
+    const detected = ay.getCountry();
+    if (detected && detected !== country.code) {
+      onCountryChange(detected);
+    }
+
+    onValueChange(formatted);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    // Allow navigation and editing keys unconditionally
-    const editKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "Tab"];
-    if (editKeys.includes(e.key)) return;
-    if (e.metaKey || e.ctrlKey) return; // Cmd+A, Cmd+V, Cmd+C etc.
+    // Always allow navigation/editing keys and modifier-based shortcuts
+    const nav = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "Tab", "Enter"];
+    if (nav.includes(e.key)) return;
+    if (e.metaKey || e.ctrlKey) return;
 
-    // Allow a leading "+" so paste-detect can still work when typed manually
-    if (e.key === "+" && (inputRef.current?.selectionStart ?? 0) === 0) return;
+    // A leading "+" is allowed at the very start of the input
+    if (e.key === "+") {
+      if ((inputRef.current?.selectionStart ?? 0) === 0) return;
+      e.preventDefault();
+      return;
+    }
 
-    // Only digits from here
+    // Space is allowed (formatter uses spaces to group digits)
+    if (e.key === " ") return;
+
+    // Digits only from here
     if (!/^\d$/.test(e.key)) e.preventDefault();
   }
 
   return (
-    <label className="block">
-      <span className="pointer-events-none block px-4 pt-3 text-xs font-medium text-ink-500">
+    <label className="block cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500">
+      <span className="pointer-events-none block text-xs font-medium text-ink-500">
         Phone Number
       </span>
-      <div className="-mt-1 flex items-baseline rounded-xl bg-ink-900/[0.04] px-4 pb-3 focus-within:ring-2 focus-within:ring-brand-500">
-        <span className="mr-2 select-none text-lg font-medium tabular-nums text-ink-900">
-          {country.dial}
-        </span>
-        <input
-          ref={inputRef}
-          type="tel"
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder={placeholderFor(country.code)}
-          value={display}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          className="min-w-0 flex-1 bg-transparent text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
-          aria-label={`Phone number in ${country.name}`}
-        />
-      </div>
+      <input
+        ref={inputRef}
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        placeholder={`${country.dial} ${placeholderFor(country.code)}`}
+        value={value}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        className="mt-1 block w-full bg-transparent text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
+        aria-label={`Phone number in ${country.name}`}
+      />
     </label>
   );
 }
