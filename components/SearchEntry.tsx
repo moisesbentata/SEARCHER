@@ -319,34 +319,32 @@ function PhoneInput({
   invalid?: boolean;
 }) {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    // Whitelist: leading +, digits, spaces. Drop everything else so pasting
-    // "call me at +44 (20) 7946-0958" reduces to "+44 20 79460958" instantly.
+    // Whitelist: digits, +, spaces. Everything else is dropped so pasting
+    // "call me at +44 (20) 7946-0958" reduces to "+44 20 7946 0958".
     let raw = e.target.value;
-    // Only one leading "+" allowed; any subsequent + is stripped.
     raw = raw.replace(/[^\d+\s]/g, "");
-    if (raw.startsWith("+")) {
-      raw = "+" + raw.slice(1).replace(/\+/g, "");
-    } else {
-      raw = raw.replace(/\+/g, "");
-    }
+    // Only one + allowed, and always at the very start. Strip any others.
+    raw = raw.replace(/\+/g, "");
+    // Enforce the leading + — a phone number in international form always
+    // starts with one, so we re-prepend it after every edit.
+    raw = "+" + raw.replace(/^\s+/, "");
 
-    // Format with AsYouType. If the string starts with +, it auto-detects the
-    // country; if not, we fall back to formatting for the currently-selected
-    // country so digits still get local spacing.
-    const ay = raw.startsWith("+")
-      ? new AsYouType()
-      : new AsYouType(country.code as CountryCode);
+    // AsYouType with no country hint reads the +CC prefix and detects the
+    // country from it, formatting the rest per that country's spacing rules.
+    const ay = new AsYouType();
     const formatted = ay.input(raw);
 
-    // Country auto-switch: if AsYouType figured out a country from the
-    // typed +CC prefix and it's different from what's currently selected,
-    // update the dropdown (and thus the flag).
+    // AsYouType can return "" for very partial inputs like just "+" — fall
+    // back to the raw string so the user always sees at least the + they
+    // typed and never loses their prefix.
+    const display = formatted && formatted.startsWith("+") ? formatted : raw;
+
     const detected = ay.getCountry();
     if (detected && detected !== country.code) {
       onCountryChange(detected);
     }
 
-    onValueChange(formatted);
+    onValueChange(display);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
