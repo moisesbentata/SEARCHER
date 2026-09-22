@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { brand } from "@/lib/brand";
+import { WorldCoverageMap } from "@/components/WorldCoverageMap";
 
 export function LandingSections() {
   return (
@@ -200,7 +201,7 @@ function WorldwideCoverage() {
         </p>
 
         <div className="mt-8 overflow-hidden rounded-3xl border border-ink-900/5 bg-white p-4 shadow-sm sm:p-6">
-          <WorldMapIllustration />
+          <WorldCoverageMap />
         </div>
 
         <p className="mt-3 text-center text-xs text-ink-400">
@@ -218,74 +219,6 @@ function WorldwideCoverage() {
         </div>
       </div>
     </section>
-  );
-}
-
-// Simple stylized world map. Highlights North America; the overlay card shows
-// the coverage stat. This is a hand-drawn approximation of the real ClarityCheck
-// illustration, not a real geographic map.
-function WorldMapIllustration() {
-  return (
-    <div className="relative aspect-[16/9] w-full">
-      <svg
-        viewBox="0 0 800 450"
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-full w-full"
-        aria-hidden
-      >
-        <defs>
-          <linearGradient id="landPale" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#e0f2fe" />
-            <stop offset="100%" stopColor="#bae6fd" />
-          </linearGradient>
-          <linearGradient id="landActive" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#38bdf8" />
-            <stop offset="100%" stopColor="#0284c7" />
-          </linearGradient>
-        </defs>
-
-        {/* Simplified continents — hand-tuned paths */}
-        <path
-          fill="url(#landActive)"
-          d="M60,90 L120,70 L180,75 L235,85 L275,110 L280,155 L245,190 L200,205 L170,235 L135,240 L110,220 L85,190 L65,150 Z"
-        />
-        <path
-          fill="url(#landPale)"
-          d="M180,235 L215,240 L235,275 L225,320 L210,350 L195,375 L180,395 L165,380 L155,340 L165,290 Z"
-        />
-        <path
-          fill="url(#landPale)"
-          d="M395,100 L440,90 L480,105 L500,135 L495,165 L470,180 L440,175 L410,165 L390,140 Z"
-        />
-        <path
-          fill="url(#landPale)"
-          d="M430,190 L470,195 L500,215 L520,255 L515,300 L490,340 L455,360 L420,350 L405,310 L400,265 L410,220 Z"
-        />
-        <path
-          fill="url(#landPale)"
-          d="M500,90 L580,80 L660,95 L720,120 L735,150 L715,180 L670,195 L605,195 L555,180 L515,160 Z"
-        />
-        <path
-          fill="url(#landPale)"
-          d="M555,200 L610,205 L665,230 L680,280 L650,310 L605,315 L570,290 L555,250 Z"
-        />
-        <path
-          fill="url(#landPale)"
-          d="M645,340 L710,335 L740,355 L735,385 L695,395 L655,388 L640,365 Z"
-        />
-
-        {/* North America highlight ring */}
-        <circle cx="180" cy="140" r="70" fill="none" stroke="#0369a1" strokeOpacity="0.35" strokeWidth="1.5" strokeDasharray="4 5" />
-      </svg>
-
-      {/* Region overlay card */}
-      <div className="absolute left-1/2 top-[38%] -translate-x-1/2 rounded-xl border border-ink-900/10 bg-white px-4 py-2 text-center shadow-lg">
-        <div className="text-sm font-semibold text-brand-700">North America</div>
-        <div className="text-xs text-ink-500">
-          Coverage: <span className="font-bold text-brand-700">98.4%</span>
-        </div>
-      </div>
-    </div>
   );
 }
 
