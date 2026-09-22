@@ -159,6 +159,82 @@ const REGIONS: Region[] = [
     ]),
     overlay: { x: 305, y: 400 },
   },
+  {
+    key: "africa",
+    name: "Africa",
+    coverage: "95.7%",
+    countries: new Set([
+      "012", // Algeria
+      "024", // Angola
+      "204", // Benin
+      "072", // Botswana
+      "854", // Burkina Faso
+      "108", // Burundi
+      "120", // Cameroon
+      "132", // Cape Verde
+      "140", // Central African Republic
+      "148", // Chad
+      "174", // Comoros
+      "178", // Congo
+      "180", // DR Congo
+      "384", // Cote d'Ivoire
+      "262", // Djibouti
+      "818", // Egypt
+      "226", // Equatorial Guinea
+      "232", // Eritrea
+      "748", // Eswatini
+      "231", // Ethiopia
+      "266", // Gabon
+      "270", // Gambia
+      "288", // Ghana
+      "324", // Guinea
+      "624", // Guinea-Bissau
+      "404", // Kenya
+      "426", // Lesotho
+      "430", // Liberia
+      "434", // Libya
+      "450", // Madagascar
+      "454", // Malawi
+      "466", // Mali
+      "478", // Mauritania
+      "480", // Mauritius
+      "504", // Morocco
+      "508", // Mozambique
+      "516", // Namibia
+      "562", // Niger
+      "566", // Nigeria
+      "646", // Rwanda
+      "686", // Senegal
+      "694", // Sierra Leone
+      "706", // Somalia
+      "710", // South Africa
+      "728", // South Sudan
+      "729", // Sudan
+      "834", // Tanzania
+      "768", // Togo
+      "788", // Tunisia
+      "800", // Uganda
+      "894", // Zambia
+      "716", // Zimbabwe
+      "732", // Western Sahara
+    ]),
+    overlay: { x: 490, y: 360 },
+  },
+  {
+    key: "oceania",
+    name: "Oceania",
+    coverage: "97.1%",
+    countries: new Set([
+      "036", // Australia
+      "554", // New Zealand
+      "598", // Papua New Guinea
+      "242", // Fiji
+      "540", // New Caledonia
+      "090", // Solomon Islands
+      "548", // Vanuatu
+    ]),
+    overlay: { x: 780, y: 400 },
+  },
 ];
 
 const WIDTH = 900;
