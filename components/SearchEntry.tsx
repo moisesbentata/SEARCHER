@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { countryList, countryEntry } from "@/lib/countries";
+import { HeroIllustration } from "@/components/HeroIllustration";
 
 type Kind = "phone" | "email" | "photo" | "vehicle" | "people";
 
@@ -62,13 +63,15 @@ export function SearchEntry({
   }
 
   return (
-    <section className="mx-auto max-w-lg px-5 pt-10 pb-14 sm:px-6">
-      <h1 className="text-center text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl">
+    <section className="mx-auto max-w-6xl px-5 pt-10 pb-14 sm:px-6 lg:pt-16 lg:pb-20">
+      <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="mx-auto w-full max-w-lg lg:mx-0">
+      <h1 className="text-center text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl lg:text-left lg:text-6xl">
         {title}
         <br />
         <span className="text-brand-700">{titleHighlight}</span>
       </h1>
-      <p className="mx-auto mt-4 max-w-md text-center text-base text-ink-500">
+      <p className="mx-auto mt-4 max-w-md text-center text-base text-ink-500 lg:mx-0 lg:text-left lg:text-lg">
         {subtitle}
       </p>
 
@@ -201,6 +204,12 @@ export function SearchEntry({
           )}
         </button>
       </form>
+        </div>
+
+        <div className="hidden justify-center lg:flex">
+          <HeroIllustration />
+        </div>
+      </div>
     </section>
   );
 }
