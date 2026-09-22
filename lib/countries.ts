@@ -101,6 +101,41 @@ export function countryList(): CountryEntry[] {
   return list;
 }
 
+// Detect a country from the raw digits that follow a "+" in what the user
+// typed. AsYouType.getCountry() only returns a country once the number is
+// far enough along to be unambiguous, but we want the flag to switch the
+// moment the user has typed a recognizable dial code like "+44".
+// This walks the digits and returns the country that owns the longest
+// matching dial code prefix.
+let dialToCountryCache: Record<string, string> | null = null;
+function dialToCountry(): Record<string, string> {
+  if (dialToCountryCache) return dialToCountryCache;
+  const map: Record<string, string> = {};
+  for (const entry of countryList()) {
+    // "+" + digits — strip the "+"
+    const digits = entry.dial.slice(1);
+    // Prefer whatever we saw first (TOP_ORDER puts US ahead of the other
+    // +1 territories, GB ahead of others, etc.).
+    if (!(digits in map)) map[digits] = entry.code;
+  }
+  dialToCountryCache = map;
+  return map;
+}
+
+export function detectCountryFromPrefix(raw: string): string | undefined {
+  const m = raw.match(/^\s*\+\s*(\d+)/);
+  if (!m) return undefined;
+  const digits = m[1];
+  const table = dialToCountry();
+  // Try longest prefix first (dial codes are up to 3 digits, plus 4-digit
+  // "shared" codes for some regions).
+  for (let len = Math.min(4, digits.length); len > 0; len--) {
+    const hit = table[digits.slice(0, len)];
+    if (hit) return hit;
+  }
+  return undefined;
+}
+
 export function countryEntry(code: string): CountryEntry | undefined {
   try {
     return {

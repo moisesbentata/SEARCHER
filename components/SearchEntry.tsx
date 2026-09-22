@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AsYouType, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
-import { countryList, countryEntry } from "@/lib/countries";
+import { countryList, countryEntry, detectCountryFromPrefix } from "@/lib/countries";
 import { HeroIllustration } from "@/components/HeroIllustration";
 
 // Format a raw national number string using libphonenumber-js's AsYouType,
@@ -329,20 +329,25 @@ function PhoneInput({
     // starts with one, so we re-prepend it after every edit.
     raw = "+" + raw.replace(/^\s+/, "");
 
-    // AsYouType with no country hint reads the +CC prefix and detects the
-    // country from it, formatting the rest per that country's spacing rules.
-    const ay = new AsYouType();
+    // Detect country early — AsYouType.getCountry() waits until the number
+    // is far enough along to be unambiguous, but we want the flag to switch
+    // the moment the user has typed a recognizable dial code like "+44".
+    const detected = detectCountryFromPrefix(raw);
+    if (detected && detected !== country.code) {
+      onCountryChange(detected);
+    }
+
+    // Format using AsYouType keyed to the detected country so spacing follows
+    // that country's national rules (e.g. UK "7400 123456" vs ES "612 34 56 78").
+    const ay = detected
+      ? new AsYouType(detected as CountryCode)
+      : new AsYouType();
     const formatted = ay.input(raw);
 
     // AsYouType can return "" for very partial inputs like just "+" — fall
     // back to the raw string so the user always sees at least the + they
     // typed and never loses their prefix.
     const display = formatted && formatted.startsWith("+") ? formatted : raw;
-
-    const detected = ay.getCountry();
-    if (detected && detected !== country.code) {
-      onCountryChange(detected);
-    }
 
     onValueChange(display);
   }
