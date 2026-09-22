@@ -1,4 +1,5 @@
 import { SearchEntry } from "@/components/SearchEntry";
+import { LandingSections } from "@/components/LandingSections";
 import { brand } from "@/lib/brand";
 
 export const metadata = {
@@ -7,13 +8,16 @@ export const metadata = {
     "Find the owner and linked profiles behind any email address.",
 };
 
-export default function EmailSearchPage() {
+export default function EmailLookupPage() {
   return (
-    <SearchEntry
-      kind="email"
-      title="Reverse Email"
-      titleHighlight="Lookup"
-      subtitle="Find the owner, linked profiles, and breach history behind any email address, using publicly available data from trusted sources."
-    />
+    <>
+      <SearchEntry
+        kind="email"
+        title="Reverse Email"
+        titleHighlight="Lookup"
+        subtitle="Find the owner, linked profiles, and breach history behind any email address, using publicly available data from trusted sources."
+      />
+      <LandingSections />
+    </>
   );
 }

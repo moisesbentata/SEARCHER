@@ -3,8 +3,18 @@
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AsYouType, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import { countryList, countryEntry } from "@/lib/countries";
 import { HeroIllustration } from "@/components/HeroIllustration";
+
+// Format a raw national number string using libphonenumber-js's AsYouType,
+// keyed to the currently-selected country so the spacing follows local rules
+// (e.g. "612 34 56 78" for Spain, "(415) 555-0134" for the US).
+function formatNational(digits: string, cc: string): string {
+  if (!digits) return "";
+  const ay = new AsYouType(cc as CountryCode);
+  return ay.input(digits);
+}
 
 type Kind = "phone" | "email" | "photo" | "vehicle" | "people";
 
@@ -171,23 +181,31 @@ export function SearchEntry({
           </div>
         ) : null}
 
-        <label className="block">
-          <span className="pointer-events-none block px-4 pt-3 text-xs font-medium text-ink-500">
-            {kind === "phone" ? "Phone Number" : "Email address"}
-          </span>
-          <input
-            ref={inputRef}
-            type={kind === "phone" ? "tel" : "email"}
-            inputMode={kind === "phone" ? "tel" : "email"}
-            autoComplete="off"
-            placeholder={
-              kind === "phone" ? `${country.dial} 000 000 0000` : "name@example.com"
-            }
+        {kind === "phone" ? (
+          <PhoneInput
+            inputRef={inputRef}
+            country={country}
             value={value}
-            onChange={(e) => setValue(e.target.value)}
-            className="-mt-1 block w-full rounded-xl bg-ink-900/[0.04] px-4 pb-3 text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            onValueChange={setValue}
+            onCountryChange={setCountryCode}
           />
-        </label>
+        ) : (
+          <label className="block">
+            <span className="pointer-events-none block px-4 pt-3 text-xs font-medium text-ink-500">
+              Email address
+            </span>
+            <input
+              ref={inputRef}
+              type="email"
+              inputMode="email"
+              autoComplete="off"
+              placeholder="name@example.com"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="-mt-1 block w-full rounded-xl bg-ink-900/[0.04] px-4 pb-3 text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+          </label>
+        )}
 
         <button
           type="submit"
@@ -212,4 +230,108 @@ export function SearchEntry({
       </div>
     </section>
   );
+}
+
+function PhoneInput({
+  inputRef,
+  country,
+  value,
+  onValueChange,
+  onCountryChange,
+}: {
+  inputRef: React.RefObject<HTMLInputElement>;
+  country: { code: string; name: string; dial: string; flag: string };
+  value: string;
+  onValueChange: (v: string) => void;
+  onCountryChange: (cc: string) => void;
+}) {
+  // `value` holds only the raw national digits (no + or CC, no spaces).
+  // The displayed string is derived via libphonenumber-js's AsYouType so it
+  // formats in real time for the selected country.
+  const display = formatNational(value, country.code);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value;
+
+    // Full international paste: "+44 20 7946 0958" or "+34 612345678".
+    // Try to parse it and pull the country + national number out.
+    if (raw.trim().startsWith("+")) {
+      const parsed = parsePhoneNumberFromString(raw);
+      if (parsed && parsed.country) {
+        onCountryChange(parsed.country);
+        onValueChange(parsed.nationalNumber);
+        return;
+      }
+    }
+
+    // Strip everything that isn't a digit
+    const digits = raw.replace(/\D+/g, "");
+    onValueChange(digits);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    // Allow navigation and editing keys unconditionally
+    const editKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "Tab"];
+    if (editKeys.includes(e.key)) return;
+    if (e.metaKey || e.ctrlKey) return; // Cmd+A, Cmd+V, Cmd+C etc.
+
+    // Allow a leading "+" so paste-detect can still work when typed manually
+    if (e.key === "+" && (inputRef.current?.selectionStart ?? 0) === 0) return;
+
+    // Only digits from here
+    if (!/^\d$/.test(e.key)) e.preventDefault();
+  }
+
+  return (
+    <label className="block">
+      <span className="pointer-events-none block px-4 pt-3 text-xs font-medium text-ink-500">
+        Phone Number
+      </span>
+      <div className="-mt-1 flex items-baseline rounded-xl bg-ink-900/[0.04] px-4 pb-3 focus-within:ring-2 focus-within:ring-brand-500">
+        <span className="mr-2 select-none text-lg font-medium tabular-nums text-ink-900">
+          {country.dial}
+        </span>
+        <input
+          ref={inputRef}
+          type="tel"
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder={placeholderFor(country.code)}
+          value={display}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          className="min-w-0 flex-1 bg-transparent text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
+          aria-label={`Phone number in ${country.name}`}
+        />
+      </div>
+    </label>
+  );
+}
+
+function placeholderFor(cc: string): string {
+  switch (cc) {
+    case "US":
+    case "CA":
+      return "(415) 555-0134";
+    case "GB":
+      return "7400 123456";
+    case "ES":
+      return "612 34 56 78";
+    case "FR":
+      return "6 12 34 56 78";
+    case "DE":
+      return "1512 3456789";
+    case "IT":
+      return "312 345 6789";
+    case "MX":
+      return "55 1234 5678";
+    case "BR":
+      return "11 91234-5678";
+    case "IL":
+      return "50 123 4567";
+    case "AU":
+      return "412 345 678";
+    default:
+      return "612 345 678";
+  }
 }
