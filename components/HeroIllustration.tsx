@@ -101,10 +101,9 @@ export function HeroIllustration() {
 
         {/* Phone badge on avatar */}
         <circle cx="207" cy="352" r="12" fill="url(#badge)" stroke="white" strokeWidth="2" />
-        <path
-          d="M201 350 q0 -2 2 -2 h1 q2 0 2 2 v1 q0 2 -0.5 2.5 l-1 1 q1 2 3 3 l1 -1 q0.5 -0.5 2.5 -0.5 h1 q2 0 2 2 v1 q0 2 -2 2 q-7 0 -12 -5 q-5 -5 -5 -12 z"
-          fill="white"
-        />
+        <g transform="translate(200, 345) scale(0.6)" fill="none" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.95.34 1.88.63 2.77a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.31-1.31a2 2 0 0 1 2.11-.45c.89.29 1.82.5 2.77.63A2 2 0 0 1 22 16.92z" />
+        </g>
 
         {/* Lines */}
         <rect x="230" y="305" width="180" height="10" rx="5" fill="#38bdf8" />
