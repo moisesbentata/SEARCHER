@@ -186,6 +186,37 @@ const SCENES: SceneRenderer[] = [
       <path d="M30 44 Q 50 22 70 44 Q 72 28 50 20 Q 28 28 30 44 Z" fill="#0a0405" />
     </svg>
   ),
+  // Bedroom — bed with rumpled sheets, warm lamp glow, headboard
+  () => (
+    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="bg9wall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#f4d9b8" />
+          <stop offset="100%" stopColor="#a97854" />
+        </linearGradient>
+        <radialGradient id="bg9lamp" cx="15%" cy="18%" r="35%">
+          <stop offset="0%" stopColor="#fff2c2" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#fff2c2" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      {/* Wall */}
+      <rect width="100" height="60" fill="url(#bg9wall)" />
+      {/* Warm lamp glow spill */}
+      <rect width="100" height="60" fill="url(#bg9lamp)" />
+      {/* Headboard */}
+      <rect x="8" y="34" width="84" height="24" rx="4" fill="#6a4a30" />
+      {/* Pillows */}
+      <rect x="14" y="46" width="30" height="14" rx="4" fill="#f6ecd8" />
+      <rect x="56" y="46" width="30" height="14" rx="4" fill="#f6ecd8" />
+      {/* Mattress */}
+      <rect x="0" y="58" width="100" height="18" fill="#e6d4b8" />
+      {/* Duvet — rumpled */}
+      <path d="M0 68 Q 25 62 50 70 Q 75 62 100 68 L 100 100 L 0 100 Z" fill="#c48a5c" />
+      <path d="M0 76 Q 30 72 60 80 Q 80 76 100 82 L 100 100 L 0 100 Z" fill="#a56a3e" opacity="0.7" />
+      {/* Lamp on nightstand hint */}
+      <circle cx="12" cy="24" r="6" fill="#ffdf8a" />
+    </svg>
+  ),
 ];
 
 export function CyclingAvatar({ intervalMs = 1400 }: { intervalMs?: number }) {
@@ -199,18 +230,22 @@ export function CyclingAvatar({ intervalMs = 1400 }: { intervalMs?: number }) {
   const Scene = SCENES[idx];
 
   return (
-    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg animate-avatar-cycle">
-      <div
-        className="absolute inset-0"
-        style={{
-          filter: "blur(8px)",
-          transform: "scale(1.15)", // hide edge blur softening
-        }}
-      >
-        <Scene />
+    <div className="relative h-16 w-16 shrink-0 animate-avatar-cycle">
+      {/* Inner square holds the blurred scene and clips it to the rounded corners */}
+      <div className="absolute inset-0 overflow-hidden rounded-lg">
+        <div
+          className="absolute inset-0"
+          style={{
+            filter: "blur(5px)",
+            transform: "scale(1.12)",
+          }}
+        >
+          <Scene />
+        </div>
       </div>
-      <div className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-amber-500 text-white ring-2 ring-white">
-        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      {/* Lock badge sits ON TOP of the square, not clipped inside it */}
+      <div className="absolute -bottom-1.5 -right-1.5 z-10 grid h-7 w-7 place-items-center rounded-full bg-amber-500 text-white shadow-md ring-2 ring-white">
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <rect x="4" y="11" width="16" height="10" rx="2" />
           <path d="M8 11V7a4 4 0 0 1 8 0v4" />
         </svg>
