@@ -156,8 +156,8 @@ const PHONE_SCHEDULE: SectionSchedule[] = [
   { itemDelaysMs: [1200, 1400, 1500, 1400, 1500, 3000], holdMs: 1000 },
   // s2 — Scanning Online Posts (13s): last = Active or Inactive Accounts
   { itemDelaysMs: [1200, 1400, 1800, 1500, 2500, 3600], holdMs: 1000 },
-  // s3 — Scanning App Activity (15s): last = Current or Past Profiles
-  { itemDelaysMs: [1300, 1500, 2500, 1600, 3500, 3600], holdMs: 1000 },
+  // s3 — Scanning App Activity (17s): last = Current or Past Profiles (5.6s)
+  { itemDelaysMs: [1300, 1500, 2500, 1600, 3500, 5600], holdMs: 1000 },
   // s4 — Searching Chat Apps (18s): last two = Images then Linked Accounts
   { itemDelaysMs: [1400, 2000, 1500, 3200, 4400, 4500], holdMs: 1000 },
   // s5 — Searching Social Media (20s): last two = Recent Photos and Videos
