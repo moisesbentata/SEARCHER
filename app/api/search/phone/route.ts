@@ -22,16 +22,12 @@ export async function POST(req: NextRequest) {
     (defaultCountry || undefined) as CountryCode | undefined,
   );
 
-  // If we got a valid E.164 number, ask the carrier module (which will use
-  // NumVerify or AbstractAPI if configured, else fall back to a country hint).
+  // Resolve carrier locally from Google's bundled carrier prefix data.
+  // Free at scale, no network call, no key.
   if (result.valid && result.e164) {
-    const carrier = await lookupCarrier(result.e164, result.countryCode);
+    const carrier = lookupCarrier(result.e164, result.countryCode);
     result.carrier = carrier.carrier;
     result.carrierSource = carrier.source;
-    // If the external API returned a more specific line type, prefer it
-    if (carrier.lineType && !result.type) {
-      result.type = carrier.lineType.toUpperCase();
-    }
   }
 
   return NextResponse.json(result);
