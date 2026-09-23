@@ -149,19 +149,21 @@ type SectionSchedule = {
   holdMs: number;
 };
 
-// Phone: total ~91s (Stage 1 phone map ~9s → 100s combined)
+// Phone: total ~91s (Stage 1 phone map ~9s → 100s combined). Delays climb
+// toward the end of each section so the LAST-ticked item is the juicy one.
 const PHONE_SCHEDULE: SectionSchedule[] = [
-  // s1 — Collecting Data (11s): warm-up
-  { itemDelaysMs: [1200, 1400, 2000, 1400, 2500, 1500], holdMs: 1000 },
-  // s2 — Scanning Online Posts (13s): last item is the tease
-  { itemDelaysMs: [1200, 1400, 2600, 1500, 1700, 3600], holdMs: 1000 },
-  // s3 — Scanning App Activity (15s): two mid-section dramatic pauses
-  { itemDelaysMs: [1300, 1500, 3200, 1600, 3600, 2800], holdMs: 1000 },
-  // s4 — Searching Chat Apps (18s): juicy, aliases at the end
-  { itemDelaysMs: [1300, 3800, 1500, 3500, 1700, 5200], holdMs: 1000 },
-  // s5 — Searching Social Media (20s): biggest section, escalating drama
-  { itemDelaysMs: [1400, 1600, 4500, 1500, 3800, 6200], holdMs: 1000 },
-  // s6 — Success! Data Found (14s): fast payoff with dramatic tail
+  // s1 — Collecting Data (11s): last tick = Forgotten Profiles
+  { itemDelaysMs: [1200, 1400, 1500, 1400, 1500, 3000], holdMs: 1000 },
+  // s2 — Scanning Online Posts (13s): last = Active or Inactive Accounts
+  { itemDelaysMs: [1200, 1400, 1800, 1500, 2500, 3600], holdMs: 1000 },
+  // s3 — Scanning App Activity (15s): last = Current or Past Profiles
+  { itemDelaysMs: [1300, 1500, 2500, 1600, 3500, 3600], holdMs: 1000 },
+  // s4 — Searching Chat Apps (18s): last two = Images then Linked Accounts
+  { itemDelaysMs: [1400, 2000, 1500, 3200, 4400, 4500], holdMs: 1000 },
+  // s5 — Searching Social Media (20s): last two = Recent Photos and Videos
+  //   then Online Activity (biggest drama)
+  { itemDelaysMs: [1400, 1700, 2000, 2900, 4500, 6500], holdMs: 1000 },
+  // s6 — Success! Data Found (14s): last = Social Profiles
   { itemDelaysMs: [800, 900, 900, 1000, 2400, 1000, 2500, 3500], holdMs: 1000 },
 ];
 
@@ -183,6 +185,35 @@ const EMAIL_SCHEDULE: SectionSchedule[] = [
 // Chosen so the bar reaches ~99% right at the last item of Success.
 const PHONE_SECTION_END_PCT = [14, 29, 47, 66, 83, 98];
 const EMAIL_SECTION_END_PCT = [17, 37, 62, 82, 98];
+
+// Tick order per section: index [i] is which item-index gets checked at
+// tick step i. Ordered so the LAST tick is the juicy item the user wants
+// featured, and the biggest delays in itemDelaysMs line up with those.
+const PHONE_TICK_ORDER: number[][] = [
+  // s1 Collecting Data — last: Forgotten Profiles (1)
+  [0, 3, 5, 2, 4, 1],
+  // s2 Scanning Online Posts — last: Active or Inactive Accounts (5)
+  [0, 2, 4, 1, 3, 5],
+  // s3 Scanning App Activity — last: Current or Past Profiles (1)
+  [0, 2, 4, 3, 5, 1],
+  // s4 Searching Chat Apps — last two: Images (2), Linked Accounts (3)
+  [0, 1, 4, 5, 2, 3],
+  // s5 Searching Social Media — last two: Recent Photos and Videos (2),
+  //   Online Activity (0)
+  [1, 3, 4, 5, 2, 0],
+  // s6 Success! Data Found — last: Social Profiles (7)
+  [0, 1, 2, 3, 5, 4, 6, 7],
+];
+
+// Email tick order: mildly shuffled but each section keeps its natural
+// dramatic tail (Ashley Madison, TikTok, Aliases).
+const EMAIL_TICK_ORDER: number[][] = [
+  [0, 2, 4, 1, 3, 5],
+  [0, 2, 4, 1, 3, 5],
+  [0, 2, 1, 3, 4, 5],
+  [0, 2, 1, 3, 4, 5],
+  [0, 1, 2, 3, 5, 4, 6, 7],
+];
 
 // Waits >= this many ms are treated as a "juicy pause" — the bar visibly
 // stalls in the middle of the wait, then resumes climbing as the item ticks.
@@ -262,6 +293,7 @@ export function Stage2OwnerInfo({
   const sections = kind === "phone" ? PHONE_SECTIONS : EMAIL_SECTIONS;
   const schedule = kind === "phone" ? PHONE_SCHEDULE : EMAIL_SCHEDULE;
   const beats = kind === "phone" ? PHONE_BEATS : EMAIL_BEATS;
+  const tickOrder = kind === "phone" ? PHONE_TICK_ORDER : EMAIL_TICK_ORDER;
 
   const [sectionIdx, setSectionIdx] = useState(0);
   const [itemsDone, setItemsDone] = useState<Record<number, Set<number>>>({});
@@ -280,10 +312,12 @@ export function Stage2OwnerInfo({
     function tickNext() {
       if (cancelled) return;
       const items = sections[s].items;
+      const order = tickOrder[s];
+      const which = order[i] ?? i;
       setItemsDone((prev) => {
         const next = { ...prev };
         const set = new Set(next[s] ?? []);
-        set.add(orderIndex(i, items.length));
+        set.add(which);
         next[s] = set;
         return next;
       });
@@ -404,13 +438,6 @@ export function Stage2OwnerInfo({
       </div>
     </section>
   );
-}
-
-// Slight shuffle so items don't check strictly top-to-bottom
-function orderIndex(step: number, total: number): number {
-  const perm = [0, 2, 4, 1, 5, 3, 6, 7];
-  const p = perm[step] ?? step;
-  return p % total;
 }
 
 function formatQuery(kind: "phone" | "email", q: string) {
