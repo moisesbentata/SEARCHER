@@ -68,6 +68,7 @@ function PhoneCard({ result }: { result: PhoneLookupResult }) {
           value={result.citiesHint?.length ? result.citiesHint.join(", ") : "Not identified"}
         />
         <Field label="Line type" value={result.carrierHint ?? "Unknown"} />
+        <Field label="Carrier" value={result.carrier ?? "Not identified"} />
         <Field label="National format" value={result.national ?? "—"} />
         <Field label="E.164" value={<code className="text-xs">{result.e164}</code>} />
       </div>

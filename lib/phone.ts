@@ -16,6 +16,10 @@ export type PhoneLookupResult = {
   region?: string;
   type?: string;
   carrierHint?: string;
+  // Real carrier name resolved server-side (NumVerify / AbstractAPI /
+  // fallback country hint). Undefined if the API returned nothing.
+  carrier?: string;
+  carrierSource?: "numverify" | "abstractapi" | "prefix-table" | "unknown";
   timezoneHint?: string[];
   citiesHint?: string[];
 };

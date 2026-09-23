@@ -87,14 +87,18 @@ export function Stage1PhoneMap({
   const currentPhase = PHASES[phaseIdx];
   const reveal = currentPhase.reveal;
 
+  // Prefer the real carrier we resolved server-side (NumVerify /
+  // AbstractAPI / country hint). Fall back to a friendly line-type label
+  // only if the carrier module returned nothing.
   const carrier =
-    result.type === "MOBILE"
-      ? sampleCarrier(result.countryCode)
-      : result.type === "VOIP"
-        ? "VoIP provider"
-        : result.type === "TOLL_FREE"
-          ? "Toll-free"
-          : "Landline";
+    result.carrier ||
+    (result.type === "VOIP"
+      ? "VoIP provider"
+      : result.type === "TOLL_FREE"
+        ? "Toll-free"
+        : result.type === "MOBILE"
+          ? "Mobile network"
+          : "Landline");
 
   const typeLabel = (() => {
     switch (result.type) {
@@ -205,37 +209,3 @@ function titleCase(s: string) {
     .join(" ");
 }
 
-function sampleCarrier(cc?: string) {
-  switch (cc) {
-    case "US":
-      return sample(["Verizon", "AT&T", "T-Mobile", "Cricket", "Metro by T-Mobile"]);
-    case "CA":
-      return sample(["Bell", "Rogers", "Telus", "Freedom Mobile"]);
-    case "GB":
-      return sample(["EE", "O2", "Vodafone", "Three"]);
-    case "ES":
-      return sample(["Movistar", "Orange", "Vodafone", "Yoigo"]);
-    case "FR":
-      return sample(["Orange", "SFR", "Bouygues", "Free Mobile"]);
-    case "DE":
-      return sample(["Deutsche Telekom", "Vodafone", "O2 Telefónica"]);
-    case "IT":
-      return sample(["TIM", "Vodafone", "Wind Tre", "Iliad"]);
-    case "BR":
-      return sample(["Vivo", "Claro", "TIM", "Oi"]);
-    case "MX":
-      return sample(["Telcel", "AT&T México", "Movistar"]);
-    case "IN":
-      return sample(["Airtel", "Jio", "Vi (Vodafone Idea)", "BSNL"]);
-    case "AU":
-      return sample(["Telstra", "Optus", "Vodafone AU"]);
-    case "IL":
-      return sample(["Cellcom", "Pelephone", "Partner", "HOT Mobile"]);
-    default:
-      return "Local carrier";
-  }
-}
-
-function sample<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
