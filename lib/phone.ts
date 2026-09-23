@@ -4,6 +4,7 @@ import {
   getCountryCallingCode,
   type CountryCode,
 } from "libphonenumber-js";
+import type { EnrichmentResult } from "./enrich/types";
 
 export type PhoneLookupResult = {
   input: string;
@@ -16,12 +17,14 @@ export type PhoneLookupResult = {
   region?: string;
   type?: string;
   carrierHint?: string;
-  // Real carrier name resolved server-side (NumVerify / AbstractAPI /
-  // fallback country hint). Undefined if the API returned nothing.
+  // Real carrier name resolved server-side (libphonenumber prefix data +
+  // country-level hint fallback).
   carrier?: string;
   carrierSource?: "libphonenumber" | "country-hint" | "unknown";
   timezoneHint?: string[];
   citiesHint?: string[];
+  // Full enrichment payload attached server-side.
+  enrichment?: EnrichmentResult;
 };
 
 const COUNTRY_NAMES: Record<string, string> = {

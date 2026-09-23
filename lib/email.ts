@@ -1,3 +1,5 @@
+import type { EnrichmentResult } from "./enrich/types";
+
 export type EmailLookupResult = {
   input: string;
   valid: boolean;
@@ -10,6 +12,7 @@ export type EmailLookupResult = {
   provider?: string;
   gravatarUrl?: string;
   breachCount?: number | null;
+  enrichment?: EnrichmentResult;
 };
 
 const FREE_PROVIDERS = new Set([
