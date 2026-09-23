@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CyclingAvatar } from "@/components/CyclingAvatar";
 
 export function Stage3EmailCapture({
   query,
@@ -139,7 +138,7 @@ function BlurredDashboard() {
     <div className="space-y-4">
       {/* Profile header */}
       <div className="flex items-center gap-3">
-        <CyclingAvatar intervalMs={1200} />
+        <NoProfileAvatar />
         <div className="min-w-0 flex-1">
           <div className="h-4 w-40 rounded bg-ink-900/70" />
           <div className="mt-1.5 h-3 w-28 rounded bg-ink-900/25" />
@@ -199,6 +198,32 @@ function BlurredDashboard() {
           <div className="mt-1 h-3 w-6 rounded bg-ink-900/70" />
         </div>
       </div>
+    </div>
+  );
+}
+
+// Generic "no profile picture" placeholder: gray circle with the default
+// person silhouette (head + shoulders), rendered chunky/pixelated so it reads
+// as the empty-avatar default you see on social networks when a user hasn't
+// uploaded a photo.
+function NoProfileAvatar() {
+  return (
+    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-ink-900/[0.12] ring-1 ring-ink-900/10">
+      <svg
+        viewBox="0 0 64 64"
+        className="h-full w-full"
+        style={{ imageRendering: "pixelated", shapeRendering: "crispEdges" }}
+        aria-hidden
+      >
+        {/* Head — chunky rectangles so it reads as pixelated */}
+        <rect x="24" y="14" width="16" height="4" fill="#8a95a5" />
+        <rect x="22" y="18" width="20" height="4" fill="#8a95a5" />
+        <rect x="20" y="22" width="24" height="8" fill="#8a95a5" />
+        <rect x="22" y="30" width="20" height="4" fill="#8a95a5" />
+        {/* Shoulders / body */}
+        <rect x="14" y="42" width="36" height="6" fill="#8a95a5" />
+        <rect x="10" y="48" width="44" height="16" fill="#8a95a5" />
+      </svg>
     </div>
   );
 }
