@@ -163,8 +163,8 @@ const PHONE_SCHEDULE: SectionSchedule[] = [
   // s5 — Searching Social Media (20s): last two = Recent Photos and Videos
   //   then Online Activity (biggest drama)
   { itemDelaysMs: [1400, 1700, 2000, 2900, 4500, 6500], holdMs: 1000 },
-  // s6 — Success! Data Found (14s): last = Social Profiles
-  { itemDelaysMs: [800, 900, 900, 1000, 2400, 1000, 2500, 3500], holdMs: 1000 },
+  // s6 — Success! Data Found (16s): last = Social Profiles (5.5s)
+  { itemDelaysMs: [800, 900, 900, 1000, 2400, 1000, 2500, 5500], holdMs: 1000 },
 ];
 
 // Email: total ~100s (no Stage 1 for email)
