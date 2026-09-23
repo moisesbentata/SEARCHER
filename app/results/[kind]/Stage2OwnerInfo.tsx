@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { CyclingAvatar } from "@/components/CyclingAvatar";
 import { StripedProgressBar } from "@/components/StripedProgressBar";
 
@@ -140,8 +140,100 @@ const EMAIL_SECTIONS: Section[] = [
   },
 ];
 
-const TICK_MS = 340; // pace of each item flipping to a check
-const SECTION_HOLD_MS = 1100; // hold each fully-ticked section this long before swapping
+// Per-item delay BEFORE that item ticks (from start of section), then holdMs
+// keeps every item visibly checked before moving on. Numbers hand-tuned so the
+// scan feels alive — some items snap in fast, then a beat where nothing moves,
+// then a small cluster, then a dramatic pause on the sensitive sections.
+type SectionSchedule = {
+  itemDelaysMs: number[];
+  holdMs: number;
+};
+
+const PHONE_SCHEDULE: SectionSchedule[] = [
+  // s1 — Collecting Data: fast opening burst
+  { itemDelaysMs: [220, 200, 280, 240, 200, 260], holdMs: 500 },
+  // s2 — Scanning Online Posts: cluster, then a mid-section pause
+  { itemDelaysMs: [260, 240, 900, 280, 260, 340], holdMs: 600 },
+  // s3 — Scanning App Activity: slower, small pause in the middle
+  { itemDelaysMs: [340, 300, 380, 950, 300, 340], holdMs: 700 },
+  // s4 — Searching Chat Apps: biggest pause, tension beat
+  { itemDelaysMs: [320, 280, 340, 1200, 260, 340], holdMs: 700 },
+  // s5 — Searching Social Media: medium with a short breath
+  { itemDelaysMs: [280, 260, 700, 240, 260, 320], holdMs: 500 },
+  // s6 — Success!: fast payoff burst
+  { itemDelaysMs: [220, 200, 240, 220, 200, 240, 220, 300], holdMs: 900 },
+];
+
+const EMAIL_SCHEDULE: SectionSchedule[] = [
+  // s1 — Collecting Data
+  { itemDelaysMs: [220, 240, 260, 220, 260, 300], holdMs: 500 },
+  // s2 — Scanning Data Breaches: big mid-pause (dramatic)
+  { itemDelaysMs: [280, 300, 1100, 260, 280, 340], holdMs: 700 },
+  // s3 — Searching Dating Apps: biggest pause for tension
+  { itemDelaysMs: [340, 280, 340, 1400, 280, 340], holdMs: 800 },
+  // s4 — Searching Social Media
+  { itemDelaysMs: [280, 260, 700, 240, 260, 320], holdMs: 500 },
+  // s5 — Success!
+  { itemDelaysMs: [220, 200, 240, 220, 200, 240, 220, 300], holdMs: 900 },
+];
+
+// Bar beats: [elapsedMs, targetPercent]. Two consecutive beats at the same
+// percent create a visible plateau (the bar stalls). Aligned with the
+// SCHEDULE above so the bar visibly pauses when the item scanner pauses.
+const PHONE_BAR_BEATS: Array<[number, number]> = [
+  [0, 2],
+  [1400, 14],   // s1 items done
+  [1900, 14],   // s1 hold plateau
+  [2400, 20],   // s2 beginning
+  [3300, 20],   // s2's 900ms pause plateau
+  [4180, 30],   // s2 items done
+  [4780, 30],   // s2 hold plateau
+  [6100, 40],   // s3 mid-progress
+  [7050, 40],   // s3's 950ms pause plateau
+  [7390, 48],   // s3 done
+  [8090, 48],   // s3 hold plateau
+  [9750, 58],   // s4 mid
+  [10950, 58],  // s4's 1200ms dramatic pause plateau
+  [11530, 68],  // s4 done
+  [12230, 68],  // s4 hold plateau
+  [12990, 74],  // s5 mid
+  [13690, 74],  // s5's 700ms pause plateau
+  [14290, 82],  // s5 done
+  [14790, 82],  // s5 hold plateau
+  [16630, 99],  // s6 payoff burst
+];
+
+const EMAIL_BAR_BEATS: Array<[number, number]> = [
+  [0, 2],
+  [1520, 15],
+  [2020, 15],
+  [2600, 22],
+  [3700, 22],  // s2 1100ms breach pause
+  [4820, 33],
+  [5520, 33],
+  [7000, 45],
+  [8400, 45],  // s3 1400ms dating drama pause
+  [8980, 58],
+  [9780, 58],
+  [11040, 72],
+  [11540, 72],
+  [13380, 99],
+];
+
+function interpolateBeats(beats: Array<[number, number]>, elapsed: number): number {
+  if (elapsed <= beats[0][0]) return beats[0][1];
+  const last = beats[beats.length - 1];
+  if (elapsed >= last[0]) return last[1];
+  for (let i = 0; i < beats.length - 1; i++) {
+    const [t0, p0] = beats[i];
+    const [t1, p1] = beats[i + 1];
+    if (elapsed >= t0 && elapsed <= t1) {
+      const t = t1 === t0 ? 1 : (elapsed - t0) / (t1 - t0);
+      return p0 + t * (p1 - p0);
+    }
+  }
+  return last[1];
+}
 
 export function Stage2OwnerInfo({
   kind,
@@ -153,70 +245,73 @@ export function Stage2OwnerInfo({
   onDone: () => void;
 }) {
   const sections = kind === "phone" ? PHONE_SECTIONS : EMAIL_SECTIONS;
+  const schedule = kind === "phone" ? PHONE_SCHEDULE : EMAIL_SCHEDULE;
+  const barBeats = kind === "phone" ? PHONE_BAR_BEATS : EMAIL_BAR_BEATS;
+
   const [sectionIdx, setSectionIdx] = useState(0);
   const [itemsDone, setItemsDone] = useState<Record<number, Set<number>>>({});
-  // percent is animated smoothly via requestAnimationFrame — not tied to item ticks
   const [percent, setPercent] = useState(2);
-
-  // Total run time chosen so the bar reaches 99% roughly when the final
-  // section finishes checking off.
-  const totalRunMs = useRef(
-    sections.reduce((n, s) => n + s.items.length * TICK_MS + SECTION_HOLD_MS, 0),
-  );
 
   useEffect(() => {
     let cancelled = false;
     let s = 0;
     let i = 0;
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+    const later = (fn: () => void, ms: number) => {
+      const t = setTimeout(fn, ms);
+      timeouts.push(t);
+    };
 
-    function tick() {
+    function tickNext() {
       if (cancelled) return;
-      const section = sections[s];
-      // check off items in a mildly randomized order
+      const items = sections[s].items;
       setItemsDone((prev) => {
         const next = { ...prev };
         const set = new Set(next[s] ?? []);
-        set.add(orderIndex(i, section.items.length));
+        set.add(orderIndex(i, items.length));
         next[s] = set;
         return next;
       });
       i += 1;
-      if (i >= section.items.length) {
-        // hold the fully-checked section so the user actually sees every tick
-        setTimeout(() => {
+      if (i >= items.length) {
+        // hold on the fully-checked section so every tick registers,
+        // then swap to the next section
+        later(() => {
           if (cancelled) return;
           s += 1;
           i = 0;
-          if (s >= sections.length) {
-            setTimeout(() => !cancelled && onDone(), 900);
+          if (s >= schedule.length) {
+            later(() => !cancelled && onDone(), 900);
             return;
           }
           setSectionIdx(s);
-          setTimeout(tick, 350); // brief breath before the new section starts
-        }, SECTION_HOLD_MS);
+          later(tickNext, schedule[s].itemDelaysMs[0]);
+        }, schedule[s].holdMs);
       } else {
-        setTimeout(tick, TICK_MS);
+        later(tickNext, schedule[s].itemDelaysMs[i]);
       }
     }
-    // small delay so the header lands before ticking begins
-    setTimeout(tick, 450);
+    // initial breath so the section header lands before ticking begins
+    later(tickNext, 450 + schedule[0].itemDelaysMs[0]);
 
-    // Smoothly animate the percent value from 2 → 99 over the total run time.
+    // Independent rAF loop drives the bar via the hand-crafted beat curve.
+    // Because the beats have plateau segments, the bar physically pauses and
+    // then jumps rather than climbing at a constant rate.
     const start = performance.now();
+    const endMs = barBeats[barBeats.length - 1][0] + 400;
     let raf = 0;
     function loop(now: number) {
       if (cancelled) return;
-      const t = Math.min(1, (now - start) / totalRunMs.current);
-      // ease-out so the bar sprints early and eases at the end
-      const eased = 1 - Math.pow(1 - t, 1.6);
-      setPercent(Math.round(2 + eased * 97));
-      if (t < 1) raf = requestAnimationFrame(loop);
+      const elapsed = now - start;
+      setPercent(interpolateBeats(barBeats, elapsed));
+      if (elapsed < endMs) raf = requestAnimationFrame(loop);
     }
     raf = requestAnimationFrame(loop);
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      timeouts.forEach(clearTimeout);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -267,10 +362,7 @@ export function Stage2OwnerInfo({
             return (
               <li key={item} className="flex items-center gap-3">
                 {done ? (
-                  <span
-                    key="check"
-                    className="inline-flex h-6 w-6 items-center justify-center animate-fade-in"
-                  >
+                  <span className="inline-flex h-6 w-6 items-center justify-center animate-fade-in">
                     <svg
                       viewBox="0 0 24 24"
                       className="h-6 w-6 text-brand-600"
@@ -286,7 +378,9 @@ export function Stage2OwnerInfo({
                 ) : (
                   <span className="inline-block h-6 w-6 animate-spin rounded-full border-[2.5px] border-brand-600/20 border-t-brand-600" />
                 )}
-                <span className={`text-lg transition-colors ${done ? "text-ink-900" : "text-ink-500"}`}>
+                <span
+                  className={`text-lg transition-colors ${done ? "text-ink-900" : "text-ink-500"}`}
+                >
                   {item}
                 </span>
               </li>
@@ -298,7 +392,7 @@ export function Stage2OwnerInfo({
   );
 }
 
-// Randomize check-off order lightly so items don't check top-to-bottom
+// Slight shuffle so items don't check strictly top-to-bottom
 function orderIndex(step: number, total: number): number {
   const perm = [0, 2, 4, 1, 5, 3, 6, 7];
   const p = perm[step] ?? step;
@@ -307,7 +401,6 @@ function orderIndex(step: number, total: number): number {
 
 function formatQuery(kind: "phone" | "email", q: string) {
   if (kind === "phone") {
-    // Strip leading + and country code cluster for a shorter display
     const digits = q.replace(/[^\d]/g, "");
     return digits.length > 10 ? digits.slice(-9).replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4") : q;
   }
