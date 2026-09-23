@@ -63,8 +63,8 @@ export function Stage3EmailCapture({
       </h1>
 
       <form onSubmit={submit} className="mt-5 space-y-3">
-        <label className="block">
-          <span className="pointer-events-none block px-4 pt-3 text-xs font-medium text-ink-500">
+        <label className="block rounded-xl bg-ink-900/[0.04] px-4 py-2.5 focus-within:ring-2 focus-within:ring-brand-500">
+          <span className="block text-[11px] font-medium uppercase tracking-wide text-ink-500">
             Email
           </span>
           <input
@@ -74,7 +74,7 @@ export function Stage3EmailCapture({
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="-mt-1 block w-full rounded-xl bg-ink-900/[0.04] px-4 pb-3 text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="block w-full bg-transparent text-base font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
           />
         </label>
 
