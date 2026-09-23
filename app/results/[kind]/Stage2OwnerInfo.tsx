@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CyclingAvatar } from "@/components/CyclingAvatar";
 import { StripedProgressBar } from "@/components/StripedProgressBar";
 
@@ -140,8 +140,8 @@ const EMAIL_SECTIONS: Section[] = [
   },
 ];
 
-const TICK_MS = 260; // pace of each item flipping to a check
-const PHASE_END_PAUSE = 400;
+const TICK_MS = 340; // pace of each item flipping to a check
+const SECTION_HOLD_MS = 1100; // hold each fully-ticked section this long before swapping
 
 export function Stage2OwnerInfo({
   kind,
@@ -153,10 +153,16 @@ export function Stage2OwnerInfo({
   onDone: () => void;
 }) {
   const sections = kind === "phone" ? PHONE_SECTIONS : EMAIL_SECTIONS;
-  const totalItems = sections.reduce((n, s) => n + s.items.length, 0);
   const [sectionIdx, setSectionIdx] = useState(0);
   const [itemsDone, setItemsDone] = useState<Record<number, Set<number>>>({});
-  const [globalDone, setGlobalDone] = useState(0);
+  // percent is animated smoothly via requestAnimationFrame — not tied to item ticks
+  const [percent, setPercent] = useState(2);
+
+  // Total run time chosen so the bar reaches 99% roughly when the final
+  // section finishes checking off.
+  const totalRunMs = useRef(
+    sections.reduce((n, s) => n + s.items.length * TICK_MS + SECTION_HOLD_MS, 0),
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -166,7 +172,7 @@ export function Stage2OwnerInfo({
     function tick() {
       if (cancelled) return;
       const section = sections[s];
-      // random order of check-offs per section
+      // check off items in a mildly randomized order
       setItemsDone((prev) => {
         const next = { ...prev };
         const set = new Set(next[s] ?? []);
@@ -174,33 +180,47 @@ export function Stage2OwnerInfo({
         next[s] = set;
         return next;
       });
-      setGlobalDone((n) => n + 1);
       i += 1;
       if (i >= section.items.length) {
+        // hold the fully-checked section so the user actually sees every tick
         setTimeout(() => {
           if (cancelled) return;
           s += 1;
           i = 0;
           if (s >= sections.length) {
-            setTimeout(() => !cancelled && onDone(), 700);
+            setTimeout(() => !cancelled && onDone(), 900);
             return;
           }
           setSectionIdx(s);
-          tick();
-        }, PHASE_END_PAUSE);
+          setTimeout(tick, 350); // brief breath before the new section starts
+        }, SECTION_HOLD_MS);
       } else {
         setTimeout(tick, TICK_MS);
       }
     }
-    // start after a tiny delay so the section header is visible first
-    setTimeout(tick, 500);
+    // small delay so the header lands before ticking begins
+    setTimeout(tick, 450);
+
+    // Smoothly animate the percent value from 2 → 99 over the total run time.
+    const start = performance.now();
+    let raf = 0;
+    function loop(now: number) {
+      if (cancelled) return;
+      const t = Math.min(1, (now - start) / totalRunMs.current);
+      // ease-out so the bar sprints early and eases at the end
+      const eased = 1 - Math.pow(1 - t, 1.6);
+      setPercent(Math.round(2 + eased * 97));
+      if (t < 1) raf = requestAnimationFrame(loop);
+    }
+    raf = requestAnimationFrame(loop);
+
     return () => {
       cancelled = true;
+      cancelAnimationFrame(raf);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const percent = Math.max(2, Math.min(99, Math.round((globalDone / totalItems) * 99) + 2));
   const section = sections[sectionIdx];
   const doneSet = itemsDone[sectionIdx] ?? new Set<number>();
   const isSuccess = section.title.startsWith("Success");
@@ -235,38 +255,45 @@ export function Stage2OwnerInfo({
 
       <hr className="my-5 border-ink-900/5" />
 
-      <h2
-        className={`text-xl font-extrabold tracking-tight ${isSuccess ? "text-ink-900" : "text-ink-900"}`}
-      >
-        {section.title}
-        {isSuccess ? "" : "…"}
-      </h2>
+      <div key={sectionIdx} className="animate-fade-in">
+        <h2 className="text-xl font-extrabold tracking-tight text-ink-900">
+          {section.title}
+          {isSuccess ? "" : "…"}
+        </h2>
 
-      <ul className="mt-4 space-y-3">
-        {section.items.map((item, i) => {
-          const done = doneSet.has(i);
-          return (
-            <li key={item} className="flex items-center gap-3">
-              {done ? (
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-6 w-6 text-brand-600"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
-              ) : (
-                <span className="inline-block h-6 w-6 animate-spin rounded-full border-[2.5px] border-brand-600/20 border-t-brand-600" />
-              )}
-              <span className="text-lg text-ink-800">{item}</span>
-            </li>
-          );
-        })}
-      </ul>
+        <ul className="mt-4 space-y-3">
+          {section.items.map((item, i) => {
+            const done = doneSet.has(i);
+            return (
+              <li key={item} className="flex items-center gap-3">
+                {done ? (
+                  <span
+                    key="check"
+                    className="inline-flex h-6 w-6 items-center justify-center animate-fade-in"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-6 w-6 text-brand-600"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  </span>
+                ) : (
+                  <span className="inline-block h-6 w-6 animate-spin rounded-full border-[2.5px] border-brand-600/20 border-t-brand-600" />
+                )}
+                <span className={`text-lg transition-colors ${done ? "text-ink-900" : "text-ink-500"}`}>
+                  {item}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </section>
   );
 }
