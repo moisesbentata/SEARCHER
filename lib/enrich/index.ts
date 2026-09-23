@@ -6,6 +6,7 @@ import { sherlockLookup, usernameFromEmail } from "./sherlock";
 import { githubSearch } from "./github-search";
 import { waybackLookup } from "./wayback";
 import { rdapLookup } from "./rdap";
+import { leakcheckLookup } from "./leakcheck";
 
 // Merge multiple partial results into one, concatenating array fields and
 // preferring the first-set value on scalar fields.
@@ -36,6 +37,7 @@ export async function enrichEmail(email: string): Promise<EnrichmentResult> {
   const settled = await Promise.allSettled([
     gravatarLookup(email),
     hibpLookup(email),
+    leakcheckLookup(email, "email"),
     domainLookup(email),
     sherlockLookup(username),
     githubSearch(email),
@@ -53,6 +55,7 @@ export async function enrichEmail(email: string): Promise<EnrichmentResult> {
 export async function enrichPhone(e164: string): Promise<EnrichmentResult> {
   const settled = await Promise.allSettled([
     hibpLookup(e164),
+    leakcheckLookup(e164, "phone"),
     githubSearch(e164),
     waybackLookup(e164),
   ]);
