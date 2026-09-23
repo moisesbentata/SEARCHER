@@ -28,6 +28,18 @@ export type DomainInfo = {
   mx?: string[];
   disposable?: boolean;
   role?: boolean;
+  registrar?: string;
+  createdOn?: string;
+  expiresOn?: string;
+  lastChangedOn?: string;
+  ageYears?: number;
+  nameservers?: string[];
+};
+
+export type WebMention = {
+  url: string;
+  captured?: string;
+  archiveUrl?: string;
 };
 
 export type EnrichmentResult = {
@@ -45,6 +57,8 @@ export type EnrichmentResult = {
 
   // Presence checks
   usernameHits?: UsernameHit[];
+  githubMentions?: UsernameHit[];
+  webMentions?: WebMention[];
 
   // Domain info (for email)
   domain?: DomainInfo;
