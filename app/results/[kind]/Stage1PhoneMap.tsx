@@ -20,17 +20,17 @@ type Phase = {
 };
 
 const PHASES: Phase[] = [
-  { title: "Initiating phone lookup", seconds: 4, totalMs: 1200, reveal: {} },
+  { title: "Initiating phone lookup", seconds: 8, totalMs: 4500, reveal: {} },
   {
     title: "Analyzing phone data",
-    seconds: 2,
-    totalMs: 900,
+    seconds: 3,
+    totalMs: 3200,
     reveal: { carrier: true, type: true, country: true, city: true },
   },
   {
     title: "Mapping location",
-    seconds: 0,
-    totalMs: 500,
+    seconds: 1,
+    totalMs: 1000,
     reveal: { carrier: true, type: true, country: true, city: true, location: true },
   },
 ];
@@ -52,7 +52,7 @@ export function Stage1PhoneMap({
     function runPhase() {
       if (cancelled) return;
       if (phase >= PHASES.length) {
-        setTimeout(() => !cancelled && onDone(), 150);
+        setTimeout(() => !cancelled && onDone(), 300);
         return;
       }
       setPhaseIdx(phase);
