@@ -5,7 +5,6 @@ import { WorldCoverageMap } from "@/components/WorldCoverageMap";
 export function LandingSections() {
   return (
     <>
-      <FeaturedOn />
       <UncoverSection />
       <StatsVerifying />
       <WorldwideCoverage />
@@ -16,28 +15,6 @@ export function LandingSections() {
       <FAQ />
       <BottomCta />
     </>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Featured on                                                        */
-/* ------------------------------------------------------------------ */
-function FeaturedOn() {
-  return (
-    <section className="bg-white">
-      <div className="mx-auto max-w-5xl px-5 py-10 sm:px-6">
-        <p className="text-center text-sm font-bold uppercase tracking-widest text-ink-500">
-          {brand.name} has been featured on
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-around gap-x-8 gap-y-5 text-lg font-black uppercase tracking-wider text-ink-400">
-          <span className="italic">Entrepreneur</span>
-          <span className="rounded bg-ink-900/[0.06] px-2 py-0.5 tracking-[0.35em]">WIRED</span>
-          <span className="lowercase tracking-[0.15em]">msn</span>
-          <span className="tracking-[0.15em]">BBC</span>
-          <span className="font-serif italic tracking-widest">THE GLOBE AND MAIL</span>
-        </div>
-      </div>
-    </section>
   );
 }
 
