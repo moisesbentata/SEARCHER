@@ -171,7 +171,7 @@ function StatsVerifying() {
           <span className="block text-2xl font-bold sm:text-3xl lg:text-4xl">
             You&apos;re Not Overthinking,
           </span>
-          <span className="mt-1 block bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text text-4xl font-extrabold text-transparent sm:text-5xl lg:text-6xl">
+          <span className="mt-1 block bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text pb-2 text-4xl font-extrabold leading-[1.15] text-transparent sm:text-5xl lg:text-6xl">
             You&apos;re Verifying
           </span>
         </h2>
