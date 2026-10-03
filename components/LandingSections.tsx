@@ -192,8 +192,7 @@ function StatsVerifying() {
     },
     {
       n: "1/5",
-      label:
-        "of people who checked their partner's phone discovered their partner was cheating",
+      label: "found cheating after checking their partner's phone",
       source: "Pew Research",
       sourceUrl:
         "https://www.pewresearch.org/internet/2014/02/11/couples-the-internet-and-social-media/",
