@@ -35,15 +35,46 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs md:flex-row md:items-center md:justify-between">
-          <div>
-            © {new Date().getFullYear()} {brand.name}. All rights reserved.
-          </div>
-          <div className="max-w-2xl text-ink-400">
-            <strong className="text-ink-300">FCRA notice:</strong> {brand.name} is not a
-            consumer reporting agency. Do not use this service for employment,
-            credit, housing, insurance, or any other purpose covered under the
-            Fair Credit Reporting Act.
+        <div className="mt-10 space-y-6 border-t border-white/10 pt-6 text-xs text-ink-400">
+          <p className="leading-relaxed">
+            {brand.name} compiles information and images from publicly available
+            web pages and public records for personal informational purposes
+            only. Do not use our services to stalk, harass, dox, or attempt to
+            track or monitor any person; image matching, where offered, is
+            performed by third-party search engines over publicly available
+            images; we do not create or retain facial-recognition templates of
+            searched individuals, and do not offer identity verification,
+            person-tracking, device monitoring, real-time location or GPS, or
+            access to private communications, accounts, or login credentials.
+            Results come from public sources, may be incomplete or outdated,
+            and are not provided in real time. We are not a consumer or
+            credit-reference reporting agency; do not use our information for
+            employment, tenancy, credit, insurance, or other eligibility
+            decisions. For users in the EEA, {brand.name} acts as a data
+            controller and processes publicly available personal data on
+            lawful bases including legitimate interests. You have rights of
+            access, rectification, erasure, restriction, objection, and
+            portability. To exercise your rights or request removal or opt-out,
+            follow the opt-out procedure described in our{" "}
+            <Link href="/terms-conditions" className="underline hover:text-ink-200">
+              Terms &amp; Conditions
+            </Link>
+            . You may also lodge a complaint with your local Data Protection
+            Authority. Only upload images you have the right to share.
+          </p>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              © {new Date().getFullYear()} {brand.name}. All rights reserved.
+            </div>
+            <div>
+              Questions or concerns? Email{" "}
+              <a
+                href={`mailto:${brand.supportEmail}`}
+                className="underline hover:text-ink-200"
+              >
+                {brand.supportEmail}
+              </a>
+            </div>
           </div>
         </div>
       </div>
