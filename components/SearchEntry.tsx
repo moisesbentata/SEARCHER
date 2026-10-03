@@ -176,26 +176,49 @@ export function SearchEntry({
       <form onSubmit={handleSubmit} className="mt-6 space-y-3">
         {kind === "phone" ? (
           <div className="relative">
-            <button
-              type="button"
-              onClick={() => setCountryOpen((o) => !o)}
-              className="flex w-full items-center justify-between rounded-xl bg-ink-900/[0.04] px-4 py-4 text-left ring-1 ring-inset ring-ink-900/5 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              aria-haspopup="listbox"
-              aria-expanded={countryOpen}
+            <div
+              className={`flex items-stretch overflow-hidden rounded-xl bg-ink-900/[0.04] focus-within:ring-2 focus-within:ring-brand-500 ${
+                error ? "ring-2 ring-rose-400 focus-within:ring-rose-500" : ""
+              }`}
             >
-              <span className="flex items-center gap-3">
-                <span className="text-2xl leading-none">{country.flag}</span>
-                <span className="text-base font-medium text-ink-900">
+              <button
+                type="button"
+                onClick={() => setCountryOpen((o) => !o)}
+                className="flex shrink-0 items-center gap-2 px-4 py-3 text-left hover:bg-ink-900/[0.03] focus:outline-none"
+                aria-haspopup="listbox"
+                aria-expanded={countryOpen}
+              >
+                <span className="text-xl leading-none">{country.flag}</span>
+                <span className="max-w-[5.5rem] truncate text-base font-medium text-ink-900 sm:max-w-[8rem]">
                   {country.name}
                 </span>
-              </span>
-              <span className="flex items-center gap-2 text-ink-400">
-                <span className="text-sm">{country.dial}</span>
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4 shrink-0 text-ink-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="m6 9 6 6 6-6" />
                 </svg>
-              </span>
-            </button>
+              </button>
+
+              <div className="w-px self-stretch bg-ink-900/10" />
+
+              <PhoneInput
+                inputRef={inputRef}
+                country={country}
+                value={value}
+                onValueChange={(v) => {
+                  setValue(v);
+                  if (error) setError(null);
+                }}
+                onCountryChange={setCountryCode}
+                invalid={Boolean(error)}
+              />
+            </div>
 
             {countryOpen ? (
               <div className="absolute left-0 right-0 top-full z-30 mt-2 max-h-72 overflow-hidden rounded-xl border border-ink-900/10 bg-white shadow-2xl">
@@ -232,19 +255,7 @@ export function SearchEntry({
           </div>
         ) : null}
 
-        {kind === "phone" ? (
-          <PhoneInput
-            inputRef={inputRef}
-            country={country}
-            value={value}
-            onValueChange={(v) => {
-              setValue(v);
-              if (error) setError(null);
-            }}
-            onCountryChange={setCountryCode}
-            invalid={Boolean(error)}
-          />
-        ) : (
+        {kind === "email" ? (
           <label
             className={`block cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500 ${
               error ? "ring-2 ring-rose-400 focus-within:ring-rose-500" : ""
@@ -386,12 +397,10 @@ function PhoneInput({
     if (!/^\d$/.test(e.key)) e.preventDefault();
   }
 
+  // Note: no own box styling — this is embedded inside the shared country +
+  // phone container above, so it blends into one unified input visually.
   return (
-    <label
-      className={`block cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500 ${
-        invalid ? "ring-2 ring-rose-400 focus-within:ring-rose-500" : ""
-      }`}
-    >
+    <label className="block min-w-0 flex-1 cursor-text px-4 py-2">
       <span className="pointer-events-none block text-xs font-medium text-ink-500">
         Phone Number
       </span>
@@ -404,7 +413,7 @@ function PhoneInput({
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        className="mt-1 block w-full bg-transparent text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
+        className="block w-full bg-transparent text-base font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
         aria-label={`Phone number in ${country.name}`}
         aria-invalid={invalid ? "true" : undefined}
       />
