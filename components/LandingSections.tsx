@@ -14,7 +14,49 @@ export function LandingSections() {
       <AccuracyBlock />
       <FAQ />
       <BottomCta />
+      <LegalDisclaimer />
     </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Full legal disclaimer — bottom of the landing page only            */
+/* ------------------------------------------------------------------ */
+function LegalDisclaimer() {
+  return (
+    <section className="bg-white">
+      <div className="mx-auto max-w-4xl px-5 py-10 sm:px-6 sm:py-14">
+        <p className="text-center text-xs leading-relaxed text-ink-500 sm:text-sm">
+          {brand.name} compiles information and images from publicly available
+          web pages and public records for personal informational purposes
+          only. Do not use our services to stalk, harass, dox, or attempt to
+          track or monitor any person; image matching, where offered, is
+          performed by third-party search engines over publicly available
+          images; we do not create or retain facial-recognition templates of
+          searched individuals, and do not offer identity verification,
+          person-tracking, device monitoring, real-time location or GPS, or
+          access to private communications, accounts, or login credentials.
+          Results come from public sources, may be incomplete or outdated,
+          and are not provided in real time. We are not a consumer or
+          credit-reference reporting agency; do not use our information for
+          employment, tenancy, credit, insurance, or other eligibility
+          decisions. For users in the EEA, {brand.name} acts as a data
+          controller and processes publicly available personal data on lawful
+          bases including legitimate interests. You have rights of access,
+          rectification, erasure, restriction, objection, and portability. To
+          exercise your rights or request removal or opt-out, follow the
+          opt-out procedure described in our{" "}
+          <Link
+            href="/terms-conditions"
+            className="underline underline-offset-2 hover:text-ink-700"
+          >
+            Terms &amp; Conditions
+          </Link>
+          . You may also lodge a complaint with your local Data Protection
+          Authority. Only upload images you have the right to share.
+        </p>
+      </div>
+    </section>
   );
 }
 
