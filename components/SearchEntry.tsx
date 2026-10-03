@@ -278,7 +278,7 @@ export function SearchEntry({
               className="mt-1 block w-full bg-transparent text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
             />
           </label>
-        )}
+        ) : null}
 
         {error ? (
           <div
