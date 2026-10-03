@@ -167,9 +167,11 @@ function StatsVerifying() {
   return (
     <section className="bg-white">
       <div className="mx-auto max-w-5xl px-5 py-14 sm:px-6 sm:py-20">
-        <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl lg:text-6xl">
-          You&apos;re Not Overthinking,{" "}
-          <span className="bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text text-transparent">
+        <h2 className="text-center tracking-tight text-ink-900">
+          <span className="block text-2xl font-bold sm:text-3xl lg:text-4xl">
+            You&apos;re Not Overthinking,
+          </span>
+          <span className="mt-1 block bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text text-4xl font-extrabold text-transparent sm:text-5xl lg:text-6xl">
             You&apos;re Verifying
           </span>
         </h2>
