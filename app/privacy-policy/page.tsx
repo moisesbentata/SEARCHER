@@ -17,6 +17,23 @@ export default function PrivacyPage() {
       </h1>
       <p className="mt-2 text-sm text-ink-500">Last updated: {LAST_UPDATED}</p>
 
+      <div className="mt-6 rounded-2xl border border-brand-500/25 bg-brand-50 p-5 text-sm text-ink-800 sm:text-base">
+        <strong className="block text-ink-900">A note from the team</strong>
+        <p className="mt-1.5">
+          {brand.name} is an early-stage service and we take privacy seriously. If
+          you have <strong>any</strong> privacy question or concern — for example
+          you want to see, correct, or delete data we hold about you, you want to
+          opt out of any processing, you believe information about you is
+          misattributed, or you simply want to understand how something works —
+          please email us at{" "}
+          <a href={`mailto:${brand.supportEmail}`} className="underline">
+            {brand.supportEmail}
+          </a>{" "}
+          and we will do our genuine best to resolve it quickly. We would far
+          rather hear directly from you than have any concern go unaddressed.
+        </p>
+      </div>
+
       <div className="prose prose-ink mt-10 space-y-8 text-ink-700">
         <Section n="1" title="Introduction">
           <p>
@@ -190,14 +207,22 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section n="9" title="Security">
+        <Section n="9" title="Security; Best-Effort Early-Stage Service">
           <p>
-            We employ administrative, technical, and physical safeguards designed
-            to protect personal information from unauthorized access, use, or
-            disclosure. However, no method of transmission over the internet or
-            method of electronic storage is one hundred percent secure, and we
-            cannot guarantee absolute security. You use the Service at your own
-            risk.
+            {brand.name} is an early-stage service operated by a small team. We
+            employ administrative, technical, and physical safeguards that we
+            consider reasonable and appropriate given the nature of our Service,
+            including industry-standard transport encryption, access controls on
+            production systems, and standard engineering practices. We work in
+            good faith to maintain and improve these safeguards over time.
+          </p>
+          <p>
+            However, no method of transmission over the internet or electronic
+            storage is one hundred percent secure, and we cannot and do not
+            guarantee absolute security. You use the Service at your own risk.
+            In the event of a security incident that affects your personal
+            information, we will notify you where required by applicable law and
+            will cooperate with you in good faith to resolve the matter.
           </p>
         </Section>
 

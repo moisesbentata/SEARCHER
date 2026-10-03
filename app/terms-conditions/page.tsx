@@ -17,6 +17,23 @@ export default function TermsPage() {
       </h1>
       <p className="mt-2 text-sm text-ink-500">Last updated: {LAST_UPDATED}</p>
 
+      <div className="mt-6 rounded-2xl border border-brand-500/25 bg-brand-50 p-5 text-sm text-ink-800 sm:text-base">
+        <strong className="block text-ink-900">A note from the team</strong>
+        <p className="mt-1.5">
+          {brand.name} is an early-stage service built by a small team doing our
+          best to deliver something useful and lawful. If you have{" "}
+          <strong>any</strong> complaint, concern, question, or request —
+          including about your subscription, your data, a report&apos;s content,
+          our marketing, our pricing, your privacy, or anything else — please
+          email us at{" "}
+          <a href={`mailto:${brand.supportEmail}`} className="underline">
+            {brand.supportEmail}
+          </a>{" "}
+          and we will do our genuine best to fix it quickly. We would far rather
+          hear from you and resolve things directly than have you remain unhappy.
+        </p>
+      </div>
+
       <div className="prose prose-ink mt-10 space-y-8 text-ink-700">
         <Section n="1" title="Acceptance of these Terms">
           <p>
@@ -200,7 +217,15 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section n="10" title="Disclaimer of Warranties">
+        <Section n="10" title="Disclaimer of Warranties; Early-Stage Service">
+          <p>
+            {brand.name} is an early-stage service operated by a small team.
+            Features may change, be added, be removed, or be temporarily
+            unavailable without notice. We make no representation that any
+            particular feature, data source, provider integration, pricing, or
+            report format will remain available at any time. We may discontinue
+            all or part of the Service at any time at our sole discretion.
+          </p>
           <p className="uppercase">
             The Service is provided &ldquo;as is&rdquo; and &ldquo;as
             available&rdquo; without warranty of any kind, whether express, implied,
@@ -212,6 +237,16 @@ export default function TermsPage() {
             the Service will be uninterrupted, error-free, secure, or that defects
             will be corrected, nor do we warrant that any information obtained
             through the Service will be accurate, complete, current, or reliable.
+          </p>
+          <p className="uppercase">
+            Without limiting the foregoing: we do not represent or warrant that
+            any report, record, data point, or other information displayed in the
+            Service actually relates to, is owned by, is used by, or is otherwise
+            connected to any specific individual, including the individual you
+            believe you are researching. Information may be misattributed,
+            outdated, duplicated, falsified, or incorrect for reasons entirely
+            outside our control. You bear sole responsibility for how you
+            interpret or act on any information obtained through the Service.
           </p>
         </Section>
 
