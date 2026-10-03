@@ -5,8 +5,8 @@ import { WorldCoverageMap } from "@/components/WorldCoverageMap";
 export function LandingSections() {
   return (
     <>
-      <UncoverSection />
       <StatsVerifying />
+      <UncoverSection />
       <WorldwideCoverage />
       <WhyPeopleChoose />
       <UseCases />
