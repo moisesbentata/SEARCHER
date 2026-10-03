@@ -116,13 +116,26 @@ export function SearchEntry({
   }
 
   return (
-    <section className="mx-auto max-w-6xl px-5 pt-10 pb-14 sm:px-6 lg:pt-16 lg:pb-20">
-      <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        <div className="mx-auto w-full max-w-lg lg:mx-0">
+    <section className="relative overflow-hidden">
+      {/* Soft blue wash behind the hero — picks up the brand palette and
+          echoes the reference's green blob with trust-blue instead. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 60% at 35% 40%, rgba(14,165,233,0.14) 0%, rgba(56,189,248,0.08) 40%, transparent 75%)",
+        }}
+      />
+      <div className="mx-auto max-w-6xl px-5 pt-10 pb-14 sm:px-6 lg:pt-16 lg:pb-20">
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="mx-auto w-full max-w-lg lg:mx-0">
       <h1 className="text-center text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl lg:text-left lg:text-6xl">
         {title}
         <br />
-        <span className="text-brand-700">{titleHighlight}</span>
+        <span className="bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text text-transparent">
+          {titleHighlight}
+        </span>
       </h1>
       <p className="mx-auto mt-4 max-w-md text-center text-base text-ink-500 lg:mx-0 lg:text-left lg:text-lg">
         {subtitle}
@@ -298,6 +311,7 @@ export function SearchEntry({
         <div className="hidden justify-center lg:flex">
           <HeroIllustration />
         </div>
+      </div>
       </div>
     </section>
   );
