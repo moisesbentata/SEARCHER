@@ -167,7 +167,7 @@ function StatsVerifying() {
   return (
     <section className="bg-white">
       <div className="mx-auto max-w-5xl px-5 py-14 sm:px-6 sm:py-20">
-        <h2 className="text-center text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
+        <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl lg:text-6xl">
           You&apos;re Not Overthinking,{" "}
           <span className="bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text text-transparent">
             You&apos;re Verifying
@@ -176,7 +176,7 @@ function StatsVerifying() {
         <div className="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((s) => (
             <div key={s.n}>
-              <div className="text-4xl font-black tracking-tight text-ink-900 sm:text-5xl">
+              <div className="text-3xl font-black tracking-tight text-ink-900 sm:text-4xl">
                 {s.n}
               </div>
               <p className="mt-2 max-w-[16rem] text-base text-ink-500">{s.label}</p>
