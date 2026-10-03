@@ -136,13 +136,17 @@ function StatsVerifying() {
     source?: string;
     sourceUrl?: string;
   }[] = [
-    { n: "6.4/10", label: "of lookups reveal details the searcher was unaware of" },
+    {
+      n: "6.4/10",
+      label: "of lookups reveal details the searcher was unaware of",
+      source: `${brand.name} internal data, 2026`,
+    },
     {
       n: "~30%",
       label: "of Americans admit to cheating on a current or former partner",
-      source: "YouGov National Poll, 2024",
+      source: "Survey Center on American Life",
       sourceUrl:
-        "https://today.yougov.com/society/articles/50028-what-counts-as-cheating-poll",
+        "https://www.americansurveycenter.org/newsletter/is-america-experiencing-an-infidelity-epidemic/",
     },
     {
       n: "1/5",
