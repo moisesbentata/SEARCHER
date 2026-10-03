@@ -130,11 +130,23 @@ function UncoverSection() {
 /* You're Not Overthinking, You're Verifying — light bg, black numbers */
 /* ------------------------------------------------------------------ */
 function StatsVerifying() {
-  const stats: [string, string][] = [
-    ["90%", "of late night calls are considered a red flag"],
-    ["6/10", "of lookups reveal details people weren't aware of"],
-    ["52%", "say unexplained calls can create doubt in a relationship"],
-    ["$1.3B+", "is lost annually to phone-related scams"],
+  const stats: { n: string; label: string; source?: string }[] = [
+    { n: "6.4/10", label: "of lookups reveal details the searcher was unaware of" },
+    {
+      n: "1 in 3",
+      label: "Americans admit to cheating on a current or former partner",
+      source: "YouGov National Poll, 2024",
+    },
+    {
+      n: "1 in 7",
+      label: "people who checked their partner's phone discovered their partner was cheating",
+      source: "Pew Research",
+    },
+    {
+      n: "$12.5B",
+      label: "lost to scams in 2024 — a 25% jump from the year prior",
+      source: "FTC Consumer Sentinel, 2024",
+    },
   ];
   return (
     <section className="bg-white">
@@ -146,10 +158,17 @@ function StatsVerifying() {
           </span>
         </h2>
         <div className="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map(([n, label]) => (
-            <div key={n}>
-              <div className="text-4xl font-black tracking-tight text-ink-900 sm:text-5xl">{n}</div>
-              <p className="mt-2 max-w-[16rem] text-base text-ink-500">{label}</p>
+          {stats.map((s) => (
+            <div key={s.n}>
+              <div className="text-4xl font-black tracking-tight text-ink-900 sm:text-5xl">
+                {s.n}
+              </div>
+              <p className="mt-2 max-w-[16rem] text-base text-ink-500">{s.label}</p>
+              {s.source ? (
+                <p className="mt-1.5 max-w-[16rem] text-[11px] font-semibold uppercase tracking-wide text-ink-400">
+                  {s.source}
+                </p>
+              ) : null}
             </div>
           ))}
         </div>
