@@ -130,22 +130,34 @@ function UncoverSection() {
 /* You're Not Overthinking, You're Verifying — light bg, black numbers */
 /* ------------------------------------------------------------------ */
 function StatsVerifying() {
-  const stats: { n: string; label: string; source?: string }[] = [
+  const stats: {
+    n: string;
+    label: string;
+    source?: string;
+    sourceUrl?: string;
+  }[] = [
     { n: "6.4/10", label: "of lookups reveal details the searcher was unaware of" },
     {
-      n: "1 in 3",
-      label: "Americans admit to cheating on a current or former partner",
+      n: "~30%",
+      label: "of Americans admit to cheating on a current or former partner",
       source: "YouGov National Poll, 2024",
+      sourceUrl:
+        "https://today.yougov.com/society/articles/50028-what-counts-as-cheating-poll",
     },
     {
-      n: "1 in 7",
-      label: "people who checked their partner's phone discovered their partner was cheating",
+      n: "1/5",
+      label:
+        "of people who checked their partner's phone discovered their partner was cheating",
       source: "Pew Research",
+      sourceUrl:
+        "https://www.pewresearch.org/internet/2014/02/11/couples-the-internet-and-social-media/",
     },
     {
       n: "$12.5B",
       label: "lost to scams in 2024 — a 25% jump from the year prior",
       source: "FTC Consumer Sentinel, 2024",
+      sourceUrl:
+        "https://www.ftc.gov/system/files/ftc_gov/pdf/csn-annual-data-book-2024.pdf",
     },
   ];
   return (
@@ -166,7 +178,18 @@ function StatsVerifying() {
               <p className="mt-2 max-w-[16rem] text-base text-ink-500">{s.label}</p>
               {s.source ? (
                 <p className="mt-1.5 max-w-[16rem] text-[11px] font-semibold uppercase tracking-wide text-ink-400">
-                  {s.source}
+                  {s.sourceUrl ? (
+                    <a
+                      href={s.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline decoration-ink-400/60 underline-offset-2 hover:decoration-ink-500"
+                    >
+                      {s.source}
+                    </a>
+                  ) : (
+                    s.source
+                  )}
                 </p>
               ) : null}
             </div>
