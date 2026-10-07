@@ -496,6 +496,7 @@ export function Stage2OwnerInfo({
                     logoBUrl={SWIPE_LOGO_B}
                     firstPhasePct={0.4}
                     size={14}
+                    blurPx={0}
                   />
                 ) : null}
               </li>
