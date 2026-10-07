@@ -1,8 +1,8 @@
 export const brand = {
-  name: "Searcher",
-  domain: "searcher.com",
-  tagline: "Identify unknown callers and find the information connected to any phone number.",
-  supportEmail: "support@searcher.com",
+  name: "TraceCheck",
+  domain: "tracecheck.co",
+  tagline: "Identify unknown callers and find the information connected to any phone number or email.",
+  supportEmail: "support@tracecheck.co",
   currency: "USD" as const,
   currencySymbol: "$",
   trialPrice: 1,

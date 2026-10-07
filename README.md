@@ -1,4 +1,4 @@
-# Searcher
+# TraceCheck
 
 Rebranded people-lookup web app. Next.js 14 (App Router) + TypeScript + Tailwind.
 

@@ -1,6 +1,6 @@
 # Project — Full Overview
 
-_Working name: **Searcher** (placeholder, rebrandable in one file: `lib/brand.ts`)_
+_Working name: **TraceCheck** (placeholder, rebrandable in one file: `lib/brand.ts`)_
 _Status: pre-launch, no revenue yet_
 _Last updated: 2026-10-03_
 _Founder: moisesbenchoc@gmail.com_

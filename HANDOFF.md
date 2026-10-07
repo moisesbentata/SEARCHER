@@ -1,4 +1,4 @@
-# Searcher — Session Handoff Doc
+# TraceCheck — Session Handoff Doc
 
 Living reference for continuing this project in a fresh Claude Code
 session. Written 2026-09-22. Read this end-to-end before making changes.
@@ -38,7 +38,7 @@ conversion sensitivity.
 - Uses a Mac. Deploys via Vercel account (moisesbentata's projects,
   Hobby plan). Prefers to test on his iPhone.
 - Has NOT picked a permanent brand name yet — see §7. Placeholder is
-  `Searcher`, swappable in one file.
+  `TraceCheck`, swappable in one file.
 
 ## 3. Repository
 
@@ -81,10 +81,10 @@ committed.
 
 ```ts
 brand = {
-  name: "Searcher",           // placeholder, swap when name picked
-  domain: "searcher.com",
+  name: "TraceCheck",           // placeholder, swap when name picked
+  domain: "tracecheck.co",
   tagline: "Identify unknown callers…",
-  supportEmail: "support@searcher.com",
+  supportEmail: "support@tracecheck.co",
   currency: "USD",
   currencySymbol: "$",
   trialPrice: 1,

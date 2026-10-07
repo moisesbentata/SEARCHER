@@ -1,6 +1,6 @@
-# Searcher — Company & Product 1-Pager
+# TraceCheck — Company & Product 1-Pager
 
-_Last updated 2026-09-23 · Working name "Searcher" (rebrandable in one file, `lib/brand.ts`)_
+_Last updated 2026-09-23 · Working name "TraceCheck" (rebrandable in one file, `lib/brand.ts`)_
 
 ---
 
@@ -158,7 +158,7 @@ Tiered so we ship free-first, add cost only when it pays for itself.
 
 Pre-launch. Fully animated funnel + real metadata + free-tier
 enrichment building right now. No paying users yet, no marketing
-spend, no permanent brand name chosen (working name "Searcher").
+spend, no permanent brand name chosen (working name "TraceCheck").
 
 ---
 
