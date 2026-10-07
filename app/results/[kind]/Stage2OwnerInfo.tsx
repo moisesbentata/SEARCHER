@@ -312,6 +312,9 @@ export function Stage2OwnerInfo({
   const tickOrder = kind === "phone" ? PHONE_TICK_ORDER : EMAIL_TICK_ORDER;
 
   const [sectionIdx, setSectionIdx] = useState(0);
+  const [sectionStartedAt, setSectionStartedAt] = useState(() =>
+    typeof performance !== "undefined" ? performance.now() : 0,
+  );
   const [itemsDone, setItemsDone] = useState<Record<number, Set<number>>>({});
   const [percent, setPercent] = useState(2);
   const [activeSlot, setActiveSlot] = useState<ActiveSlot>(null);
@@ -365,6 +368,7 @@ export function Stage2OwnerInfo({
             return;
           }
           setSectionIdx(s);
+          setSectionStartedAt(performance.now());
           markWaiting(s, 0);
           later(tickNext, schedule[s].itemDelaysMs[0]);
         }, schedule[s].holdMs);
@@ -450,16 +454,16 @@ export function Stage2OwnerInfo({
         <ul className="mt-4 space-y-3">
           {section.items.map((item, i) => {
             const done = doneSet.has(i);
-            const isActive =
-              !done &&
-              activeSlot !== null &&
-              activeSlot.sectionIdx === sectionIdx &&
-              activeSlot.which === i;
+            // Swipe appears next to Current or Past Profiles from the moment
+            // section 3 starts, through its final tick (whole section
+            // duration, not just the row's own 8.6s wait).
             const showSwipe =
-              isActive &&
+              !done &&
               kind === "phone" &&
               sectionIdx === SWIPE_PHONE_SECTION &&
               i === SWIPE_PHONE_ITEM;
+            const swipeDurationMs =
+              schedule[SWIPE_PHONE_SECTION].itemDelaysMs.reduce((a, b) => a + b, 0);
             return (
               <li key={item} className="flex items-center gap-3">
                 {done ? (
@@ -484,13 +488,14 @@ export function Stage2OwnerInfo({
                 >
                   {item}
                 </span>
-                {showSwipe && activeSlot ? (
+                {showSwipe ? (
                   <DatingAppSwipe
-                    startedAt={activeSlot.startedAt}
-                    durationMs={activeSlot.durationMs}
+                    startedAt={sectionStartedAt}
+                    durationMs={swipeDurationMs}
                     logoAUrl={SWIPE_LOGO_A}
                     logoBUrl={SWIPE_LOGO_B}
                     firstPhasePct={0.4}
+                    size={14}
                   />
                 ) : null}
               </li>
