@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { brand } from "@/lib/brand";
 import { WorldCoverageMap } from "@/components/WorldCoverageMap";
@@ -14,8 +15,25 @@ export function LandingSections() {
       <AccuracyBlock />
       <FAQ />
       <BottomCta />
+      <BrandBadge />
       <LegalDisclaimer />
     </>
+  );
+}
+
+function BrandBadge() {
+  return (
+    <section className="bg-white">
+      <div className="mx-auto flex max-w-4xl justify-center px-5 pt-10 sm:pt-12">
+        <Image
+          src="/brand/tracecheck-logo.png"
+          alt={brand.name}
+          width={1650}
+          height={280}
+          className="h-6 w-auto opacity-70"
+        />
+      </div>
+    </section>
   );
 }
 
