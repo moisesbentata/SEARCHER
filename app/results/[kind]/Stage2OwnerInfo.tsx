@@ -483,22 +483,24 @@ export function Stage2OwnerInfo({
                 ) : (
                   <span className="inline-block h-6 w-6 animate-spin rounded-full border-[2.5px] border-brand-600/20 border-t-brand-600" />
                 )}
+                {showSwipe ? (
+                  <span className="-ml-1 flex items-center">
+                    <DatingAppSwipe
+                      startedAt={sectionStartedAt}
+                      durationMs={swipeDurationMs}
+                      logoAUrl={SWIPE_LOGO_A}
+                      logoBUrl={SWIPE_LOGO_B}
+                      firstPhasePct={0.4}
+                      size={17}
+                      blurPx={2}
+                    />
+                  </span>
+                ) : null}
                 <span
                   className={`text-lg transition-colors ${done ? "text-ink-900" : "text-ink-500"}`}
                 >
                   {item}
                 </span>
-                {showSwipe ? (
-                  <DatingAppSwipe
-                    startedAt={sectionStartedAt}
-                    durationMs={swipeDurationMs}
-                    logoAUrl={SWIPE_LOGO_A}
-                    logoBUrl={SWIPE_LOGO_B}
-                    firstPhasePct={0.4}
-                    size={14}
-                    blurPx={0}
-                  />
-                ) : null}
               </li>
             );
           })}
