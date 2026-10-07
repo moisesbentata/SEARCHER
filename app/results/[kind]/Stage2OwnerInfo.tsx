@@ -3,6 +3,22 @@
 import { useEffect, useState } from "react";
 import { CyclingAvatar } from "@/components/CyclingAvatar";
 import { StripedProgressBar } from "@/components/StripedProgressBar";
+import { DatingAppSwipe } from "@/components/DatingAppSwipe";
+
+// Phone flow only, section 2 ("Scanning App Activity"), item index 1
+// ("Current or Past Profiles"). When this row is the actively-loading row,
+// a small blurred image swipe plays inline next to the item name.
+const SWIPE_PHONE_SECTION = 2;
+const SWIPE_PHONE_ITEM = 1;
+const SWIPE_LOGO_A = "/dating-logos/dating1.webp";
+const SWIPE_LOGO_B = "/dating-logos/dating2.webp";
+
+type ActiveSlot = {
+  sectionIdx: number;
+  which: number;
+  startedAt: number;
+  durationMs: number;
+} | null;
 
 type Section = {
   title: string;
@@ -298,6 +314,7 @@ export function Stage2OwnerInfo({
   const [sectionIdx, setSectionIdx] = useState(0);
   const [itemsDone, setItemsDone] = useState<Record<number, Set<number>>>({});
   const [percent, setPercent] = useState(2);
+  const [activeSlot, setActiveSlot] = useState<ActiveSlot>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -308,6 +325,19 @@ export function Stage2OwnerInfo({
       const t = setTimeout(fn, ms);
       timeouts.push(t);
     };
+    // Record which item slot is currently loading (the one with a spinner
+    // that's about to tick), so inline companions like the dating-app swipe
+    // know when and how long to animate.
+    function markWaiting(sectionI: number, tickI: number) {
+      const which = tickOrder[sectionI][tickI];
+      const durationMs = schedule[sectionI].itemDelaysMs[tickI];
+      setActiveSlot({
+        sectionIdx: sectionI,
+        which,
+        startedAt: performance.now(),
+        durationMs,
+      });
+    }
 
     function tickNext() {
       if (cancelled) return;
@@ -325,6 +355,7 @@ export function Stage2OwnerInfo({
       if (i >= items.length) {
         // hold on the fully-checked section so every tick registers,
         // then swap to the next section
+        setActiveSlot(null);
         later(() => {
           if (cancelled) return;
           s += 1;
@@ -334,12 +365,15 @@ export function Stage2OwnerInfo({
             return;
           }
           setSectionIdx(s);
+          markWaiting(s, 0);
           later(tickNext, schedule[s].itemDelaysMs[0]);
         }, schedule[s].holdMs);
       } else {
+        markWaiting(s, i);
         later(tickNext, schedule[s].itemDelaysMs[i]);
       }
     }
+    markWaiting(0, 0);
     later(tickNext, schedule[0].itemDelaysMs[0]);
 
     // rAF drives the bar percent along the generated beat curve. Because the
@@ -370,6 +404,15 @@ export function Stage2OwnerInfo({
 
   return (
     <section className="mx-auto max-w-md px-5 py-8 sm:px-6">
+      {/* Preload the swipe images so they're cached well before Section 3 */}
+      {kind === "phone" ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={SWIPE_LOGO_A} alt="" aria-hidden className="hidden" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={SWIPE_LOGO_B} alt="" aria-hidden className="hidden" />
+        </>
+      ) : null}
       <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-brand-100 px-3 py-1 text-sm font-semibold text-brand-800">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand-600" />
         {kind === "phone" ? "Phone owner" : "Email owner"} won&apos;t be notified
@@ -407,6 +450,16 @@ export function Stage2OwnerInfo({
         <ul className="mt-4 space-y-3">
           {section.items.map((item, i) => {
             const done = doneSet.has(i);
+            const isActive =
+              !done &&
+              activeSlot !== null &&
+              activeSlot.sectionIdx === sectionIdx &&
+              activeSlot.which === i;
+            const showSwipe =
+              isActive &&
+              kind === "phone" &&
+              sectionIdx === SWIPE_PHONE_SECTION &&
+              i === SWIPE_PHONE_ITEM;
             return (
               <li key={item} className="flex items-center gap-3">
                 {done ? (
@@ -431,6 +484,15 @@ export function Stage2OwnerInfo({
                 >
                   {item}
                 </span>
+                {showSwipe && activeSlot ? (
+                  <DatingAppSwipe
+                    startedAt={activeSlot.startedAt}
+                    durationMs={activeSlot.durationMs}
+                    logoAUrl={SWIPE_LOGO_A}
+                    logoBUrl={SWIPE_LOGO_B}
+                    firstPhasePct={0.4}
+                  />
+                ) : null}
               </li>
             );
           })}
