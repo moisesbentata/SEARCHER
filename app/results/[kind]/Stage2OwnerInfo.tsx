@@ -489,7 +489,7 @@ export function Stage2OwnerInfo({
                   {item}
                 </span>
                 {showSwipe ? (
-                  <span className="-ml-2 flex items-center">
+                  <span className="ml-1 flex items-center">
                     <DatingAppSwipe
                       startedAt={sectionStartedAt}
                       durationMs={swipeDurationMs}
@@ -497,7 +497,7 @@ export function Stage2OwnerInfo({
                       logoBUrl={SWIPE_LOGO_B}
                       firstPhasePct={0.4}
                       size={17}
-                      blurPx={1}
+                      blurPx={0}
                     />
                   </span>
                 ) : null}
