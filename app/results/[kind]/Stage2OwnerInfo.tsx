@@ -30,7 +30,7 @@ const PHONE_SECTIONS: Section[] = [
     title: "Collecting Data",
     items: [
       "Addresses",
-      "Profiles",
+      "Online Profiles",
       "Online Usernames",
       "Job Information",
       "Email or Phone Numbers",
