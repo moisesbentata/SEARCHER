@@ -44,17 +44,9 @@ export function DatingAppSwipe({
 
   const elapsed = Math.max(0, performance.now() - startedAt);
   const switchAt = durationMs * firstPhasePct;
-  const crossFadeMs = 400;
 
-  // Cross-fade centered on `switchAt`
-  let aOpacity = 1;
-  let bOpacity = 0;
-  const fadeStart = switchAt - crossFadeMs / 2;
-  if (elapsed > fadeStart) {
-    const t = Math.min(1, (elapsed - fadeStart) / crossFadeMs);
-    aOpacity = 1 - t;
-    bOpacity = t;
-  }
+  // Instant swap — no cross-fade, no CSS transition.
+  const showA = elapsed < switchAt;
 
   return (
     <span
@@ -68,9 +60,8 @@ export function DatingAppSwipe({
         alt=""
         className="absolute inset-0 h-full w-full object-contain"
         style={{
-          filter: `blur(${blurPx}px)`,
-          opacity: aOpacity,
-          transition: "opacity 60ms linear",
+          filter: blurPx > 0 ? `blur(${blurPx}px)` : undefined,
+          opacity: showA ? 1 : 0,
         }}
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -79,9 +70,8 @@ export function DatingAppSwipe({
         alt=""
         className="absolute inset-0 h-full w-full object-contain"
         style={{
-          filter: `blur(${blurPx}px)`,
-          opacity: bOpacity,
-          transition: "opacity 60ms linear",
+          filter: blurPx > 0 ? `blur(${blurPx}px)` : undefined,
+          opacity: showA ? 0 : 1,
         }}
       />
     </span>
