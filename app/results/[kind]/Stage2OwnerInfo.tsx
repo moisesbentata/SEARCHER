@@ -10,8 +10,8 @@ import { DatingAppSwipe } from "@/components/DatingAppSwipe";
 // a small blurred image swipe plays inline next to the item name.
 const SWIPE_PHONE_SECTION = 2;
 const SWIPE_PHONE_ITEM = 1;
-const SWIPE_LOGO_A = "/dating-logos/dating1.webp";
-const SWIPE_LOGO_B = "/dating-logos/dating2.webp";
+const SWIPE_LOGO_A = "/dating-logos/finaldating1.webp";
+const SWIPE_LOGO_B = "/dating-logos/finaldating2.webp";
 
 type ActiveSlot = {
   sectionIdx: number;
