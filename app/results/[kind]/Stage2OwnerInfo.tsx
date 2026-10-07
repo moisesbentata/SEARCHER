@@ -30,7 +30,7 @@ const PHONE_SECTIONS: Section[] = [
     title: "Collecting Data",
     items: [
       "Addresses",
-      "Forgotten Profiles",
+      "Profiles",
       "Online Usernames",
       "Job Information",
       "Email or Phone Numbers",
@@ -42,7 +42,7 @@ const PHONE_SECTIONS: Section[] = [
     items: [
       "Personal Blog Posts",
       "User Comments",
-      "Forgotten Pictures",
+      "Hidden Pictures",
       "Public Profiles",
       "Public Videos",
       "Active or Inactive Accounts",
@@ -483,8 +483,13 @@ export function Stage2OwnerInfo({
                 ) : (
                   <span className="inline-block h-6 w-6 animate-spin rounded-full border-[2.5px] border-brand-600/20 border-t-brand-600" />
                 )}
+                <span
+                  className={`text-lg transition-colors ${done ? "text-ink-900" : "text-ink-500"}`}
+                >
+                  {item}
+                </span>
                 {showSwipe ? (
-                  <span className="-ml-1 flex items-center">
+                  <span className="-ml-2 flex items-center">
                     <DatingAppSwipe
                       startedAt={sectionStartedAt}
                       durationMs={swipeDurationMs}
@@ -492,15 +497,10 @@ export function Stage2OwnerInfo({
                       logoBUrl={SWIPE_LOGO_B}
                       firstPhasePct={0.4}
                       size={17}
-                      blurPx={2}
+                      blurPx={1}
                     />
                   </span>
                 ) : null}
-                <span
-                  className={`text-lg transition-colors ${done ? "text-ink-900" : "text-ink-500"}`}
-                >
-                  {item}
-                </span>
               </li>
             );
           })}
