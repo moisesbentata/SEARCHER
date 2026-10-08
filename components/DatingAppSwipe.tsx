@@ -5,17 +5,23 @@ import { useEffect, useRef, useState } from "react";
 /**
  * Inline app-logo swipe for a single loading row.
  *
- * Timeline (relative to `startedAt`, over `durationMs`):
- *   0 .. T_A                       → Logo A visible
- *   T_A .. T_A + 500               → spinner
- *   T_A + 500 .. T_A + 1000        → tick (A completion)
- *   T_A + 1000 .. durationMs - 500 → Logo B visible
- *   durationMs - 500 .. durationMs → spinner
- *   >= durationMs                  → tick (B completion — intended to appear
- *                                     in the same frame as the row's own
- *                                     left-side completion tick)
+ * The whole animation runs over `durationMs`, split by `firstPhasePct`:
+ *   [0 .. durationMs * firstPhasePct]            → Phase A (Logo A)
+ *   [durationMs * firstPhasePct .. durationMs]   → Phase B (Logo B)
  *
- * `firstPhasePct` sets T_A as a fraction of durationMs (default 0.4).
+ * The LAST 1 second of each phase is subdivided into 0.5s spinner + 0.5s
+ * tick (that 1s is drawn FROM the phase's own budget — it's not added on
+ * top). The Phase B tick therefore ends exactly at `durationMs`, so it
+ * can be scheduled to pop in the same frame as the enclosing row's own
+ * left-side completion tick.
+ *
+ * Example — durationMs 19000, firstPhasePct 0.4:
+ *   0 .. 6600   Logo A
+ *   6600 .. 7100 spinner
+ *   7100 .. 7600 tick A
+ *   7600 .. 18000 Logo B
+ *   18000 .. 18500 spinner
+ *   18500 .. 19000 tick B
  */
 export function DatingAppSwipe({
   startedAt,
@@ -48,28 +54,23 @@ export function DatingAppSwipe({
 
   const SPIN_MS = 500;
   const TICK_MS = 500;
+  const TRANSITION_MS = SPIN_MS + TICK_MS;
   const elapsed = Math.max(0, performance.now() - startedAt);
 
-  // Compute phase boundaries. If durationMs is too short for the full
-  // sequence, fall back to a simple instant swap at firstPhasePct.
-  const minForFull = 2 * SPIN_MS + TICK_MS + 500; // need headroom for both logos
+  const phaseAEnd = durationMs * firstPhasePct; // boundary between Logo A and Logo B halves
+  // Spinner/tick for each phase eat the final 1s of that phase's budget.
+  const T_SPIN_A_START = phaseAEnd - TRANSITION_MS;
+  const T_TICK_A_START = phaseAEnd - TICK_MS;
+  const T_SPIN_B_START = durationMs - TRANSITION_MS;
+  const T_TICK_B_START = durationMs - TICK_MS;
+
   let phase: "logoA" | "spinA" | "tickA" | "logoB" | "spinB" | "tickB";
-
-  if (durationMs < minForFull) {
-    phase = elapsed < durationMs * firstPhasePct ? "logoA" : "logoB";
-  } else {
-    const T_A = durationMs * firstPhasePct;
-    const T_SPIN_A_END = T_A + SPIN_MS;
-    const T_TICK_A_END = T_SPIN_A_END + TICK_MS;
-    const T_SPIN_B_START = durationMs - SPIN_MS;
-
-    if (elapsed < T_A) phase = "logoA";
-    else if (elapsed < T_SPIN_A_END) phase = "spinA";
-    else if (elapsed < T_TICK_A_END) phase = "tickA";
-    else if (elapsed < T_SPIN_B_START) phase = "logoB";
-    else if (elapsed < durationMs) phase = "spinB";
-    else phase = "tickB";
-  }
+  if (elapsed < T_SPIN_A_START) phase = "logoA";
+  else if (elapsed < T_TICK_A_START) phase = "spinA";
+  else if (elapsed < phaseAEnd) phase = "tickA";
+  else if (elapsed < T_SPIN_B_START) phase = "logoB";
+  else if (elapsed < T_TICK_B_START) phase = "spinB";
+  else phase = "tickB";
 
   const showA = phase === "logoA";
   const showB = phase === "logoB";

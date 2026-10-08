@@ -454,25 +454,17 @@ export function Stage2OwnerInfo({
         <ul className="mt-4 space-y-3">
           {section.items.map((item, i) => {
             const done = doneSet.has(i);
-            // Swipe appears next to Current or Past Profiles from the moment
-            // that row becomes the active loading row, and stays visible
-            // through completion so the final tick lines up with the row's
-            // own left-side tick in the same frame.
-            const swipeTickIndex = tickOrder[SWIPE_PHONE_SECTION].indexOf(SWIPE_PHONE_ITEM);
-            const swipeOffsetMs = schedule[SWIPE_PHONE_SECTION].itemDelaysMs
-              .slice(0, swipeTickIndex)
+            // Swipe runs across the WHOLE of section 3 — anchored next to
+            // "Current or Past Profiles" (the last row to tick), from section
+            // start to section end. Its final tick lines up with that row's
+            // own left-side tick because they both fire at section end.
+            const swipeStartedAt = sectionStartedAt;
+            const swipeDurationMs = schedule[SWIPE_PHONE_SECTION].itemDelaysMs
               .reduce((a, b) => a + b, 0);
-            const swipeStartedAt = sectionStartedAt + swipeOffsetMs;
-            const swipeDurationMs =
-              schedule[SWIPE_PHONE_SECTION].itemDelaysMs[swipeTickIndex];
-            const swipeIsActive =
-              activeSlot?.sectionIdx === SWIPE_PHONE_SECTION &&
-              activeSlot?.which === SWIPE_PHONE_ITEM;
             const showSwipe =
               kind === "phone" &&
               sectionIdx === SWIPE_PHONE_SECTION &&
-              i === SWIPE_PHONE_ITEM &&
-              (swipeIsActive || done);
+              i === SWIPE_PHONE_ITEM;
             return (
               <li key={item} className="flex items-center gap-3">
                 {done ? (
