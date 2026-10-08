@@ -128,8 +128,11 @@ export function LoginDialog({ open, onClose, onSuccess, initialEmail }: Props) {
   return (
     <div
       // h-[100dvh] uses the dynamic viewport height so iOS Safari's URL bar
-      // doesn't push the centred modal off the visible area.
-      className="fixed inset-x-0 top-0 z-50 flex h-screen h-[100dvh] items-center justify-center overflow-y-auto bg-ink-900/50 p-4 backdrop-blur-sm"
+      // doesn't push the modal off the visible area. On mobile, bias the
+      // modal slightly above true centre (items-start + ~15vh top padding)
+      // so the email/code input isn't hidden behind the on-screen keyboard
+      // when it opens; on sm+ keep it dead-centre.
+      className="fixed inset-x-0 top-0 z-50 flex h-screen h-[100dvh] items-start justify-center overflow-y-auto bg-ink-900/50 px-4 pb-4 pt-[12vh] backdrop-blur-sm sm:items-center sm:p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
