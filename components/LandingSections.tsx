@@ -537,9 +537,7 @@ function FAQ() {
     <section className="bg-ink-900/[0.03]">
       <div className="mx-auto max-w-3xl px-5 py-14 sm:px-6 sm:py-20">
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
-          Frequently
-          <br />
-          Asked <span className="text-brand-700">Questions</span>
+          Frequently Asked <span className="text-brand-700">Questions</span>
         </h2>
         <div className="mt-8 divide-y divide-ink-900/10 rounded-2xl border border-ink-900/5 bg-white shadow-sm">
           {items.map((item) => (
