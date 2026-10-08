@@ -6,7 +6,7 @@ import { Stage2OwnerInfo } from "./Stage2OwnerInfo";
 import { Stage3EmailCapture } from "./Stage3EmailCapture";
 import { Stage4Paywall } from "./Stage4Paywall";
 import { Stage5Payment } from "./Stage5Payment";
-import { Stage6Success } from "./Stage6Success";
+import { Stage6Report } from "./Stage6Report";
 import type { PhoneLookupResult } from "@/lib/phone";
 import type { EmailLookupResult } from "@/lib/email";
 
@@ -117,9 +117,9 @@ export function ResultsClient({
 
       {stage === "success" ? (
         kind === "phone" && phone ? (
-          <Stage6Success kind="phone" query={query} phone={phone} email={null} />
+          <Stage6Report kind="phone" query={query} phone={phone} email={null} />
         ) : email ? (
-          <Stage6Success kind="email" query={query} phone={null} email={email} />
+          <Stage6Report kind="email" query={query} phone={null} email={email} />
         ) : null
       ) : null}
     </>
