@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { brand } from "@/lib/brand";
+import { UserMenu } from "@/components/UserMenu";
 
 export function Header() {
   return (
@@ -10,8 +11,8 @@ export function Header() {
           <Image
             src="/brand/tracecheck-logo.png"
             alt={brand.name}
-            width={1650}
-            height={280}
+            width={1858}
+            height={347}
             priority
             className="h-7 w-auto"
           />
@@ -33,12 +34,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="hidden text-sm font-semibold text-ink-700 hover:text-ink-900 sm:inline"
-          >
-            Log in
-          </Link>
+          <UserMenu />
           <button
             className="grid h-9 w-9 place-items-center rounded-lg text-ink-700 md:hidden"
             aria-label="Menu"

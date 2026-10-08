@@ -1,0 +1,102 @@
+// TraceCheck auth + accounts + lookups schema.
+// Deployed to Neon Postgres via the Vercel–Neon integration.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // POSTGRES_PRISMA_URL is pooled (via pgbouncer) and tuned for Prisma.
+  // POSTGRES_URL_NON_POOLING is the direct connection used for migrations.
+  // Both are auto-created by the Vercel + Neon integration.
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+enum SubscriptionStatus {
+  NONE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum LookupKind {
+  PHONE
+  EMAIL
+}
+
+model Account {
+  id                       String             @id @default(cuid())
+  email                    String             @unique
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  // Subscription + quota
+  subscriptionStatus       SubscriptionStatus @default(NONE)
+  stripeCustomerId         String?            @unique
+  stripeSubscriptionId     String?            @unique
+  currentCycleStart        DateTime?
+  currentCycleLookupsUsed  Int                @default(0)
+  monthlyLookupQuota       Int                @default(20)
+
+  sessions                 Session[]
+  lookups                  Lookup[]
+
+  @@index([email])
+}
+
+// OTP codes sent to email. We store the hash only, never the raw code.
+model AuthCode {
+  id                 String   @id @default(cuid())
+  email              String
+  codeHash           String
+  expiresAt          DateTime
+  attemptsRemaining  Int      @default(5)
+  usedAt             DateTime?
+  createdAt          DateTime @default(now())
+  ipAddress          String?
+  userAgent          String?
+
+  @@index([email, createdAt])
+}
+
+// Opaque session tokens stored only as hashes.
+model Session {
+  id         String   @id @default(cuid())
+  accountId  String
+  tokenHash  String   @unique
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  ipAddress  String?
+  userAgent  String?
+
+  account    Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+}
+
+// Audit record for every lookup — needed for FCRA/GDPR requests
+// and for the per-cycle quota count.
+model Lookup {
+  id          String     @id @default(cuid())
+  accountId   String
+  kind        LookupKind
+  input       String
+  createdAt   DateTime   @default(now())
+
+  account     Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, createdAt])
+}
+
+// Simple DB-backed rate limiter buckets.
+// Key format: "<action>:<identifier>"  (e.g. "send:email:alice@x.com", "send:ip:1.2.3.4")
+model RateLimitBucket {
+  key       String   @id
+  count     Int      @default(0)
+  resetAt   DateTime
+  updatedAt DateTime @updatedAt
+}
