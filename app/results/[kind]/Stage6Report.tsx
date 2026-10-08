@@ -129,74 +129,46 @@ function PhoneSections({
   phone: PhoneLookupResult;
   enrichment?: EnrichmentResult;
 }) {
-  const hasLine = Boolean(phone?.country);
-  const hasLocation = Boolean(phone?.region || phone?.citiesHint?.length);
+  const hasProfile = Boolean(phone?.country);
   const identity = pickIdentity(enrichment);
   const presence = enrichment?.usernameHits ?? [];
   const breaches = enrichment?.breaches ?? [];
+  const breachCount = enrichment?.breachCount ?? undefined;
 
   return (
     <>
       <ReportSection
         n={1}
-        title="Line Intelligence"
-        subtitle="Metadata derived from carrier prefix databases and public telephone numbering plans."
-        status={hasLine ? "found" : "inconclusive"}
+        title="Subject Profile"
+        subtitle="Telephony metadata, carrier, and location indicators for this phone number."
+        status={hasProfile ? "found" : "inconclusive"}
       >
-        {hasLine ? (
+        {hasProfile ? (
           <FieldGrid>
             <ReportField label="Country" value={formatCountry(phone)} />
             <ReportField label="Region / state" value={phone.region ?? "Not identified"} />
             <ReportField label="Line type" value={phone.carrierHint ?? "Unknown"} />
             <ReportField label="Carrier of record" value={phone.carrier ?? "Not identified"} />
             <ReportField
-              label="National format"
-              value={phone.national ?? "—"}
-              mono
-            />
-            <ReportField label="E.164" value={phone.e164 ?? "—"} mono />
-            {phone.timezoneHint && phone.timezoneHint.length > 0 ? (
-              <ReportField
-                label="Timezone(s)"
-                value={phone.timezoneHint.join(", ")}
-              />
-            ) : null}
-          </FieldGrid>
-        ) : (
-          <EmptyNote variant="inconclusive" subject="line metadata" />
-        )}
-      </ReportSection>
-
-      <ReportSection
-        n={2}
-        title="Likely Location"
-        subtitle="Approximate geography inferred from numbering plan allocations and known regional carriers."
-        status={hasLocation ? "found" : "inconclusive"}
-      >
-        {hasLocation ? (
-          <FieldGrid>
-            <ReportField
               label="Likely cities"
               value={phone.citiesHint?.join(", ") ?? "Not identified"}
             />
             <ReportField
               label="Timezone"
-              value={phone.timezoneHint?.[0] ?? "Not identified"}
+              value={phone.timezoneHint?.join(", ") ?? "Not identified"}
             />
-            <ReportField
-              label="Precise GPS or address"
-              value={<EmptyInline variant="confirmed-none">We do not retrieve real-time location, GPS, or physical address from telephony metadata.</EmptyInline>}
-            />
+            <ReportField label="National format" value={phone.national ?? "—"} mono />
+            <ReportField label="E.164" value={phone.e164 ?? "—"} mono />
           </FieldGrid>
         ) : (
-          <EmptyNote variant="inconclusive" subject="location indicators" />
+          <EmptyNote variant="inconclusive" subject="telephony metadata" />
         )}
       </ReportSection>
 
       <ReportSection
-        n={3}
-        title="Owner Identity"
-        subtitle="Name, aliases, approximate age, and household context — sourced via licensed people-search providers when available."
+        n={2}
+        title="Identity & Associated Records"
+        subtitle="Legal name, aliases, approximate age, addresses, and other contact points tied to the subject on file with public-records aggregators and licensed people-search providers."
         status={identity.hasAny ? "found" : "inconclusive"}
       >
         {identity.hasAny ? (
@@ -210,67 +182,49 @@ function PhoneSections({
                 />
                 <ReportField label="Known aliases" value={<EmptyInline variant="inconclusive" />} />
                 <ReportField label="Approximate age" value={<EmptyInline variant="inconclusive" />} />
+                <ReportField label="Addresses on file" value={<EmptyInline variant="inconclusive" />} />
+                <ReportField label="Associated phones / emails" value={<EmptyInline variant="inconclusive" />} />
                 <ReportField label="Household members" value={<EmptyInline variant="inconclusive" />} />
               </FieldGrid>
             </div>
           </>
         ) : (
-          <EmptyNote variant="inconclusive" subject="owner identity" />
-        )}
-      </ReportSection>
-
-      <ReportSection
-        n={4}
-        title="Addresses & Historical Locations"
-        subtitle="Current and prior addresses on file with public-records aggregators."
-        status="inconclusive"
-      >
-        <EmptyNote variant="inconclusive" subject="address history" />
-      </ReportSection>
-
-      <ReportSection
-        n={5}
-        title="Associated Contact Points"
-        subtitle="Other phone numbers, email addresses, and digital identifiers connected to this subject."
-        status="inconclusive"
-      >
-        <EmptyNote variant="inconclusive" subject="associated contact points" />
-      </ReportSection>
-
-      <ReportSection
-        n={6}
-        title="Public Online Presence"
-        subtitle="Username and account presence across public websites, social networks, and developer platforms."
-        status={presence.length > 0 ? "found" : "none-found"}
-      >
-        {presence.length > 0 ? (
-          <PresenceGrid hits={presence} />
-        ) : (
           <EmptyNote
-            variant="none-found"
-            subject="public online profiles"
-            noun="profiles"
+            variant="inconclusive"
+            subject="owner identity, addresses, or associated contact points"
           />
         )}
       </ReportSection>
 
       <ReportSection
-        n={7}
-        title="Dating & Relationship Platforms"
-        subtitle="Account presence on major dating applications."
-        status="confirmed-none"
+        n={3}
+        title="Online Presence & Activity"
+        subtitle="Public account presence across social networks, forums, developer sites, chat platforms, and dating applications."
+        status={presence.length > 0 ? "found" : "none-found"}
       >
-        <EmptyNote
-          variant="confirmed-none"
-          subject="dating-app accounts"
-          customText="We have confirmed that no publicly indexable dating-app accounts are linked to this number. Live dating-app rosters are not disclosed by their operators, so an absence of a public signal is not a guarantee of absence from the platform itself."
-        />
+        {presence.length > 0 ? (
+          <>
+            <PresenceGrid hits={presence} />
+            <p className="mt-4 text-xs italic text-ink-500">
+              Dating-app rosters are not disclosed by their operators; an
+              absence of a public signal is not a guarantee of absence from
+              those platforms.
+            </p>
+          </>
+        ) : (
+          <EmptyNote
+            variant="none-found"
+            subject="public profiles or accounts"
+            noun="public profiles"
+            customText="No public profiles or accounts have been found associated with this number across the social, chat, and dating platforms we index. Dating-app rosters in particular are not disclosed by their operators, so an absence of a public signal is not a guarantee of absence from those platforms."
+          />
+        )}
       </ReportSection>
 
       <ReportSection
-        n={8}
-        title="Public Images & Videos"
-        subtitle="Photographs and video media where the subject appears, surfaced from reverse-image and open-web indexes."
+        n={4}
+        title="Public Media"
+        subtitle="Photographs, videos, and image mentions associated with this subject on the open web."
         status="inconclusive"
       >
         <EmptyNote
@@ -281,30 +235,26 @@ function PhoneSections({
       </ReportSection>
 
       <ReportSection
-        n={9}
-        title="Data Breach Exposure"
-        subtitle="Appearances of this subject in known public credential and personal-data breaches."
-        status={breachStatus(breaches, enrichment?.breachCount ?? undefined)}
+        n={5}
+        title="Risk & Breach Exposure"
+        subtitle="Appearances in known data breaches, and public reports of scam, spam, or fraudulent activity linked to this number."
+        status={breachStatus(breaches, breachCount)}
       >
-        <BreachBody breaches={breaches} count={enrichment?.breachCount ?? undefined} />
-      </ReportSection>
-
-      <ReportSection
-        n={10}
-        title="Risk & Scam Signals"
-        subtitle="Reports of spam calls, scam attempts, nuisance activity, and public complaints linked to this number."
-        status="confirmed-none"
-      >
-        <EmptyNote
-          variant="confirmed-none"
-          subject="public scam or spam reports"
-          customText="We have confirmed that no public scam or spam complaints are currently linked to this number. We re-check community databases on each lookup; a clean record today does not preclude future reports."
-        />
+        <BreachBody breaches={breaches} count={breachCount} />
+        <div className="mt-4 rounded-xl border border-dashed border-ink-900/15 bg-white p-4 text-sm text-ink-600">
+          <div className="mb-1 font-semibold text-ink-800">
+            Scam & spam reports
+          </div>
+          We have confirmed that no public scam or spam complaints are
+          currently linked to this number. Community databases are
+          re-checked on each lookup; a clean record today does not
+          preclude future reports.
+        </div>
       </ReportSection>
 
       {enrichment?.sources && enrichment.sources.length > 0 ? (
         <ReportSection
-          n={11}
+          n={6}
           title="Sources Consulted"
           subtitle="Providers and public databases queried during the compilation of this report."
           status="found"
@@ -337,8 +287,8 @@ function EmailSections({
     <>
       <ReportSection
         n={1}
-        title="Email Technical Profile"
-        subtitle="Routing, provider classification, and account-type signals."
+        title="Subject Profile"
+        subtitle="Routing, provider classification, and account-type signals for this email address."
         status="found"
       >
         <FieldGrid>
@@ -366,69 +316,59 @@ function EmailSections({
 
       <ReportSection
         n={2}
-        title="Owner Identity"
-        subtitle="Name, aliases, and account context linked to this email address."
+        title="Identity & Associated Records"
+        subtitle="Name, aliases, phone numbers, and additional contact points linked to this email address."
         status={identity.hasAny ? "found" : "inconclusive"}
       >
         {identity.hasAny ? (
-          <IdentityCard enrichment={enrichment!} />
-        ) : (
-          <EmptyNote variant="inconclusive" subject="owner identity" />
-        )}
-      </ReportSection>
-
-      <ReportSection
-        n={3}
-        title="Associated Contact Points"
-        subtitle="Phone numbers, additional emails, and online handles connected to this subject."
-        status="inconclusive"
-      >
-        <EmptyNote variant="inconclusive" subject="associated contact points" />
-      </ReportSection>
-
-      <ReportSection
-        n={4}
-        title="Public Online Presence"
-        subtitle="Account presence across public websites and social networks."
-        status={presence.length > 0 ? "found" : "none-found"}
-      >
-        {presence.length > 0 ? (
-          <PresenceGrid hits={presence} />
+          <>
+            <IdentityCard enrichment={enrichment!} />
+            <div className="mt-4">
+              <FieldGrid>
+                <ReportField label="Legal name" value={identity.displayName ?? <EmptyInline variant="inconclusive" />} />
+                <ReportField label="Known aliases" value={<EmptyInline variant="inconclusive" />} />
+                <ReportField label="Associated phones" value={<EmptyInline variant="inconclusive" />} />
+                <ReportField label="Associated emails" value={<EmptyInline variant="inconclusive" />} />
+              </FieldGrid>
+            </div>
+          </>
         ) : (
           <EmptyNote
-            variant="none-found"
-            subject="public online profiles"
-            noun="profiles"
+            variant="inconclusive"
+            subject="owner identity or associated contact points"
           />
         )}
       </ReportSection>
 
       <ReportSection
-        n={5}
-        title="Data Breach Exposure"
-        subtitle="Appearances of this email in known public credential and personal-data breaches."
-        status={breachStatus(breaches, breachCount)}
+        n={3}
+        title="Online Presence & Activity"
+        subtitle="Public account presence across social networks, forums, developer sites, chat platforms, and dating applications."
+        status={presence.length > 0 ? "found" : "none-found"}
       >
-        <BreachBody breaches={breaches} count={breachCount} />
+        {presence.length > 0 ? (
+          <>
+            <PresenceGrid hits={presence} />
+            <p className="mt-4 text-xs italic text-ink-500">
+              Dating-app rosters are not disclosed by their operators; an
+              absence of a public signal is not a guarantee of absence from
+              those platforms.
+            </p>
+          </>
+        ) : (
+          <EmptyNote
+            variant="none-found"
+            subject="public profiles or accounts"
+            noun="public profiles"
+            customText="No public profiles or accounts have been found associated with this email across the social, chat, and dating platforms we index. Dating-app rosters in particular are not disclosed by their operators."
+          />
+        )}
       </ReportSection>
 
       <ReportSection
-        n={6}
-        title="Dating & Relationship Platforms"
-        subtitle="Account presence on major dating applications."
-        status="confirmed-none"
-      >
-        <EmptyNote
-          variant="confirmed-none"
-          subject="dating-app accounts"
-          customText="We have confirmed that no publicly indexable dating-app accounts are linked to this email. Live dating-app rosters are not disclosed by their operators, so an absence of a public signal is not a guarantee of absence from the platform itself."
-        />
-      </ReportSection>
-
-      <ReportSection
-        n={7}
-        title="Public Images & Videos"
-        subtitle="Photographs and video media associated with this subject on the open web."
+        n={4}
+        title="Public Media"
+        subtitle="Photographs, videos, and image mentions associated with this subject on the open web."
         status={enrichment?.avatarUrl ? "found" : "inconclusive"}
       >
         {enrichment?.avatarUrl ? (
@@ -440,34 +380,35 @@ function EmailSections({
               className="h-20 w-20 shrink-0 rounded-xl object-cover ring-1 ring-ink-900/10"
             />
             <div className="text-sm text-ink-700">
-              Public avatar sourced from a Gravatar account registered to this
-              email. Further open-web image indexing is in progress.
+              Public avatar sourced from a Gravatar account registered to
+              this email. Further open-web image indexing is in progress.
             </div>
           </div>
         ) : (
-          <EmptyNote
-            variant="inconclusive"
-            subject="public images or videos"
-          />
+          <EmptyNote variant="inconclusive" subject="public images or videos" />
         )}
       </ReportSection>
 
       <ReportSection
-        n={8}
-        title="Risk & Scam Signals"
-        subtitle="Reports of fraud, phishing, or malicious activity associated with this email."
-        status="confirmed-none"
+        n={5}
+        title="Risk & Breach Exposure"
+        subtitle="Appearances in known public credential breaches, and public reports of fraud, phishing, or abuse linked to this email."
+        status={breachStatus(breaches, breachCount)}
       >
-        <EmptyNote
-          variant="confirmed-none"
-          subject="public fraud reports"
-          customText="We have confirmed that no public fraud, phishing, or abuse complaints are currently linked to this email address."
-        />
+        <BreachBody breaches={breaches} count={breachCount} />
+        <div className="mt-4 rounded-xl border border-dashed border-ink-900/15 bg-white p-4 text-sm text-ink-600">
+          <div className="mb-1 font-semibold text-ink-800">
+            Fraud, phishing, &amp; abuse reports
+          </div>
+          We have confirmed that no public fraud, phishing, or abuse
+          complaints are currently linked to this email address. Community
+          databases are re-checked on each lookup.
+        </div>
       </ReportSection>
 
       {enrichment?.sources && enrichment.sources.length > 0 ? (
         <ReportSection
-          n={9}
+          n={6}
           title="Sources Consulted"
           subtitle="Providers and public databases queried during the compilation of this report."
           status="found"
