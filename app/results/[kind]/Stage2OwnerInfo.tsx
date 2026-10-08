@@ -9,7 +9,7 @@ import { DatingAppSwipe } from "@/components/DatingAppSwipe";
 // ("Current or Past Profiles"). When this row is the actively-loading row,
 // a small blurred image swipe plays inline next to the item name.
 const SWIPE_PHONE_SECTION = 2;
-const SWIPE_PHONE_ITEM = 1;
+const SWIPE_PHONE_ITEM = 5;
 const SWIPE_LOGO_A = "/dating-logos/finaldating1.webp";
 const SWIPE_LOGO_B = "/dating-logos/finaldating2.webp";
 
@@ -52,11 +52,11 @@ const PHONE_SECTIONS: Section[] = [
     title: "Scanning App Activity",
     items: [
       "Account History",
-      "Current or Past Profiles",
       "Saved Preferences",
       "Archived Photos or Videos",
       "Linked Contacts",
       "Recent Comments",
+      "Current or Past Profiles",
     ],
   },
   {
@@ -210,8 +210,8 @@ const PHONE_TICK_ORDER: number[][] = [
   [0, 3, 5, 2, 4, 1],
   // s2 Scanning Online Posts — last: Active or Inactive Accounts (5)
   [0, 2, 4, 1, 3, 5],
-  // s3 Scanning App Activity — last: Current or Past Profiles (1)
-  [0, 2, 4, 3, 5, 1],
+  // s3 Scanning App Activity — last: Current or Past Profiles (5)
+  [0, 2, 4, 3, 1, 5],
   // s4 Searching Chat Apps — last two: Images (2), Linked Accounts (3)
   [0, 1, 4, 5, 2, 3],
   // s5 Searching Social Media — last two: Recent Photos and Videos (2),
@@ -455,15 +455,24 @@ export function Stage2OwnerInfo({
           {section.items.map((item, i) => {
             const done = doneSet.has(i);
             // Swipe appears next to Current or Past Profiles from the moment
-            // section 3 starts, through its final tick (whole section
-            // duration, not just the row's own 8.6s wait).
+            // that row becomes the active loading row, and stays visible
+            // through completion so the final tick lines up with the row's
+            // own left-side tick in the same frame.
+            const swipeTickIndex = tickOrder[SWIPE_PHONE_SECTION].indexOf(SWIPE_PHONE_ITEM);
+            const swipeOffsetMs = schedule[SWIPE_PHONE_SECTION].itemDelaysMs
+              .slice(0, swipeTickIndex)
+              .reduce((a, b) => a + b, 0);
+            const swipeStartedAt = sectionStartedAt + swipeOffsetMs;
+            const swipeDurationMs =
+              schedule[SWIPE_PHONE_SECTION].itemDelaysMs[swipeTickIndex];
+            const swipeIsActive =
+              activeSlot?.sectionIdx === SWIPE_PHONE_SECTION &&
+              activeSlot?.which === SWIPE_PHONE_ITEM;
             const showSwipe =
-              !done &&
               kind === "phone" &&
               sectionIdx === SWIPE_PHONE_SECTION &&
-              i === SWIPE_PHONE_ITEM;
-            const swipeDurationMs =
-              schedule[SWIPE_PHONE_SECTION].itemDelaysMs.reduce((a, b) => a + b, 0);
+              i === SWIPE_PHONE_ITEM &&
+              (swipeIsActive || done);
             return (
               <li key={item} className="flex items-center gap-3">
                 {done ? (
@@ -491,7 +500,7 @@ export function Stage2OwnerInfo({
                 {showSwipe ? (
                   <span className="-ml-2 flex items-center">
                     <DatingAppSwipe
-                      startedAt={sectionStartedAt}
+                      startedAt={swipeStartedAt}
                       durationMs={swipeDurationMs}
                       logoAUrl={SWIPE_LOGO_A}
                       logoBUrl={SWIPE_LOGO_B}

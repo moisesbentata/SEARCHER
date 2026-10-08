@@ -3,15 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Blurred app-logo swipe that sits inline next to a single loading row.
+ * Inline app-logo swipe for a single loading row.
  *
- * Given a `startedAt` timestamp (performance.now()) and the total time the
- * row will wait before it ticks (`durationMs`), the component shows the
- * first image for the first `firstPhasePct` of the time, then cross-fades
- * to the second image for the remainder.
+ * Timeline (relative to `startedAt`, over `durationMs`):
+ *   0 .. T_A                       → Logo A visible
+ *   T_A .. T_A + 500               → spinner
+ *   T_A + 500 .. T_A + 1000        → tick (A completion)
+ *   T_A + 1000 .. durationMs - 500 → Logo B visible
+ *   durationMs - 500 .. durationMs → spinner
+ *   >= durationMs                  → tick (B completion — intended to appear
+ *                                     in the same frame as the row's own
+ *                                     left-side completion tick)
  *
- * The two image sources are passed in as paths. The component does not know
- * or care what the files are; it just renders what the browser fetches.
+ * `firstPhasePct` sets T_A as a fraction of durationMs (default 0.4).
  */
 export function DatingAppSwipe({
   startedAt,
@@ -19,7 +23,7 @@ export function DatingAppSwipe({
   logoAUrl,
   logoBUrl,
   firstPhasePct = 0.4,
-  blurPx = 2.5,
+  blurPx = 0,
   size = 28,
 }: {
   startedAt: number;
@@ -42,11 +46,39 @@ export function DatingAppSwipe({
     return () => cancelAnimationFrame(rafRef.current);
   }, [startedAt]);
 
+  const SPIN_MS = 500;
+  const TICK_MS = 500;
   const elapsed = Math.max(0, performance.now() - startedAt);
-  const switchAt = durationMs * firstPhasePct;
 
-  // Instant swap — no cross-fade, no CSS transition.
-  const showA = elapsed < switchAt;
+  // Compute phase boundaries. If durationMs is too short for the full
+  // sequence, fall back to a simple instant swap at firstPhasePct.
+  const minForFull = 2 * SPIN_MS + TICK_MS + 500; // need headroom for both logos
+  let phase: "logoA" | "spinA" | "tickA" | "logoB" | "spinB" | "tickB";
+
+  if (durationMs < minForFull) {
+    phase = elapsed < durationMs * firstPhasePct ? "logoA" : "logoB";
+  } else {
+    const T_A = durationMs * firstPhasePct;
+    const T_SPIN_A_END = T_A + SPIN_MS;
+    const T_TICK_A_END = T_SPIN_A_END + TICK_MS;
+    const T_SPIN_B_START = durationMs - SPIN_MS;
+
+    if (elapsed < T_A) phase = "logoA";
+    else if (elapsed < T_SPIN_A_END) phase = "spinA";
+    else if (elapsed < T_TICK_A_END) phase = "tickA";
+    else if (elapsed < T_SPIN_B_START) phase = "logoB";
+    else if (elapsed < durationMs) phase = "spinB";
+    else phase = "tickB";
+  }
+
+  const showA = phase === "logoA";
+  const showB = phase === "logoB";
+  const showSpin = phase === "spinA" || phase === "spinB";
+  const showTick = phase === "tickA" || phase === "tickB";
+
+  // Stroke/border scales roughly with icon size.
+  const borderPx = Math.max(1.5, size / 10);
+  const tickStroke = Math.max(2, Math.round(size / 7));
 
   return (
     <span
@@ -71,9 +103,30 @@ export function DatingAppSwipe({
         className="absolute inset-0 h-full w-full object-contain"
         style={{
           filter: blurPx > 0 ? `blur(${blurPx}px)` : undefined,
-          opacity: showA ? 0 : 1,
+          opacity: showB ? 1 : 0,
         }}
       />
+      {showSpin ? (
+        <span
+          className="absolute inset-0 inline-block animate-spin rounded-full border-brand-600/20 border-t-brand-600"
+          style={{ borderWidth: `${borderPx}px` }}
+        />
+      ) : null}
+      {showTick ? (
+        <span className="absolute inset-0 flex items-center justify-center animate-fade-in">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-full w-full text-brand-600"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={tickStroke}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </span>
+      ) : null}
     </span>
   );
 }
