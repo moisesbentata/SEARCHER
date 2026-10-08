@@ -127,7 +127,7 @@ export function LoginDialog({ open, onClose, onSuccess, initialEmail }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-ink-900/50 p-4 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink-900/50 p-4 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -135,7 +135,7 @@ export function LoginDialog({ open, onClose, onSuccess, initialEmail }: Props) {
       aria-modal="true"
       aria-labelledby="login-title"
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl sm:p-7">
+      <div className="my-auto w-full max-w-md rounded-2xl bg-white p-6 shadow-xl sm:p-7">
         <div className="mb-5 flex items-start justify-between">
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide text-brand-700">{brand.name}</div>
