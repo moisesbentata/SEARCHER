@@ -41,6 +41,28 @@ export function SearchEntry({
   const countries = useMemo(() => countryList(), []);
   const [countryCode, setCountryCode] = useState("US");
   const [value, setValue] = useState(kind === "phone" ? "+1 " : "");
+
+  // On mount, upgrade the default country from the browser locale so an ES
+  // user starts in ES — this matters most for autofill, which sometimes
+  // inserts just the national digits (no leading "+34") and we have to pick
+  // the right country for them. Runs after hydration to avoid SSR mismatch.
+  useEffect(() => {
+    if (kind !== "phone") return;
+    if (typeof navigator === "undefined") return;
+    const langTag = navigator.language || "";
+    const match = langTag.match(/-([A-Z]{2})/i);
+    const cc = match ? match[1].toUpperCase() : null;
+    if (cc && cc !== "US") {
+      const entry = countryEntry(cc);
+      if (entry) {
+        setCountryCode(cc);
+        // Only reset value if the user hasn't already typed anything beyond
+        // the default US prefix.
+        setValue((prev) => (prev.trim() === "+1" || prev === "+1 " ? entry.dial + " " : prev));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [submitting, setSubmitting] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [countryQuery, setCountryQuery] = useState("");
@@ -116,7 +138,9 @@ export function SearchEntry({
   }
 
   return (
-    <section className="relative overflow-hidden">
+    // overflow-x-hidden only — overflow-y must stay visible so the
+    // country-picker dropdown isn't clipped by the section's bottom edge.
+    <section className="relative overflow-x-clip">
       {/* Soft blue wash behind the hero — picks up the brand palette and
           echoes the reference's green blob with trust-blue instead. */}
       <div
@@ -221,7 +245,7 @@ export function SearchEntry({
             </div>
 
             {countryOpen ? (
-              <div className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[60vh] overflow-hidden rounded-xl border border-ink-900/10 bg-white shadow-2xl">
+              <div className="absolute left-0 right-0 top-full z-[60] mt-2 max-h-[60vh] overflow-hidden rounded-xl border border-ink-900/10 bg-white shadow-2xl">
                 <div className="border-b border-ink-900/5 p-2">
                   <input
                     autoFocus
@@ -344,21 +368,67 @@ function PhoneInput({
   onCountryChange: (cc: string) => void;
   invalid?: boolean;
 }) {
-  // iOS Safari autofill from Contacts (and some Android password managers)
-  // writes the number directly to the DOM input and does NOT reliably fire
-  // React's synthetic onChange. Poll briefly after focus and after mount so
-  // we catch the autofilled value and re-run our country-code detection on
-  // it. Without this, autofilling "+34 675740119" into a field holding the
-  // default "+1 " leaves React state stale on "+1 " and the +34 prefix is
-  // effectively ignored.
+  // Refs mirror the latest props so the autofill poll (set up once on
+  // mount) can always see current values instead of stale closures from
+  // the first render.
+  const valueRef = useRef(value);
+  const countryRef = useRef(country);
+  useEffect(() => {
+    valueRef.current = value;
+    countryRef.current = country;
+  });
+
+  function processInput(rawInput: string) {
+    // Whitelist: digits, +, spaces. Everything else is dropped so pasting
+    // "call me at +44 (20) 7946-0958" reduces to "+44 20 7946 0958".
+    let raw = rawInput.replace(/[^\d+\s]/g, "");
+    // If a NEW "+" appears partway through, user wanted to restart the
+    // country code — keep only from the last "+" onward.
+    const lastPlus = raw.lastIndexOf("+");
+    if (lastPlus > 0) raw = raw.substring(lastPlus);
+    const hasExplicitPlus = raw.includes("+");
+    raw = raw.replace(/\+/g, "").replace(/^\s+/, "");
+
+    if (hasExplicitPlus) {
+      // International format — the + prefix tells us which country to use.
+      const international = "+" + raw;
+      const detected = detectCountryFromPrefix(international);
+      if (detected && detected !== countryRef.current.code) {
+        onCountryChange(detected);
+      }
+      const cc = (detected ?? countryRef.current.code) as CountryCode;
+      const ay = new AsYouType(cc);
+      const formatted = ay.input(international);
+      const display = formatted && formatted.startsWith("+") ? formatted : international;
+      onValueChange(display);
+      return;
+    }
+
+    // No "+" — treat as a national-format number inside the currently
+    // selected country. This is the autofill-from-Contacts case where iOS
+    // Safari sometimes inserts just the digits ("675740119") even though
+    // the autofill suggestion shows "+34 675 740 119". We keep the user's
+    // chosen country instead of trying to re-detect it from the leading
+    // digits (which would otherwise match the wrong country code).
+    const digits = raw.replace(/\s/g, "");
+    if (!digits) {
+      // Field cleared — leave just the country prefix as a hint.
+      onValueChange(countryRef.current.dial + " ");
+      return;
+    }
+    const dial = countryRef.current.dial; // e.g. "+34"
+    const international = dial + " " + digits;
+    const ay = new AsYouType(countryRef.current.code as CountryCode);
+    const formatted = ay.input(international);
+    const display = formatted && formatted.startsWith("+") ? formatted : international;
+    onValueChange(display);
+  }
+
   function syncFromDom() {
     const el = inputRef.current;
     if (!el) return;
-    if (el.value === value) return;
-    handleChange({
-      target: el,
-      currentTarget: el,
-    } as unknown as React.ChangeEvent<HTMLInputElement>);
+    if (el.value === valueRef.current) return;
+    processInput(el.value);
   }
 
   function pollForAutofill() {
@@ -382,42 +452,7 @@ function PhoneInput({
   }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    // Whitelist: digits, +, spaces. Everything else is dropped so pasting
-    // "call me at +44 (20) 7946-0958" reduces to "+44 20 7946 0958".
-    let raw = e.target.value;
-    raw = raw.replace(/[^\d+\s]/g, "");
-    // If the user typed/pasted a NEW "+" partway through the string, assume
-    // they wanted to restart the number from there (e.g. existing "+1 "
-    // and they type "+34 …" — honor the new country code).
-    const lastPlus = raw.lastIndexOf("+");
-    if (lastPlus > 0) raw = raw.substring(lastPlus);
-    // Only one + allowed, and always at the very start. Strip any extras.
-    raw = raw.replace(/\+/g, "");
-    // Enforce the leading + — a phone number in international form always
-    // starts with one, so we re-prepend it after every edit.
-    raw = "+" + raw.replace(/^\s+/, "");
-
-    // Detect country early — AsYouType.getCountry() waits until the number
-    // is far enough along to be unambiguous, but we want the flag to switch
-    // the moment the user has typed a recognizable dial code like "+44".
-    const detected = detectCountryFromPrefix(raw);
-    if (detected && detected !== country.code) {
-      onCountryChange(detected);
-    }
-
-    // Format using AsYouType keyed to the detected country so spacing follows
-    // that country's national rules (e.g. UK "7400 123456" vs ES "612 34 56 78").
-    const ay = detected
-      ? new AsYouType(detected as CountryCode)
-      : new AsYouType();
-    const formatted = ay.input(raw);
-
-    // AsYouType can return "" for very partial inputs like just "+" — fall
-    // back to the raw string so the user always sees at least the + they
-    // typed and never loses their prefix.
-    const display = formatted && formatted.startsWith("+") ? formatted : raw;
-
-    onValueChange(display);
+    processInput(e.target.value);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
