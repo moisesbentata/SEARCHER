@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AsYouType, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import { countryList, countryEntry, detectCountryFromPrefix } from "@/lib/countries";
@@ -344,6 +344,43 @@ function PhoneInput({
   onCountryChange: (cc: string) => void;
   invalid?: boolean;
 }) {
+  // iOS Safari autofill from Contacts (and some Android password managers)
+  // writes the number directly to the DOM input and does NOT reliably fire
+  // React's synthetic onChange. Poll briefly after focus and after mount so
+  // we catch the autofilled value and re-run our country-code detection on
+  // it. Without this, autofilling "+34 675740119" into a field holding the
+  // default "+1 " leaves React state stale on "+1 " and the +34 prefix is
+  // effectively ignored.
+  function syncFromDom() {
+    const el = inputRef.current;
+    if (!el) return;
+    if (el.value === value) return;
+    handleChange({
+      target: el,
+      currentTarget: el,
+    } as unknown as React.ChangeEvent<HTMLInputElement>);
+  }
+
+  function pollForAutofill() {
+    const start = performance.now();
+    let frame = 0;
+    const loop = () => {
+      syncFromDom();
+      if (performance.now() - start < 2500) {
+        frame = requestAnimationFrame(loop);
+      }
+    };
+    frame = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(frame);
+  }
+
+  useEffect(() => {
+    // Catch autofill that fires right at page load (common for password
+    // managers that pre-fill as soon as the field exists).
+    return pollForAutofill();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     // Whitelist: digits, +, spaces. Everything else is dropped so pasting
     // "call me at +44 (20) 7946-0958" reduces to "+44 20 7946 0958".
@@ -417,6 +454,8 @@ function PhoneInput({
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onFocus={pollForAutofill}
+        onBlur={syncFromDom}
         className="block w-full bg-transparent text-base font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
         aria-label={`Phone number in ${country.name}`}
         aria-invalid={invalid ? "true" : undefined}

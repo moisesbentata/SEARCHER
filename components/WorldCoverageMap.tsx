@@ -319,28 +319,34 @@ export function WorldCoverageMap() {
         </g>
       </svg>
 
-      {/* Overlay card — anchors flip when the overlay point is near a map
-          edge so the card never spills past the clipped container. */}
+      {/* Overlay card — anchored to whichever edge (left/right, top/bottom)
+          the overlay point sits closer to, so the card always grows AWAY
+          from that edge and never spills past the clipped container. */}
       {(() => {
         const xPct = (region.overlay.x / WIDTH) * 100;
         const yPct = (region.overlay.y / HEIGHT) * 100;
-        const translateX = xPct < 20 ? "0%" : xPct > 80 ? "-100%" : "-50%";
-        const translateY = yPct < 20 ? "0%" : yPct > 80 ? "-100%" : "-50%";
+        const edgePadPct = 2; // minimum breathing room from each edge
+        const anchorRight = xPct > 55;
+        const anchorBottom = yPct > 70;
+        const horizontal: React.CSSProperties = anchorRight
+          ? { right: `${Math.max(edgePadPct, 100 - xPct)}%` }
+          : { left: `${Math.max(edgePadPct, xPct)}%` };
+        const vertical: React.CSSProperties = anchorBottom
+          ? { bottom: `${Math.max(edgePadPct, 100 - yPct)}%` }
+          : { top: `${Math.max(edgePadPct, yPct)}%` };
         return (
-      <div
-        key={region.key}
-        className="pointer-events-none absolute animate-fade-in rounded-xl border border-ink-900/10 bg-white px-4 py-2 text-center shadow-lg"
-        style={{
-          left: `${xPct}%`,
-          top: `${yPct}%`,
-          transform: `translate(${translateX}, ${translateY})`,
-        }}
-      >
-        <div className="text-sm font-semibold text-brand-700">{region.name}</div>
-        <div className="text-xs text-ink-500">
-          Coverage: <span className="font-bold text-brand-700">{region.coverage}</span>
-        </div>
-      </div>
+          <div
+            key={region.key}
+            className="pointer-events-none absolute z-10 max-w-[46%] animate-fade-in rounded-xl border border-ink-900/10 bg-white px-3 py-2 text-center shadow-lg sm:max-w-[180px] sm:px-4"
+            style={{ ...horizontal, ...vertical }}
+          >
+            <div className="text-xs font-semibold text-brand-700 sm:text-sm">
+              {region.name}
+            </div>
+            <div className="text-[11px] text-ink-500 sm:text-xs">
+              Coverage: <span className="font-bold text-brand-700">{region.coverage}</span>
+            </div>
+          </div>
         );
       })()}
     </div>

@@ -127,7 +127,9 @@ export function LoginDialog({ open, onClose, onSuccess, initialEmail }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink-900/50 p-4 backdrop-blur-sm"
+      // h-[100dvh] uses the dynamic viewport height so iOS Safari's URL bar
+      // doesn't push the centred modal off the visible area.
+      className="fixed inset-x-0 top-0 z-50 flex h-screen h-[100dvh] items-center justify-center overflow-y-auto bg-ink-900/50 p-4 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
