@@ -130,14 +130,14 @@ export function SearchEntry({
       <div className="mx-auto max-w-6xl px-5 pt-10 pb-14 sm:px-6 lg:pt-16 lg:pb-20">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="mx-auto w-full max-w-lg lg:mx-0">
-      <h1 className="text-center text-4xl font-extrabold tracking-tight text-ink-900 sm:text-5xl lg:text-left lg:text-6xl">
+      <h1 className="text-left text-5xl font-extrabold tracking-tight text-ink-900 sm:text-5xl lg:text-6xl">
         {title}
         <br />
         <span className="bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text text-transparent">
           {titleHighlight}
         </span>
       </h1>
-      <p className="mx-auto mt-4 max-w-md text-center text-base text-ink-500 lg:mx-0 lg:text-left lg:text-lg">
+      <p className="mt-4 max-w-md text-left text-base text-ink-500 lg:text-lg">
         {subtitle}
       </p>
 
@@ -221,17 +221,18 @@ export function SearchEntry({
             </div>
 
             {countryOpen ? (
-              <div className="absolute left-0 right-0 top-full z-30 mt-2 max-h-72 overflow-hidden rounded-xl border border-ink-900/10 bg-white shadow-2xl">
+              <div className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[60vh] overflow-hidden rounded-xl border border-ink-900/10 bg-white shadow-2xl">
                 <div className="border-b border-ink-900/5 p-2">
                   <input
                     autoFocus
                     placeholder="Search country…"
                     value={countryQuery}
                     onChange={(e) => setCountryQuery(e.target.value)}
-                    className="w-full rounded-lg bg-ink-900/[0.04] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    // text-base (16px) prevents iOS Safari from zooming in on focus.
+                    className="w-full rounded-lg bg-ink-900/[0.04] px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
-                <ul role="listbox" className="max-h-56 overflow-y-auto py-1">
+                <ul role="listbox" className="max-h-[calc(60vh-56px)] overflow-y-auto py-1">
                   {filteredCountries.map((c) => (
                     <li key={c.code}>
                       <button
@@ -348,7 +349,12 @@ function PhoneInput({
     // "call me at +44 (20) 7946-0958" reduces to "+44 20 7946 0958".
     let raw = e.target.value;
     raw = raw.replace(/[^\d+\s]/g, "");
-    // Only one + allowed, and always at the very start. Strip any others.
+    // If the user typed/pasted a NEW "+" partway through the string, assume
+    // they wanted to restart the number from there (e.g. existing "+1 "
+    // and they type "+34 …" — honor the new country code).
+    const lastPlus = raw.lastIndexOf("+");
+    if (lastPlus > 0) raw = raw.substring(lastPlus);
+    // Only one + allowed, and always at the very start. Strip any extras.
     raw = raw.replace(/\+/g, "");
     // Enforce the leading + — a phone number in international form always
     // starts with one, so we re-prepend it after every edit.
@@ -383,12 +389,10 @@ function PhoneInput({
     if (nav.includes(e.key)) return;
     if (e.metaKey || e.ctrlKey) return;
 
-    // A leading "+" is allowed at the very start of the input
-    if (e.key === "+") {
-      if ((inputRef.current?.selectionStart ?? 0) === 0) return;
-      e.preventDefault();
-      return;
-    }
+    // "+" is always allowed — handleChange collapses stray plus signs by
+    // keeping only the last one, which lets the user restart the country
+    // code at any time (e.g. switch from "+1 …" to "+34 …" mid-edit).
+    if (e.key === "+") return;
 
     // Space is allowed (formatter uses spaces to group digits)
     if (e.key === " ") return;

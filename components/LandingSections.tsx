@@ -227,22 +227,22 @@ function StatsVerifying() {
     <section className="bg-white">
       <div className="mx-auto max-w-5xl px-5 py-14 sm:px-6 sm:py-20">
         <h2 className="text-center tracking-tight text-ink-900">
-          <span className="block text-2xl font-bold sm:text-3xl lg:text-4xl">
+          <span className="block text-3xl font-bold sm:text-3xl lg:text-4xl">
             You&apos;re Not Overthinking,
           </span>
-          <span className="mt-1 block bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text pb-2 text-4xl font-extrabold leading-[1.15] text-transparent sm:text-5xl lg:text-6xl">
+          <span className="mt-1 block bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text pb-2 text-5xl font-extrabold leading-[1.15] text-transparent sm:text-5xl lg:text-6xl">
             You&apos;re Verifying
           </span>
         </h2>
-        <div className="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4">
           {stats.map((s) => (
             <div key={s.n}>
               <div className="text-3xl font-black tracking-tight text-ink-900 sm:text-4xl">
                 {s.n}
               </div>
-              <p className="mt-2 max-w-[16rem] text-base text-ink-500">{s.label}</p>
+              <p className="mt-2 max-w-[16rem] text-sm text-ink-500 sm:text-base">{s.label}</p>
               {s.source ? (
-                <p className="mt-1.5 max-w-[16rem] text-[11px] font-semibold uppercase tracking-wide text-ink-400">
+                <p className="mt-1.5 max-w-[16rem] text-[10px] font-semibold uppercase tracking-wide text-ink-400 sm:text-[11px]">
                   {s.sourceUrl ? (
                     <a
                       href={s.sourceUrl}
@@ -294,11 +294,11 @@ function WorldwideCoverage() {
           number, based on searches performed in 2025.
         </p>
 
-        <div className="mt-12 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4">
           {stats.map(([n, label]) => (
             <div key={n}>
               <div className="text-4xl font-black tracking-tight text-ink-900 sm:text-5xl">{n}</div>
-              <p className="mt-2 max-w-[16rem] text-base text-ink-500">{label}</p>
+              <p className="mt-2 max-w-[16rem] text-sm text-ink-500 sm:text-base">{label}</p>
             </div>
           ))}
         </div>
