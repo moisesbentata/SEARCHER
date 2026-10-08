@@ -319,14 +319,21 @@ export function WorldCoverageMap() {
         </g>
       </svg>
 
-      {/* Overlay card */}
+      {/* Overlay card — anchors flip when the overlay point is near a map
+          edge so the card never spills past the clipped container. */}
+      {(() => {
+        const xPct = (region.overlay.x / WIDTH) * 100;
+        const yPct = (region.overlay.y / HEIGHT) * 100;
+        const translateX = xPct < 20 ? "0%" : xPct > 80 ? "-100%" : "-50%";
+        const translateY = yPct < 20 ? "0%" : yPct > 80 ? "-100%" : "-50%";
+        return (
       <div
         key={region.key}
         className="pointer-events-none absolute animate-fade-in rounded-xl border border-ink-900/10 bg-white px-4 py-2 text-center shadow-lg"
         style={{
-          left: `${(region.overlay.x / WIDTH) * 100}%`,
-          top: `${(region.overlay.y / HEIGHT) * 100}%`,
-          transform: "translate(-50%, -50%)",
+          left: `${xPct}%`,
+          top: `${yPct}%`,
+          transform: `translate(${translateX}, ${translateY})`,
         }}
       >
         <div className="text-sm font-semibold text-brand-700">{region.name}</div>
@@ -334,6 +341,8 @@ export function WorldCoverageMap() {
           Coverage: <span className="font-bold text-brand-700">{region.coverage}</span>
         </div>
       </div>
+        );
+      })()}
     </div>
   );
 }
