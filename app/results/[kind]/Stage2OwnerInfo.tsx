@@ -490,7 +490,7 @@ export function Stage2OwnerInfo({
                   {item}
                 </span>
                 {showSwipe ? (
-                  <span className="-ml-2 flex items-center">
+                  <span className="-ml-0.5 flex items-center">
                     <DatingAppSwipe
                       startedAt={swipeStartedAt}
                       durationMs={swipeDurationMs}
