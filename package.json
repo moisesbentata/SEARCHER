@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
+    "@react-pdf/renderer": "^4.9.0",
     "d3-geo": "^3.1.1",
     "jose": "^6.2.12",
     "libphonenumber-js": "1.11.12",

@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Playfair_Display } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/lib/brand";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
-// Loaded as a CSS variable so the Stage 6 report (and anywhere else that
-// wants a document-style serif) can opt in without pulling the font into
-// every page's critical path.
-const playfair = Playfair_Display({
+// Mono face used by the Stage 6 report's terminal / code-forensic
+// layout. Exposed as a CSS variable so it doesn't become the default
+// body font — only the report opts in.
+const reportMono = JetBrains_Mono({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-report-serif",
+  variable: "--font-report-mono",
 });
 
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={playfair.variable}>
+    <html lang="en" className={reportMono.variable}>
       <body className="min-h-screen bg-white text-ink-900 antialiased">
         <Header />
         <main className="min-h-[70vh]">{children}</main>
