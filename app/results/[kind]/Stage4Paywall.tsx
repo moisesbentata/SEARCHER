@@ -218,7 +218,7 @@ function TrustpilotCard() {
         </div>
       </div>
       <div className="mt-3 text-center text-sm text-ink-500">
-        Rated <strong>4.5</strong> / 5 · <span className="underline">44,562 reviews</span>
+        Rated <strong>4.5</strong> / 5 · <span className="underline">22,514 reviews</span>
       </div>
       <div className="mt-1 flex items-center justify-center gap-2 text-sm text-ink-700">
         <span className="text-emerald-500">★</span>
