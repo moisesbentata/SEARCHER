@@ -38,20 +38,22 @@ Font.register({
 });
 
 const COLOR = {
-  bg: "#0e1116",
-  panel: "#0a0d12",
-  panelInner: "#111820",
-  border: "#243041",
-  slate100: "#f1f5f9",
-  slate200: "#e2e8f0",
-  slate300: "#cbd5e1",
-  slate400: "#94a3b8",
+  bg: "#ffffff",
+  panel: "#f8fafc", // slate-50
+  panelInner: "#f1f5f9", // slate-100
+  border: "#cbd5e1", // slate-300
+  borderSoft: "#e2e8f0", // slate-200
+  ink: "#0f172a", // slate-900
+  slate100: "#0f172a", // (now near-black for primary text)
+  slate200: "#1e293b", // slate-800
+  slate300: "#334155", // slate-700
+  slate400: "#64748b", // slate-500
   slate500: "#64748b",
-  slate600: "#475569",
-  emerald300: "#6ee7b7",
-  emerald400: "#34d399",
-  amber300: "#fcd34d",
-  rose300: "#fda4af",
+  slate600: "#94a3b8",
+  emerald300: "#059669", // emerald-600 for success
+  emerald400: "#047857", // emerald-700 for prompts
+  amber300: "#b45309", // amber-700
+  rose300: "#9f1239", // rose-800
   rose500: "#f43f5e",
 };
 
@@ -68,7 +70,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 7,
     paddingHorizontal: 10,
-    backgroundColor: "#1a1f27",
+    backgroundColor: COLOR.panelInner,
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
     borderBottomWidth: 1,
@@ -97,9 +99,9 @@ const styles = StyleSheet.create({
   },
   terminal: {
     padding: 14,
-    backgroundColor: COLOR.bg,
+    backgroundColor: COLOR.panel,
     borderBottomWidth: 1,
-    borderBottomColor: COLOR.border,
+    borderBottomColor: COLOR.borderSoft,
   },
   shellPrompt: { color: COLOR.emerald400 },
   shellArrow: { color: COLOR.slate500 },
@@ -121,7 +123,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: COLOR.border,
+    borderBottomColor: COLOR.borderSoft,
+    backgroundColor: COLOR.bg,
   },
   sectionHead: {
     flexDirection: "row",
@@ -153,7 +156,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     padding: 8,
     borderWidth: 1,
-    borderColor: COLOR.border,
+    borderColor: COLOR.borderSoft,
     borderRadius: 4,
     backgroundColor: COLOR.panel,
   },
@@ -173,7 +176,7 @@ const styles = StyleSheet.create({
     borderColor: COLOR.border,
     borderRadius: 4,
     backgroundColor: COLOR.panel,
-    color: COLOR.slate500,
+    color: COLOR.slate400,
     fontSize: 9,
     fontStyle: "italic",
   },
@@ -187,9 +190,11 @@ const styles = StyleSheet.create({
     marginTop: "auto",
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: COLOR.border,
-    color: COLOR.slate500,
+    borderTopColor: COLOR.borderSoft,
+    color: COLOR.slate400,
     fontSize: 8,
+    backgroundColor: COLOR.panel,
+    padding: 10,
   },
   breachHeader: {
     color: COLOR.rose300,
@@ -200,9 +205,9 @@ const styles = StyleSheet.create({
     marginTop: 3,
     padding: 5,
     borderWidth: 1,
-    borderColor: "#4b0f1a",
+    borderColor: "#fecdd3", // rose-200
     borderRadius: 3,
-    backgroundColor: "#1a0f12",
+    backgroundColor: "#ffffff",
   },
   confBar: { color: COLOR.emerald400, marginLeft: 8 },
   confPct: { color: COLOR.slate300, marginLeft: 4 },
@@ -719,7 +724,7 @@ function breachNodes(breaches: BreachHit[], count: number | undefined): React.Re
             borderWidth: 1,
             borderColor: COLOR.emerald400,
             borderRadius: 4,
-            backgroundColor: "#0f1a16",
+            backgroundColor: "#ecfdf5",
           },
         },
         React.createElement(
@@ -756,7 +761,7 @@ function breachNodes(breaches: BreachHit[], count: number | undefined): React.Re
           borderWidth: 1,
           borderColor: COLOR.rose500,
           borderRadius: 4,
-          backgroundColor: "#1a0f12",
+          backgroundColor: "#fff1f2",
         },
       },
       React.createElement(

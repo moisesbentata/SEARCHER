@@ -18,16 +18,6 @@ export function Stage5Payment({
 
   function pay(method: string) {
     setSelected(method);
-    // Fire-and-forget: as soon as the (stub) payment "succeeds", push the
-    // compiled PDF to the email the user captured in Stage 3. The user may
-    // also re-send manually from the Stage 6 report page.
-    if (email) {
-      fetch("/api/report/send-pdf", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, subject: query, kind }),
-      }).catch(() => undefined);
-    }
     setTimeout(() => onPaid(method), 900);
   }
 

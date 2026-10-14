@@ -61,24 +61,34 @@ export function Stage6Report(props: Props) {
   const filename = `${reportId.toLowerCase()}.report`;
 
   return (
-    <section className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+    <section
+      className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10"
+      style={{
+        fontFamily:
+          "var(--font-report-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+      }}
+    >
+      {/* PDF-by-email CTA — sits ABOVE the document so it's the first thing
+          the user sees once Stage 6 renders. Nothing is sent unless they
+          explicitly type an email and click the button. */}
+      <PdfCta subject={subjectValue} kind={props.kind} />
+
+      {/* Document */}
       <div
-        className="overflow-hidden rounded-2xl border border-ink-900/15 bg-[#0e1116] text-[13px] text-slate-200 shadow-2xl transition-all duration-300 ease-out"
+        className="mt-5 overflow-hidden rounded-xl border border-slate-300 bg-white text-[13px] text-slate-900 shadow-xl transition-all duration-300 ease-out"
         style={{
-          fontFamily:
-            "var(--font-report-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
           opacity: opened ? 1 : 0,
           transform: opened ? "translateY(0) scale(1)" : "translateY(6px) scale(0.985)",
         }}
       >
         {/* Window chrome */}
-        <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-[#1a1f27] px-4 py-2.5">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-300 bg-slate-100 px-4 py-2.5">
           <div className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
             <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
             <span className="h-3 w-3 rounded-full bg-[#28c840]" />
           </div>
-          <div className="min-w-0 flex-1 text-center text-[11px] text-slate-400">
+          <div className="min-w-0 flex-1 text-center text-[11px] text-slate-500">
             <span className="truncate">{filename}</span>
           </div>
           <div className="w-10 text-right text-[11px] text-slate-500">
@@ -87,21 +97,21 @@ export function Stage6Report(props: Props) {
         </div>
 
         {/* Terminal header */}
-        <div className="border-b border-white/10 bg-[#0e1116] px-4 py-4 sm:px-6">
+        <div className="border-b border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
           <div className="text-[12px] leading-relaxed">
-            <div className="text-emerald-400">
-              <span className="text-slate-500">$</span>{" "}
+            <div className="text-emerald-700">
+              <span className="text-slate-400">$</span>{" "}
               {brand.name.toLowerCase()} {props.kind === "phone" ? "--phone" : "--email"}{" "}
-              <span className="text-slate-200">{compactSubject(subjectValue)}</span>
+              <span className="text-slate-900">{compactSubject(subjectValue)}</span>
             </div>
             <div className="mt-0.5 text-slate-500">
-              <span className="text-slate-500">&gt;</span> analyzing subject across{" "}
+              <span className="text-slate-400">&gt;</span> analyzing subject across{" "}
               {sourceCount(enrichment)} data streams
             </div>
             <div className="text-slate-500">
-              <span className="text-slate-500">&gt;</span> compiled in{" "}
+              <span className="text-slate-400">&gt;</span> compiled in{" "}
               {compileTime()}s · status{" "}
-              <span className="text-emerald-400">[OK]</span>
+              <span className="font-semibold text-emerald-700">[OK]</span>
             </div>
           </div>
 
@@ -111,12 +121,10 @@ export function Stage6Report(props: Props) {
             <KvRow k="issued" v={issuedAt} />
             <KvRow k="scope" v={props.kind === "phone" ? "telephone_number" : "email_address"} />
           </div>
-
-          <PdfCta subject={subjectValue} kind={props.kind} />
         </div>
 
         {/* Sections */}
-        <div className="divide-y divide-white/10">
+        <div className="divide-y divide-slate-200 bg-white">
           {props.kind === "phone" ? (
             <PhoneSections phone={props.phone} enrichment={enrichment} />
           ) : (
@@ -125,11 +133,11 @@ export function Stage6Report(props: Props) {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-white/10 bg-[#0a0d12] px-4 py-4 text-[11px] leading-relaxed text-slate-500 sm:px-6">
+        <div className="border-t border-slate-200 bg-slate-50 px-4 py-4 text-[11px] leading-relaxed text-slate-500 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <span className="text-slate-400">{brand.name}</span> · report{" "}
-              <span className="text-slate-300">{reportId}</span>
+              <span className="font-semibold text-slate-700">{brand.name}</span> · report{" "}
+              <span className="text-slate-700">{reportId}</span>
             </div>
             <div>{issuedAt}</div>
           </div>
@@ -193,42 +201,57 @@ function PdfCta({
   return (
     <form
       onSubmit={send}
-      className="mt-5 flex flex-col gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 sm:flex-row sm:items-center"
+      className="rounded-xl border border-brand-500/30 bg-brand-50 p-4 shadow-sm"
     >
-      <div className="flex items-center gap-2 text-[12px] text-emerald-300 sm:w-56 sm:shrink-0">
-        <span>▶</span>
-        <span className="font-semibold">send_report --as-pdf</span>
+      <div className="flex items-center gap-2 text-[13px] font-semibold text-brand-800">
+        <svg
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.25"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <path d="m2 7 10 7 10-7" />
+        </svg>
+        Email this report as a PDF
       </div>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@example.com"
-        className="min-w-0 flex-1 rounded-md border border-white/10 bg-[#0a0d12] px-3 py-2 text-[13px] text-slate-100 outline-none placeholder:text-slate-600 focus:border-emerald-500/50"
-        disabled={status === "sending" || status === "sent"}
-        autoComplete="email"
-      />
-      <button
-        type="submit"
-        disabled={status === "sending" || status === "sent"}
-        className="rounded-md bg-emerald-500 px-4 py-2 text-[12px] font-semibold text-[#0a0d12] hover:bg-emerald-400 disabled:opacity-60"
-      >
-        {status === "sending"
-          ? "sending…"
-          : status === "sent"
-            ? "sent ✓"
-            : "email PDF"}
-      </button>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+          disabled={status === "sending" || status === "sent"}
+          autoComplete="email"
+        />
+        <button
+          type="submit"
+          disabled={status === "sending" || status === "sent"}
+          className="rounded-md bg-brand-700 px-4 py-2 text-[13px] font-semibold text-white shadow-sm hover:bg-brand-800 disabled:opacity-60"
+        >
+          {status === "sending"
+            ? "Sending…"
+            : status === "sent"
+              ? "Sent ✓"
+              : "Email PDF"}
+        </button>
+      </div>
       {error ? (
-        <div className="basis-full text-[11px] text-rose-400 sm:ml-56">
-          {error}
-        </div>
+        <div className="mt-2 text-[12px] text-rose-700">{error}</div>
       ) : null}
       {status === "sent" ? (
-        <div className="basis-full text-[11px] text-emerald-300 sm:ml-56">
-          // delivered to <span className="text-emerald-200">{email}</span>
+        <div className="mt-2 text-[12px] text-emerald-700">
+          Delivered to <span className="font-semibold">{email}</span>. Check your inbox (and spam folder on the first send).
         </div>
       ) : null}
+      <div className="mt-2 text-[11px] text-slate-500">
+        Nothing is sent automatically — only after you type an address and click Email PDF.
+      </div>
     </form>
   );
 }
@@ -370,7 +393,7 @@ function PhoneSections({
       >
         <BreachBlock breaches={breaches} count={breachCount} />
         <CommentLine>
-          // scam & spam reports: <span className="text-emerald-400">confirmed none</span> — no public complaints currently linked to this number
+          // scam & spam reports: <span className="font-semibold text-emerald-700">confirmed none</span> — no public complaints currently linked to this number
         </CommentLine>
       </ReportSection>
 
@@ -489,14 +512,14 @@ function EmailSections({
         status={enrichment?.avatarUrl ? "found" : "inconclusive"}
       >
         {enrichment?.avatarUrl ? (
-          <div className="flex items-center gap-4 rounded-md border border-white/10 bg-[#111820] p-3">
+          <div className="flex items-center gap-4 rounded-md border border-slate-200 bg-slate-50 p-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={enrichment.avatarUrl}
               alt=""
-              className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-white/10"
+              className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-200"
             />
-            <div className="text-[12px] text-slate-300">
+            <div className="text-[12px] text-slate-700">
               // public avatar sourced from a Gravatar account registered to
               this email
               <br />
@@ -516,7 +539,7 @@ function EmailSections({
       >
         <BreachBlock breaches={breaches} count={breachCount} />
         <CommentLine>
-          // fraud / phishing / abuse: <span className="text-emerald-400">confirmed none</span> — no public complaints currently linked to this email
+          // fraud / phishing / abuse: <span className="font-semibold text-emerald-700">confirmed none</span> — no public complaints currently linked to this email
         </CommentLine>
       </ReportSection>
 
@@ -563,9 +586,9 @@ function ReportSection({
     <section className="px-4 py-5 sm:px-6 sm:py-6">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-[13px] text-slate-100">
-            <span className="text-slate-500">##</span>
-            <span className="text-slate-500">{String(n).padStart(2, "0")}</span>
+          <div className="flex items-center gap-2 text-[13px] text-slate-900">
+            <span className="text-slate-400">##</span>
+            <span className="text-slate-400">{String(n).padStart(2, "0")}</span>
             <span className="font-semibold tracking-tight">{title}</span>
           </div>
           {subtitle ? (
@@ -576,7 +599,7 @@ function ReportSection({
         </div>
         <StatusChip status={status} />
       </div>
-      <div className="mt-4 border-t border-dashed border-white/10 pt-4">
+      <div className="mt-4 border-t border-dashed border-slate-200 pt-4">
         {children}
       </div>
     </section>
@@ -586,23 +609,23 @@ function ReportSection({
 function StatusChip({ status }: { status: SectionStatus }) {
   const map: Record<SectionStatus, { bg: string; text: string; label: string }> = {
     found: {
-      bg: "bg-emerald-500/10 ring-emerald-500/40",
-      text: "text-emerald-300",
+      bg: "bg-emerald-50 ring-emerald-500/40",
+      text: "text-emerald-800",
       label: "data_found",
     },
     inconclusive: {
-      bg: "bg-amber-500/10 ring-amber-500/40",
-      text: "text-amber-300",
+      bg: "bg-amber-50 ring-amber-500/40",
+      text: "text-amber-800",
       label: "inconclusive",
     },
     "none-found": {
-      bg: "bg-slate-500/10 ring-slate-500/30",
-      text: "text-slate-300",
+      bg: "bg-slate-100 ring-slate-300",
+      text: "text-slate-700",
       label: "no_match",
     },
     "confirmed-none": {
-      bg: "bg-slate-500/10 ring-slate-500/30",
-      text: "text-slate-300",
+      bg: "bg-slate-100 ring-slate-300",
+      text: "text-slate-700",
       label: "confirmed_none",
     },
   };
@@ -620,7 +643,7 @@ function FieldBlock({ fields }: { fields: ReportFieldSpec[] }) {
   // Pad keys to a common width so the "=" aligns like real config output.
   const maxK = Math.max(...fields.map((f) => f.k.length), 1);
   return (
-    <div className="rounded-md border border-white/10 bg-[#0a0d12] px-3 py-2.5 text-[12.5px] leading-relaxed">
+    <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 text-[12.5px] leading-relaxed">
       {fields.map((f) => {
         const isComment = typeof f.v === "string" && f.v.startsWith("//");
         return (
@@ -631,8 +654,8 @@ function FieldBlock({ fields }: { fields: ReportFieldSpec[] }) {
             <span className="whitespace-pre text-slate-500">
               {f.k.padEnd(maxK, " ")}
             </span>
-            <span className="text-slate-500">=</span>
-            <span className={isComment ? "italic text-slate-600" : "text-slate-100"}>
+            <span className="text-slate-400">=</span>
+            <span className={isComment ? "italic text-slate-500" : "text-slate-900"}>
               {f.v}
             </span>
             {f.c !== undefined && !isComment ? (
@@ -649,19 +672,19 @@ function ConfidenceInline({ c }: { c: number }) {
   const filled = Math.round((c / 100) * 10);
   const bar = "▮".repeat(filled) + "▯".repeat(10 - filled);
   return (
-    <span className="ml-auto inline-flex items-center gap-2 text-[11px] text-slate-400">
+    <span className="ml-auto inline-flex items-center gap-2 text-[11px] text-slate-500">
       <span
         className={
           c >= 85
-            ? "text-emerald-400"
+            ? "text-emerald-600"
             : c >= 65
-              ? "text-emerald-300/80"
-              : "text-amber-300"
+              ? "text-emerald-600/80"
+              : "text-amber-600"
         }
       >
         {bar}
       </span>
-      <span className="w-10 text-right tabular-nums text-slate-300">
+      <span className="w-10 text-right tabular-nums text-slate-700">
         {c}%
       </span>
     </span>
@@ -673,8 +696,8 @@ function ConfidenceLine({ c }: { c: number }) {
   const bar = "▮".repeat(filled) + "▯".repeat(10 - filled);
   return (
     <span className="text-[11px] text-slate-500">
-      // confidence <span className="text-emerald-400">{bar}</span>{" "}
-      <span className="text-slate-300">{c}%</span>
+      // confidence <span className="text-emerald-700">{bar}</span>{" "}
+      <span className="text-slate-700">{c}%</span>
     </span>
   );
 }
@@ -683,7 +706,7 @@ function KvRow({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
   return (
     <div className="flex items-baseline gap-3">
       <span className="w-20 shrink-0 text-slate-500">{k.padEnd(10, " ")}</span>
-      <span className={mono ? "truncate text-slate-100" : "text-slate-300"}>
+      <span className={mono ? "truncate text-slate-900" : "text-slate-700"}>
         {v}
       </span>
     </div>
@@ -706,7 +729,7 @@ function CommentNote({
   };
   const text = customText ?? defaults[variant];
   return (
-    <div className="rounded-md border border-dashed border-white/10 bg-[#0a0d12] p-3 text-[12px] italic leading-relaxed text-slate-500">
+    <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-3 text-[12px] italic leading-relaxed text-slate-600">
       {text}
     </div>
   );
@@ -723,22 +746,22 @@ function CommentLine({ children }: { children: React.ReactNode }) {
 function IdentityCard({ enrichment }: { enrichment: EnrichmentResult }) {
   const { avatarUrl, displayName, bio, publicLinks } = enrichment;
   return (
-    <div className="flex items-start gap-3 rounded-md border border-white/10 bg-[#111820] p-3">
+    <div className="flex items-start gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
       {avatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={avatarUrl}
           alt=""
-          className="h-14 w-14 shrink-0 rounded-lg object-cover ring-1 ring-white/10"
+          className="h-14 w-14 shrink-0 rounded-lg object-cover ring-1 ring-slate-200"
         />
       ) : (
-        <div className="h-14 w-14 shrink-0 rounded-lg bg-white/5" />
+        <div className="h-14 w-14 shrink-0 rounded-lg bg-slate-200" />
       )}
       <div className="min-w-0 flex-1">
         {displayName ? (
-          <div className="text-sm font-semibold text-slate-100">{displayName}</div>
+          <div className="text-sm font-semibold text-slate-900">{displayName}</div>
         ) : null}
-        {bio ? <div className="mt-0.5 text-xs text-slate-400">{bio}</div> : null}
+        {bio ? <div className="mt-0.5 text-xs text-slate-600">{bio}</div> : null}
         {publicLinks && publicLinks.length > 0 ? (
           <div className="mt-2 flex flex-wrap gap-1">
             {publicLinks.slice(0, 5).map((u) => (
@@ -747,7 +770,7 @@ function IdentityCard({ enrichment }: { enrichment: EnrichmentResult }) {
                 href={u}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-slate-300 hover:border-emerald-500/40 hover:text-emerald-300"
+                className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-700 hover:border-brand-500 hover:text-brand-700"
               >
                 {safeHost(u)}
               </a>
@@ -768,10 +791,10 @@ function PresenceGrid({ hits }: { hits: UsernameHit[] }) {
           href={h.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-between rounded-md border border-white/10 bg-[#111820] px-2.5 py-1.5 text-[11.5px] text-slate-200 hover:border-emerald-500/40 hover:bg-emerald-500/5"
+          className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11.5px] text-slate-800 hover:border-brand-500 hover:bg-brand-50"
         >
           <span className="truncate">{h.site}</span>
-          <span className="ml-1 text-slate-500">↗</span>
+          <span className="ml-1 text-slate-400">↗</span>
         </a>
       ))}
     </div>
@@ -787,11 +810,11 @@ function BreachBlock({
 }) {
   if (count === 0 && (!breaches || breaches.length === 0)) {
     return (
-      <div className="rounded-md border border-emerald-500/25 bg-emerald-500/5 p-3 text-[12px] text-slate-300">
-        <div className="font-semibold text-emerald-300">
+      <div className="rounded-md border border-emerald-300 bg-emerald-50 p-3 text-[12px] text-slate-700">
+        <div className="font-semibold text-emerald-800">
           [CONFIRMED_NONE] // no public breach data has been found
         </div>
-        <div className="mt-1 text-[11px] text-slate-500">
+        <div className="mt-1 text-[11px] text-slate-600">
           // backed by the Have I Been Pwned public breach index — re-queried on each lookup
         </div>
         <div className="mt-2">
@@ -806,8 +829,8 @@ function BreachBlock({
     );
   }
   return (
-    <div className="rounded-md border border-rose-500/30 bg-rose-500/5 p-3">
-      <div className="flex items-center gap-2 text-[12.5px] font-semibold text-rose-300">
+    <div className="rounded-md border border-rose-300 bg-rose-50 p-3">
+      <div className="flex items-center gap-2 text-[12.5px] font-semibold text-rose-800">
         <span>[FOUND]</span>
         <span>
           // appears in {breaches.length} public breach
@@ -818,9 +841,9 @@ function BreachBlock({
         {breaches.slice(0, 10).map((b) => (
           <li
             key={b.name}
-            className="rounded border border-rose-500/20 bg-[#1a0f12] px-2.5 py-1.5 text-[12px]"
+            className="rounded border border-rose-200 bg-white px-2.5 py-1.5 text-[12px]"
           >
-            <div className="font-semibold text-slate-100">
+            <div className="font-semibold text-slate-900">
               {b.name}
               {b.date ? (
                 <span className="ml-2 text-[11px] font-normal text-slate-500">
@@ -833,7 +856,7 @@ function BreachBlock({
                 {b.dataClasses.slice(0, 6).map((dc) => (
                   <span
                     key={dc}
-                    className="rounded bg-rose-500/15 px-1.5 py-0.5 text-[10px] text-rose-200"
+                    className="rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold text-rose-800"
                   >
                     {dc}
                   </span>
@@ -844,7 +867,7 @@ function BreachBlock({
         ))}
       </ul>
       {breaches.length > 10 ? (
-        <div className="mt-2 text-[11px] text-rose-300">
+        <div className="mt-2 text-[11px] text-rose-700">
           // …and {breaches.length - 10} more
         </div>
       ) : null}
@@ -860,11 +883,11 @@ function SourcesList({ sources }: { sources: EnrichmentResult["sources"] }) {
           key={`${s.provider}-${i}`}
           className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] ${
             s.ok
-              ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/30"
-              : "bg-white/5 text-slate-400 ring-1 ring-white/10"
+              ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-300"
+              : "bg-slate-100 text-slate-600 ring-1 ring-slate-200"
           }`}
         >
-          <span className={s.ok ? "text-emerald-400" : "text-slate-500"}>
+          <span className={s.ok ? "text-emerald-600" : "text-slate-400"}>
             {s.ok ? "✓" : "—"}
           </span>
           {s.label}
