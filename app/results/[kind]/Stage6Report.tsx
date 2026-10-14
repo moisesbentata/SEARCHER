@@ -385,21 +385,31 @@ function PdfCta({
   }
 
   return (
-    <form onSubmit={send} className="flex items-center gap-2">
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@example.com"
-        aria-label="Email address to send the PDF report to"
-        className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-        disabled={status === "sending" || status === "sent"}
-        autoComplete="email"
-      />
+    <form
+      onSubmit={send}
+      // The report section sets a monospace fontFamily so every child
+      // inherits it; the CTA should read like the rest of the site, so we
+      // reset it here back to the sans-serif body font.
+      className="flex flex-wrap items-stretch gap-3"
+      style={{ fontFamily: "inherit" }}
+    >
+      <label className="flex min-w-0 flex-1 cursor-text items-center rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          aria-label="Email address to send the PDF report to"
+          className="w-full bg-transparent text-base font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
+          disabled={status === "sending" || status === "sent"}
+          autoComplete="email"
+          style={{ fontFamily: "inherit" }}
+        />
+      </label>
       <button
         type="submit"
         disabled={status === "sending" || status === "sent"}
-        className="shrink-0 rounded-md bg-brand-700 px-4 py-2 text-[13px] font-semibold text-white shadow-sm hover:bg-brand-800 disabled:opacity-60"
+        className="shrink-0 rounded-xl bg-accent-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-accent-700 active:translate-y-px disabled:opacity-60"
       >
         {status === "sending"
           ? "Sending…"
@@ -408,7 +418,7 @@ function PdfCta({
             : "Email me this PDF"}
       </button>
       {error ? (
-        <div className="basis-full text-[12px] text-rose-700">{error}</div>
+        <div className="basis-full text-sm text-rose-700">{error}</div>
       ) : null}
     </form>
   );
