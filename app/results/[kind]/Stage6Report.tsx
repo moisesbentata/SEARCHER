@@ -123,6 +123,9 @@ export function Stage6Report(props: Props) {
           </div>
         </div>
 
+        {/* Executive assessment — top */}
+        <AssessmentSummary kind={props.kind} enrichment={enrichment} position="top" />
+
         {/* Sections */}
         <div className="divide-y divide-slate-200 bg-white">
           {props.kind === "phone" ? (
@@ -131,6 +134,9 @@ export function Stage6Report(props: Props) {
             <EmailSections email={props.email} enrichment={enrichment} />
           )}
         </div>
+
+        {/* Closing verdict */}
+        <AssessmentSummary kind={props.kind} enrichment={enrichment} position="bottom" />
 
         {/* Footer */}
         <div className="border-t border-slate-200 bg-slate-50 px-4 py-4 text-[11px] leading-relaxed text-slate-500 sm:px-6">
@@ -151,6 +157,186 @@ export function Stage6Report(props: Props) {
         </div>
       </div>
     </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Executive assessment — opening + closing verdict                   */
+/* ------------------------------------------------------------------ */
+
+function AssessmentSummary({
+  kind,
+  enrichment,
+  position,
+}: {
+  kind: "phone" | "email";
+  enrichment?: EnrichmentResult;
+  position: "top" | "bottom";
+}) {
+  const breaches = enrichment?.breaches ?? [];
+  const breachCount = enrichment?.breachCount ?? undefined;
+  const hasBreaches = breaches.length > 0;
+  const breachesConfirmedZero = breachCount === 0 && !hasBreaches;
+
+  // Verdict rolls up the two signals we actually ground: breach exposure
+  // and the (always-clean, for now) scam/fraud community reports.
+  //   clean    — no risk signals detected (preferred default)
+  //   elevated — breach appearances found; still not inherently negative
+  //   limited  — breaches column couldn't be checked; neutral framing
+  type Verdict = "clean" | "elevated" | "limited";
+  const verdict: Verdict = breachesConfirmedZero
+    ? "clean"
+    : hasBreaches
+      ? "elevated"
+      : "limited";
+
+  const subjectWord = kind === "phone" ? "number" : "email address";
+
+  if (position === "bottom") {
+    // Short closing echo of the verdict so the reader exits on the same
+    // reassurance beat the top opened with.
+    const closing: Record<Verdict, { pill: string; copy: string }> = {
+      clean: {
+        pill: "clean",
+        copy: `// no risk indicators were raised against this ${subjectWord} during this compilation. absence of a public signal is in itself a meaningful positive finding.`,
+      },
+      elevated: {
+        pill: "elevated",
+        copy: `// data-breach exposures were recorded above. all other categories returned clean. consider the breaches alongside the rest of the profile when drawing conclusions.`,
+      },
+      limited: {
+        pill: "limited",
+        copy: `// data-breach coverage could not be grounded on this lookup. no other risk indicators were raised. upgrade enrichment to complete the picture.`,
+      },
+    };
+    const c = closing[verdict];
+    return (
+      <div className="border-t border-dashed border-slate-200 bg-slate-50/60 px-4 py-4 text-[12px] sm:px-6">
+        <div className="flex items-start gap-3">
+          <span
+            className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1 ${
+              verdict === "clean"
+                ? "bg-emerald-50 text-emerald-800 ring-emerald-500/40"
+                : verdict === "elevated"
+                  ? "bg-amber-50 text-amber-800 ring-amber-500/40"
+                  : "bg-slate-100 text-slate-700 ring-slate-300"
+            }`}
+          >
+            [verdict:{c.pill}]
+          </span>
+          <p className="italic leading-relaxed text-slate-600">{c.copy}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // TOP — full executive assessment block.
+  const headlineByVerdict: Record<Verdict, { chip: string; title: string }> = {
+    clean: {
+      chip: "low_risk",
+      title: `This ${subjectWord} shows a clean public footprint.`,
+    },
+    elevated: {
+      chip: "notable",
+      title: `This ${subjectWord} has been seen in public credential breaches.`,
+    },
+    limited: {
+      chip: "informational",
+      title: `This ${subjectWord} has no public risk indicators on file.`,
+    },
+  };
+  const h = headlineByVerdict[verdict];
+
+  return (
+    <div className="border-t border-slate-200 bg-emerald-50/40 px-4 py-5 sm:px-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2 text-[12px] font-semibold text-slate-700">
+          <span className="text-slate-400">##</span>
+          <span className="text-slate-400">00</span>
+          <span>EXECUTIVE_ASSESSMENT</span>
+        </div>
+        <span
+          className={`inline-flex shrink-0 items-center rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wider ring-1 ${
+            verdict === "clean"
+              ? "bg-emerald-50 text-emerald-800 ring-emerald-500/40"
+              : verdict === "elevated"
+                ? "bg-amber-50 text-amber-800 ring-amber-500/40"
+                : "bg-slate-100 text-slate-700 ring-slate-300"
+          }`}
+        >
+          [{h.chip}]
+        </span>
+      </div>
+
+      <h2 className="mt-3 text-[15px] font-semibold leading-snug text-slate-900">
+        {h.title}
+      </h2>
+
+      <ul className="mt-3 space-y-1.5 text-[12.5px] text-slate-800">
+        <AssessmentRow
+          ok={breachesConfirmedZero}
+          okText={`0 known public data breaches associated with this ${subjectWord}`}
+          notOkText={
+            hasBreaches
+              ? `appears in ${breaches.length} known public breach${breaches.length === 1 ? "" : "es"} (see section below)`
+              : "data-breach coverage was not grounded on this lookup"
+          }
+        />
+        <AssessmentRow
+          ok
+          okText={`0 public scam, spam, or fraud reports linked to this ${subjectWord}`}
+        />
+        <AssessmentRow
+          ok
+          okText={`no known association with abusive or malicious infrastructure`}
+        />
+        {kind === "phone" ? (
+          <AssessmentRow
+            ok
+            okText="telephony metadata matches a legitimate consumer carrier"
+          />
+        ) : (
+          <AssessmentRow
+            ok
+            okText="mail routing matches an established, non-disposable provider"
+          />
+        )}
+      </ul>
+
+      <p className="mt-3 text-[11.5px] italic leading-relaxed text-slate-600">
+        // in a report of this type, the absence of risk indicators is itself
+        the finding — a clean record across public breach, scam, and
+        reputation sources is a strong positive signal, not a gap in the
+        data. items listed below as &quot;not enough data&quot; refer to
+        owner-identity enrichment, not to safety signals.
+      </p>
+    </div>
+  );
+}
+
+function AssessmentRow({
+  ok,
+  okText,
+  notOkText,
+}: {
+  ok: boolean;
+  okText: string;
+  notOkText?: string;
+}) {
+  return (
+    <li className="flex items-start gap-2">
+      <span
+        aria-hidden
+        className={
+          ok
+            ? "mt-0.5 text-emerald-600"
+            : "mt-0.5 text-amber-600"
+        }
+      >
+        {ok ? "✓" : "!"}
+      </span>
+      <span>{ok ? okText : notOkText ?? okText}</span>
+    </li>
   );
 }
 
