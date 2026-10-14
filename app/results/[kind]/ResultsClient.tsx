@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Stage1PhoneMap } from "./Stage1PhoneMap";
 import { Stage2OwnerInfo } from "./Stage2OwnerInfo";
 import { Stage3EmailCapture } from "./Stage3EmailCapture";
@@ -9,6 +10,8 @@ import { Stage5Payment } from "./Stage5Payment";
 import { Stage6Report } from "./Stage6Report";
 import type { PhoneLookupResult } from "@/lib/phone";
 import type { EmailLookupResult } from "@/lib/email";
+import { track } from "@/lib/track";
+import { brand } from "@/lib/brand";
 
 type Stage =
   | "phoneMap" // stage 1, phone only
@@ -27,11 +30,31 @@ export function ResultsClient({
   query: string;
   defaultCountry: string;
 }) {
-  const initialStage: Stage = kind === "phone" ? "phoneMap" : "owner";
+  const search = useSearchParams();
+  const paid = search?.get("paid") === "1";
+  const sessionId = search?.get("session_id") ?? "";
+  const initialStage: Stage = paid
+    ? "success"
+    : kind === "phone"
+      ? "phoneMap"
+      : "owner";
   const [stage, setStage] = useState<Stage>(initialStage);
   const [phone, setPhone] = useState<PhoneLookupResult | null>(null);
   const [email, setEmail] = useState<EmailLookupResult | null>(null);
   const [captured, setCaptured] = useState<string>("");
+
+  // Fire the Purchase event once we reach the success stage.
+  // Deduped against the server-side webhook via a shared transaction id.
+  useEffect(() => {
+    if (stage !== "success") return;
+    track({
+      type: "Purchase",
+      email: captured,
+      value: brand.trialPrice,
+      currency: brand.currency,
+      transaction_id: sessionId || undefined,
+    });
+  }, [stage, captured, sessionId]);
 
   // Fire the real backend lookup up-front so results are ready when the
   // animation naturally lands.

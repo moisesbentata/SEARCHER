@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { track } from "@/lib/track";
 
 export function Stage3EmailCapture({
   query,
@@ -20,6 +21,7 @@ export function Stage3EmailCapture({
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!canContinue) return;
+    track({ type: "Lead", email });
     onContinue(email);
   }
 

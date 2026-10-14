@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AsYouType, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import { countryList, countryEntry, detectCountryFromPrefix } from "@/lib/countries";
 import { HeroIllustration } from "@/components/HeroIllustration";
+import { track } from "@/lib/track";
 
 // Format a raw national number string using libphonenumber-js's AsYouType,
 // keyed to the currently-selected country so the spacing follows local rules
@@ -132,6 +133,13 @@ export function SearchEntry({
 
     setError(null);
     setSubmitting(true);
+    if (kind === "phone" || kind === "email") {
+      track({
+        type: "Search",
+        search_string: trimmed,
+        content_category: kind,
+      });
+    }
     const params = new URLSearchParams({ q: trimmed });
     if (kind === "phone") params.set("cc", countryCode);
     router.push(`/results/${kind}?${params.toString()}`);

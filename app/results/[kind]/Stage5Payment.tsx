@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { brand } from "@/lib/brand";
+import { track } from "@/lib/track";
+
+const STRIPE_ENABLED =
+  process.env.NEXT_PUBLIC_STRIPE_ENABLED === "1" ||
+  !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
 export function Stage5Payment({
   kind,
@@ -16,8 +21,46 @@ export function Stage5Payment({
 }) {
   const [selected, setSelected] = useState<string | null>(null);
 
-  function pay(method: string) {
+  async function pay(method: string) {
     setSelected(method);
+    track({
+      type: "AddPaymentInfo",
+      email,
+      value: brand.trialPrice,
+      currency: brand.currency,
+    });
+    track({
+      type: "StartTrial",
+      email,
+      value: brand.trialPrice,
+      currency: brand.currency,
+    });
+
+    if (STRIPE_ENABLED) {
+      // Real payment: redirect to Stripe Checkout. The server session
+      // uses our authed account; Stripe shows every enabled payment
+      // method on one page regardless of which button they clicked.
+      try {
+        const r = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ kind, query }),
+        });
+        const data = await r.json();
+        if (data?.ok && data.url) {
+          window.location.href = data.url;
+          return;
+        }
+        // Fall through to simulated flow on failure so the UX doesn't
+        // dead-end mid-payment during a Stripe outage.
+        console.error("[stripe:checkout] failed, falling back", data);
+      } catch (err) {
+        console.error("[stripe:checkout] network error, falling back", err);
+      }
+    }
+
+    // Simulated-payment flow (used when Stripe is dormant and during the
+    // Meta-validation phase before real money moves).
     setTimeout(() => onPaid(method), 900);
   }
 

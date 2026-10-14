@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/lib/brand";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { MetaPixel } from "@/components/MetaPixel";
+import { MetaPageView } from "@/components/MetaPageView";
 
 // Mono face used by the Stage 6 report's terminal / code-forensic
 // layout. Exposed as a CSS variable so it doesn't become the default
@@ -28,6 +31,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={reportMono.variable}>
       <body className="min-h-screen bg-white text-ink-900 antialiased">
+        <MetaPixel />
+        <Suspense fallback={null}>
+          <MetaPageView />
+        </Suspense>
         <Header />
         <main className="min-h-[70vh]">{children}</main>
         <Footer />

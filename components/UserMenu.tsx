@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { LoginDialog } from "@/components/LoginDialog";
 
 type Me = {
@@ -101,10 +102,18 @@ export function UserMenu() {
               </div>
               <div className="mt-0.5 capitalize">Status: {me.subscriptionStatus.toLowerCase()}</div>
             </div>
+            <Link
+              href="/account"
+              onClick={() => setMenuOpen(false)}
+              className="mt-1 block w-full rounded-lg px-3 py-2 text-left text-sm text-ink-800 hover:bg-ink-900/5"
+              role="menuitem"
+            >
+              Account & billing
+            </Link>
             <button
               type="button"
               onClick={handleLogout}
-              className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm text-ink-800 hover:bg-ink-900/5"
+              className="w-full rounded-lg px-3 py-2 text-left text-sm text-ink-800 hover:bg-ink-900/5"
               role="menuitem"
             >
               Sign out

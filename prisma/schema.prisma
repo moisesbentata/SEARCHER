@@ -37,7 +37,11 @@ model Account {
   subscriptionStatus       SubscriptionStatus @default(NONE)
   stripeCustomerId         String?            @unique
   stripeSubscriptionId     String?            @unique
+  stripePriceId            String?
   currentCycleStart        DateTime?
+  currentPeriodEnd         DateTime?
+  trialEndsAt              DateTime?
+  cancelAtPeriodEnd        Boolean            @default(false)
   currentCycleLookupsUsed  Int                @default(0)
   monthlyLookupQuota       Int                @default(20)
 

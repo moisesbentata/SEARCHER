@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { CyclingAvatar } from "@/components/CyclingAvatar";
 import { brand } from "@/lib/brand";
+import { track } from "@/lib/track";
 
 export function Stage4Paywall({
   query,
@@ -27,7 +28,15 @@ export function Stage4Paywall({
         <ReportReadyPreview query={query} />
 
         <button
-          onClick={onContinue}
+          onClick={() => {
+            track({
+              type: "InitiateCheckout",
+              email,
+              value: brand.trialPrice,
+              currency: brand.currency,
+            });
+            onContinue();
+          }}
           className="mt-5 flex w-full items-center justify-center rounded-xl bg-accent-600 py-4 text-lg font-semibold text-white shadow-sm transition hover:bg-accent-700 active:translate-y-px"
         >
           Get My Report

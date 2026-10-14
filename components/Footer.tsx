@@ -23,7 +23,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/about" className="hover:text-white">About</Link></li>
               <li><Link href="/faq" className="hover:text-white">FAQ</Link></li>
-              <li><Link href="/help" className="hover:text-white">Help</Link></li>
+              <li><Link href="/account" className="hover:text-white">My account</Link></li>
             </ul>
           </div>
           <div>
@@ -31,6 +31,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/terms-conditions" className="hover:text-white">Terms</Link></li>
               <li><Link href="/privacy-policy" className="hover:text-white">Privacy</Link></li>
+              <li><Link href="/refund-policy" className="hover:text-white">Refunds</Link></li>
               <li><Link href="/settings/exclude-phone" className="hover:text-white">Opt out</Link></li>
             </ul>
           </div>
