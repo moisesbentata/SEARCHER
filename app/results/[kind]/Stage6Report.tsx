@@ -384,32 +384,42 @@ function PdfCta({
     }
   }
 
+  // The surrounding Stage 6 report sets a monospace fontFamily inline, which
+  // leaks into every child. Explicitly reset back to the project's default
+  // sans-serif stack (same one Tailwind's `font-sans` resolves to) so the
+  // CTA reads like the landing-page inputs instead of code.
+  const SANS =
+    'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
   return (
     <form
       onSubmit={send}
-      // The report section sets a monospace fontFamily so every child
-      // inherits it; the CTA should read like the rest of the site, so we
-      // reset it here back to the sans-serif body font.
-      className="flex flex-wrap items-stretch gap-3"
-      style={{ fontFamily: "inherit" }}
+      className="flex flex-col gap-3 sm:flex-row sm:items-stretch"
+      style={{ fontFamily: SANS }}
     >
-      <label className="flex min-w-0 flex-1 cursor-text items-center rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500">
+      <label
+        className="block min-w-0 flex-1 cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500"
+        style={{ fontFamily: SANS }}
+      >
+        <span className="pointer-events-none block text-xs font-medium text-ink-500">
+          Email address
+        </span>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
+          placeholder="name@example.com"
           aria-label="Email address to send the PDF report to"
-          className="w-full bg-transparent text-base font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
+          className="mt-1 block w-full bg-transparent text-lg font-medium text-ink-900 placeholder:text-ink-400 focus:outline-none"
           disabled={status === "sending" || status === "sent"}
           autoComplete="email"
-          style={{ fontFamily: "inherit" }}
+          style={{ fontFamily: SANS }}
         />
       </label>
       <button
         type="submit"
         disabled={status === "sending" || status === "sent"}
-        className="shrink-0 rounded-xl bg-accent-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-accent-700 active:translate-y-px disabled:opacity-60"
+        className="shrink-0 rounded-xl bg-accent-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-accent-700 active:translate-y-px disabled:opacity-60"
+        style={{ fontFamily: SANS }}
       >
         {status === "sending"
           ? "Sending…"
@@ -418,7 +428,9 @@ function PdfCta({
             : "Email me this PDF"}
       </button>
       {error ? (
-        <div className="basis-full text-sm text-rose-700">{error}</div>
+        <div className="basis-full text-sm text-rose-700" style={{ fontFamily: SANS }}>
+          {error}
+        </div>
       ) : null}
     </form>
   );
