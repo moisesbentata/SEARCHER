@@ -123,14 +123,15 @@ export function ResultsClient({
         ) : null
       ) : null}
 
-      {/* ------------------------------------------------------------ *
-       * DEV SHORTCUT — remove before launch.
-       * Visible on Preview deploys and local dev only (never shipped
-       * to production). Jumps straight to Stage 6 so we can iterate on
-       * the report without walking the full funnel every time.
-       * ------------------------------------------------------------ */}
-      {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" &&
-      stage !== "success" ? (
+      {/* ============================================================ *
+       * DEV SHORTCUT — DELETE BEFORE LAUNCH
+       * ============================================================ *
+       * Floating fuchsia pill at bottom-right. Jumps straight to
+       * Stage 6 so the report can be iterated on without walking the
+       * full funnel every time. No env gate — ship-blocker is the
+       * giant banner above. Grep for "DEV SHORTCUT" to find and nuke.
+       * ============================================================ */}
+      {stage !== "success" ? (
         <button
           type="button"
           onClick={() => setStage("success")}
