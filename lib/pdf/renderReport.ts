@@ -13,7 +13,6 @@ import {
   Text,
   StyleSheet,
   renderToBuffer,
-  Font,
 } from "@react-pdf/renderer";
 import React from "react";
 import { brand } from "@/lib/brand";
@@ -21,21 +20,11 @@ import type { PhoneLookupResult } from "@/lib/phone";
 import type { EmailLookupResult } from "@/lib/email";
 import type { BreachHit, EnrichmentResult } from "@/lib/enrich/types";
 
-// Register a monospace web font so the PDF matches the on-screen mono vibe.
-// Default system fonts in react-pdf are limited; this gives us JetBrains Mono.
-Font.register({
-  family: "JetBrainsMono",
-  fonts: [
-    {
-      src: "https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxTOlOV.ttf",
-      fontWeight: 400,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxjOlOV.ttf",
-      fontWeight: 700,
-    },
-  ],
-});
+// Font strategy: use pdfkit's built-in Courier (bundled with the library,
+// no network fetch, no Google Fonts dependency). It keeps the on-screen
+// mono vibe and reliably resolves bold + italic variants (Courier-Bold,
+// Courier-Oblique, Courier-BoldOblique) that pdfkit ships out of the box.
+const MONO_FAMILY = "Courier";
 
 const COLOR = {
   bg: "#ffffff",
@@ -61,7 +50,7 @@ const styles = StyleSheet.create({
   page: {
     backgroundColor: COLOR.bg,
     color: COLOR.slate200,
-    fontFamily: "JetBrainsMono",
+    fontFamily: MONO_FAMILY,
     fontSize: 9.5,
     padding: 28,
   },
