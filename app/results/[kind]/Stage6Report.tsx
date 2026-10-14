@@ -199,59 +199,31 @@ function PdfCta({
   }
 
   return (
-    <form
-      onSubmit={send}
-      className="rounded-xl border border-brand-500/30 bg-brand-50 p-4 shadow-sm"
-    >
-      <div className="flex items-center gap-2 text-[13px] font-semibold text-brand-800">
-        <svg
-          viewBox="0 0 24 24"
-          className="h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.25"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <rect x="2" y="4" width="20" height="16" rx="2" />
-          <path d="m2 7 10 7 10-7" />
-        </svg>
-        Email this report as a PDF
-      </div>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-          disabled={status === "sending" || status === "sent"}
-          autoComplete="email"
-        />
-        <button
-          type="submit"
-          disabled={status === "sending" || status === "sent"}
-          className="rounded-md bg-brand-700 px-4 py-2 text-[13px] font-semibold text-white shadow-sm hover:bg-brand-800 disabled:opacity-60"
-        >
-          {status === "sending"
-            ? "Sending…"
-            : status === "sent"
-              ? "Sent ✓"
-              : "Email PDF"}
-        </button>
-      </div>
+    <form onSubmit={send} className="flex items-center gap-2">
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@example.com"
+        aria-label="Email address to send the PDF report to"
+        className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 outline-none placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+        disabled={status === "sending" || status === "sent"}
+        autoComplete="email"
+      />
+      <button
+        type="submit"
+        disabled={status === "sending" || status === "sent"}
+        className="shrink-0 rounded-md bg-brand-700 px-4 py-2 text-[13px] font-semibold text-white shadow-sm hover:bg-brand-800 disabled:opacity-60"
+      >
+        {status === "sending"
+          ? "Sending…"
+          : status === "sent"
+            ? "Sent ✓"
+            : "Email me this PDF"}
+      </button>
       {error ? (
-        <div className="mt-2 text-[12px] text-rose-700">{error}</div>
+        <div className="basis-full text-[12px] text-rose-700">{error}</div>
       ) : null}
-      {status === "sent" ? (
-        <div className="mt-2 text-[12px] text-emerald-700">
-          Delivered to <span className="font-semibold">{email}</span>. Check your inbox (and spam folder on the first send).
-        </div>
-      ) : null}
-      <div className="mt-2 text-[11px] text-slate-500">
-        Nothing is sent automatically — only after you type an address and click Email PDF.
-      </div>
     </form>
   );
 }

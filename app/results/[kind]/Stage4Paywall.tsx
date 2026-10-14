@@ -24,28 +24,7 @@ export function Stage4Paywall({
           Your Report is Ready!
         </h1>
 
-        <div className="mt-5 overflow-hidden rounded-2xl border border-ink-900/5 bg-white shadow-sm">
-          {/* Blurred owner preview */}
-          <div className="pointer-events-none relative select-none p-5">
-            <div className="flex items-start gap-4 blur-[6px]">
-              <CyclingAvatar intervalMs={1400} />
-              <div className="flex-1 space-y-2">
-                <div className="h-5 w-2/3 rounded bg-ink-900/10" />
-                <div className="h-3 w-1/2 rounded bg-ink-900/10" />
-                <span className="inline-block h-5 w-24 rounded-full bg-brand-200" />
-              </div>
-            </div>
-            <div className="mt-5 space-y-2 blur-[6px]">
-              <div className="h-3 w-full rounded bg-ink-900/10" />
-              <div className="h-3 w-5/6 rounded bg-ink-900/10" />
-              <div className="h-3 w-3/4 rounded bg-ink-900/10" />
-              <div className="h-3 w-4/6 rounded bg-ink-900/10" />
-            </div>
-          </div>
-          <div className="border-t border-ink-900/5 bg-ink-900/[0.03] px-5 py-3 text-center text-sm text-ink-700">
-            Report for: <span className="font-bold text-ink-900">{query}</span>
-          </div>
-        </div>
+        <ReportReadyPreview query={query} />
 
         <button
           onClick={onContinue}
@@ -167,6 +146,59 @@ function SocialProofCard() {
         <span className="grid h-8 w-8 place-items-center rounded-full bg-ink-900/[0.06] text-[10px] font-bold text-ink-700 ring-2 ring-white">
           +9.1k
         </span>
+      </div>
+    </div>
+  );
+}
+
+function ReportReadyPreview({ query }: { query: string }) {
+  const date = new Date().toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  return (
+    <div className="relative mt-5 h-[260px] overflow-hidden rounded-2xl border border-ink-900/5 bg-white shadow-sm">
+      {/* Blurred placeholder content behind the callout */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 select-none p-5"
+      >
+        <div className="flex items-start gap-4 blur-[7px]">
+          <CyclingAvatar intervalMs={1400} />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-3/4 rounded bg-ink-900/10" />
+            <div className="h-4 w-1/2 rounded bg-ink-900/10" />
+            <div className="mt-2 flex gap-2">
+              <span className="inline-block h-5 w-12 rounded-full bg-sky-300/80" />
+              <span className="inline-block h-5 w-12 rounded-full bg-emerald-400/80" />
+              <span className="inline-block h-5 w-12 rounded-full bg-rose-400/80" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-5 space-y-2 blur-[7px]">
+          <div className="h-3 w-full rounded bg-ink-900/10" />
+          <div className="h-3 w-5/6 rounded bg-ink-900/10" />
+          <div className="h-3 w-4/6 rounded bg-ink-900/10" />
+        </div>
+        <div className="mt-8 space-y-2 blur-[7px]">
+          <div className="h-3 w-11/12 rounded bg-ink-900/10" />
+          <div className="h-3 w-3/4 rounded bg-ink-900/10" />
+        </div>
+      </div>
+
+      {/* Centered "Results Are Ready" callout */}
+      <div className="absolute inset-x-6 top-1/2 -translate-y-1/2 rounded-xl border border-ink-900/10 bg-white px-5 py-4 text-center shadow-xl">
+        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-ink-500">
+          Results Are Ready
+        </div>
+        <div className="mt-1 text-2xl font-extrabold tracking-tight text-ink-900">
+          {query}
+        </div>
+        <div className="mt-0.5 text-sm text-ink-500">
+          Latest report as of{" "}
+          <span className="font-semibold text-brand-700">{date}</span>
+        </div>
       </div>
     </div>
   );
