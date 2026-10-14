@@ -113,16 +113,14 @@ export function Stage5Payment({
           </p>
         </div>
 
-        <div className="mt-8 rounded-2xl border border-amber-500/20 bg-amber-50 p-4 text-sm text-amber-900">
-          <strong className="block font-semibold">Recurring subscription:</strong>
-          You will be charged {brand.currencySymbol}{brand.trialPrice.toFixed(2)} today for a{" "}
+        <p className="mt-6 text-xs leading-relaxed text-ink-500">
+          Recurring subscription: you will be charged {brand.currencySymbol}
+          {brand.trialPrice.toFixed(2)} today for a{" "}
           {brand.trialDurationDays}-day trial. After the trial ends, your
-          subscription renews at{" "}
-          <strong>
-            {brand.currencySymbol}{brand.monthlyPrice} every {brand.billingCycleDays} days
-          </strong>{" "}
-          unless you cancel. You can cancel any time from your account settings.
-        </div>
+          subscription renews at {brand.currencySymbol}
+          {brand.monthlyPrice} every {brand.billingCycleDays} days unless you
+          cancel. You can cancel any time from your account settings.
+        </p>
       </div>
     </section>
   );
