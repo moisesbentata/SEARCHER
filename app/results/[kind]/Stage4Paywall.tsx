@@ -125,26 +125,28 @@ function Check({
 }
 
 function SocialProofCard() {
-  const initials = ["T.J", "A.K", "R.S", "M.E", "J.D"];
+  const initials = ["TJ", "AK", "RS", "ME", "JD"];
   return (
-    <div className="mt-5 flex items-center justify-between rounded-xl border border-ink-900/5 bg-white px-4 py-3 shadow-sm">
+    <div className="mt-5 flex items-center justify-between gap-4 rounded-xl border border-ink-900/5 bg-white px-4 py-3 shadow-sm">
       <div className="text-sm font-semibold leading-tight text-ink-800">
         Over 9,127 phone numbers
         <br />
         looked up today
       </div>
-      <div className="flex -space-x-2">
-        {initials.map((n, i) => (
-          <span
-            key={n}
-            className="grid h-8 w-8 place-items-center rounded-full bg-ink-900/[0.06] text-[10px] font-bold text-ink-700 ring-2 ring-white"
-            style={{ zIndex: 10 - i }}
-          >
-            {n}
-          </span>
-        ))}
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-ink-900/[0.06] text-[10px] font-bold text-ink-700 ring-2 ring-white">
-          +9.1k
+      <div className="flex items-center">
+        <div className="flex -space-x-2">
+          {initials.map((n, i) => (
+            <span
+              key={n}
+              className="grid h-8 w-8 place-items-center rounded-full bg-ink-900/[0.06] text-[11px] font-semibold text-ink-700 ring-2 ring-white"
+              style={{ zIndex: 10 - i }}
+            >
+              {n}
+            </span>
+          ))}
+        </div>
+        <span className="ml-2 text-[11px] font-semibold text-ink-500">
+          + 9.1k more
         </span>
       </div>
     </div>
