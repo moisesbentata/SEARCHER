@@ -126,19 +126,22 @@ export function ResultsClient({
       {/* ============================================================ *
        * DEV SHORTCUT — DELETE BEFORE LAUNCH
        * ============================================================ *
-       * Floating fuchsia pill at bottom-right. Jumps straight to
-       * Stage 6 so the report can be iterated on without walking the
-       * full funnel every time. No env gate — ship-blocker is the
-       * giant banner above. Grep for "DEV SHORTCUT" to find and nuke.
+       * Floating fuchsia pill at bottom-right. Jumps straight past the
+       * loading/scanning stages to Stage 3 ("Your results are ready").
+       * No env gate — ship-blocker is the giant banner above. Grep for
+       * "DEV SHORTCUT" to find and nuke.
        * ============================================================ */}
-      {stage !== "success" ? (
+      {stage !== "emailCapture" &&
+      stage !== "paywall" &&
+      stage !== "payment" &&
+      stage !== "success" ? (
         <button
           type="button"
-          onClick={() => setStage("success")}
+          onClick={() => setStage("emailCapture")}
           className="fixed bottom-5 right-5 z-50 rounded-full bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-xl ring-2 ring-white hover:bg-fuchsia-500"
-          title="DEV ONLY — jump to Stage 6 report"
+          title="DEV ONLY — jump to Results Ready page"
         >
-          ⚡ Skip to report
+          ⚡ Skip to results ready
         </button>
       ) : null}
     </>
