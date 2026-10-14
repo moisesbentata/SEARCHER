@@ -122,6 +122,24 @@ export function ResultsClient({
           <Stage6Report kind="email" query={query} phone={null} email={email} />
         ) : null
       ) : null}
+
+      {/* ------------------------------------------------------------ *
+       * DEV SHORTCUT — remove before launch.
+       * Visible on Preview deploys and local dev only (never shipped
+       * to production). Jumps straight to Stage 6 so we can iterate on
+       * the report without walking the full funnel every time.
+       * ------------------------------------------------------------ */}
+      {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" &&
+      stage !== "success" ? (
+        <button
+          type="button"
+          onClick={() => setStage("success")}
+          className="fixed bottom-5 right-5 z-50 rounded-full bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-xl ring-2 ring-white hover:bg-fuchsia-500"
+          title="DEV ONLY — jump to Stage 6 report"
+        >
+          ⚡ Skip to report
+        </button>
+      ) : null}
     </>
   );
 }
