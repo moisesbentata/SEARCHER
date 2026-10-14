@@ -49,7 +49,7 @@ export function Stage3EmailCapture({
         </div>
       </div>
 
-      <h1 className="mt-8 text-center text-2xl font-extrabold tracking-tight text-ink-900">
+      <h1 className="mt-6 whitespace-nowrap text-center text-[1.15rem] font-extrabold tracking-tight text-ink-900 sm:text-2xl">
         Where should we send your report?
       </h1>
 
@@ -135,7 +135,7 @@ export function Stage3EmailCapture({
 // reads as a rich dashboard rather than random gray blocks.
 function BlurredDashboard() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Profile header */}
       <div className="flex items-center gap-3">
         <NoProfileAvatar />
@@ -157,7 +157,7 @@ function BlurredDashboard() {
         <DataRow labelWidth="w-20" valueWidth="w-44" />
       </div>
 
-      {/* Linked accounts grid */}
+      {/* Linked accounts grid — compact row, half the chips of the old block */}
       <div>
         <div className="mb-2 h-3 w-32 rounded bg-ink-900/50" />
         <div className="grid grid-cols-4 gap-2">
@@ -165,37 +165,6 @@ function BlurredDashboard() {
           <AccountChip color="bg-blue-600/70" />
           <AccountChip color="bg-sky-500/70" />
           <AccountChip color="bg-red-500/70" />
-          <AccountChip color="bg-purple-600/70" />
-          <AccountChip color="bg-yellow-500/70" />
-          <AccountChip color="bg-emerald-500/70" />
-          <AccountChip color="bg-black/60" />
-        </div>
-      </div>
-
-      {/* Recent messages */}
-      <div>
-        <div className="mb-2 h-3 w-28 rounded bg-ink-900/50" />
-        <div className="space-y-1.5">
-          <MessageBubble side="left" width="w-40" />
-          <MessageBubble side="right" width="w-28" />
-          <MessageBubble side="left" width="w-32" />
-          <MessageBubble side="right" width="w-36" />
-        </div>
-      </div>
-
-      {/* Bottom stat row */}
-      <div className="flex items-center justify-between gap-2 pt-1">
-        <div className="flex-1 rounded-lg bg-ink-900/[0.05] p-2">
-          <div className="h-2 w-10 rounded bg-ink-900/30" />
-          <div className="mt-1 h-3 w-8 rounded bg-ink-900/70" />
-        </div>
-        <div className="flex-1 rounded-lg bg-ink-900/[0.05] p-2">
-          <div className="h-2 w-12 rounded bg-ink-900/30" />
-          <div className="mt-1 h-3 w-10 rounded bg-ink-900/70" />
-        </div>
-        <div className="flex-1 rounded-lg bg-ink-900/[0.05] p-2">
-          <div className="h-2 w-14 rounded bg-ink-900/30" />
-          <div className="mt-1 h-3 w-6 rounded bg-ink-900/70" />
         </div>
       </div>
     </div>
@@ -242,20 +211,6 @@ function AccountChip({ color }: { color: string }) {
     <div className="flex items-center gap-1.5 rounded-md bg-white/60 p-1.5 ring-1 ring-ink-900/5">
       <span className={`h-4 w-4 rounded-md ${color}`} />
       <span className="h-2 flex-1 rounded bg-ink-900/40" />
-    </div>
-  );
-}
-
-function MessageBubble({ side, width }: { side: "left" | "right"; width: string }) {
-  return (
-    <div className={`flex ${side === "right" ? "justify-end" : "justify-start"}`}>
-      <div
-        className={`${width} rounded-2xl px-3 py-1.5 ${
-          side === "right" ? "bg-brand-500/70" : "bg-ink-900/10"
-        }`}
-      >
-        <div className="h-2 w-full rounded bg-white/40" />
-      </div>
     </div>
   );
 }
