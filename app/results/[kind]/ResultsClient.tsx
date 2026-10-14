@@ -109,6 +109,7 @@ export function ResultsClient({
 
       {stage === "payment" ? (
         <Stage5Payment
+          kind={kind}
           query={query}
           email={captured}
           onPaid={() => setStage("success")}

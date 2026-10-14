@@ -4,10 +4,12 @@ import { useState } from "react";
 import { brand } from "@/lib/brand";
 
 export function Stage5Payment({
+  kind,
   query,
   email,
   onPaid,
 }: {
+  kind: "phone" | "email";
   query: string;
   email: string;
   onPaid: (method: string) => void;
@@ -16,6 +18,16 @@ export function Stage5Payment({
 
   function pay(method: string) {
     setSelected(method);
+    // Fire-and-forget: as soon as the (stub) payment "succeeds", push the
+    // compiled PDF to the email the user captured in Stage 3. The user may
+    // also re-send manually from the Stage 6 report page.
+    if (email) {
+      fetch("/api/report/send-pdf", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, subject: query, kind }),
+      }).catch(() => undefined);
+    }
     setTimeout(() => onPaid(method), 900);
   }
 
@@ -37,7 +49,7 @@ export function Stage5Payment({
           />
           <Row icon={<IconUser />} label="Owner Report" value="Included" tone="brand" />
           <Row icon={<IconGlobe />} label="Discovered Social Media" value="Included" tone="brand" />
-          <Row icon={<IconSearch />} label="+1 Additional Lookup" value="Included" tone="brand" />
+          <Row icon={<IconSearch />} label="20+ Additional Lookups" value="Included" tone="brand" />
         </ul>
 
         <div className="mt-4 flex items-baseline justify-between border-b border-ink-900/5 pb-4">
