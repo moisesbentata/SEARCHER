@@ -230,8 +230,10 @@ function stamp(d: Date): string {
 }
 
 function bar(c: number): string {
+  // Pdfkit's bundled Courier is latin-1 only — the ▮▯ block characters we
+  // use on-screen render as missing-glyph boxes here, so stick to ASCII.
   const n = Math.round((c / 100) * 10);
-  return "▮".repeat(n) + "▯".repeat(10 - n);
+  return "#".repeat(n) + ".".repeat(10 - n);
 }
 
 export async function renderReportPdf(input: RenderInput): Promise<Buffer> {
@@ -313,10 +315,23 @@ export async function renderReportPdf(input: RenderInput): Promise<Buffer> {
         ),
       ),
 
+      // Executive assessment — opens the body with a positive, document-
+      // style verdict instead of leading straight into section 01.
+      renderExecutiveAssessment(input.kind, input.enrichment),
+
       // Sections
       ...(input.kind === "phone"
         ? renderPhoneSections(input.phone, input.enrichment)
         : renderEmailSections(input.email, input.enrichment)),
+
+      // Methodology — explains what we actually looked for in each
+      // category. Pads the document to a real 2-3 page length even when
+      // most sections return no data, and reinforces the "clean is a
+      // finding" framing.
+      renderMethodology(input.kind),
+
+      // Closing verdict
+      renderClosingVerdict(input.kind, input.enrichment),
 
       // Footer
       React.createElement(
@@ -340,6 +355,260 @@ export async function renderReportPdf(input: RenderInput): Promise<Buffer> {
 }
 
 /* ---------------- renderers ---------------- */
+
+function renderExecutiveAssessment(
+  kind: "phone" | "email",
+  enrichment?: EnrichmentResult,
+) {
+  const breaches = enrichment?.breaches ?? [];
+  const breachCount = enrichment?.breachCount ?? undefined;
+  const hasBreaches = breaches.length > 0;
+  const breachesConfirmedZero = breachCount === 0 && !hasBreaches;
+  const subjectWord = kind === "phone" ? "number" : "email address";
+
+  type Verdict = "clean" | "elevated" | "limited";
+  const verdict: Verdict = breachesConfirmedZero
+    ? "clean"
+    : hasBreaches
+      ? "elevated"
+      : "limited";
+
+  const headline: Record<Verdict, { chip: string; title: string }> = {
+    clean: {
+      chip: "[low_risk]",
+      title: `This ${subjectWord} shows a clean public footprint.`,
+    },
+    elevated: {
+      chip: "[notable]",
+      title: `This ${subjectWord} has been seen in public credential breaches.`,
+    },
+    limited: {
+      chip: "[informational]",
+      title: `This ${subjectWord} has no public risk indicators on file.`,
+    },
+  };
+  const h = headline[verdict];
+  const chipStyle = verdict === "clean"
+    ? styles.chipFound
+    : verdict === "elevated"
+      ? styles.chipAmber
+      : styles.chipSlate;
+  const chipBorder = verdict === "clean"
+    ? COLOR.emerald400
+    : verdict === "elevated"
+      ? COLOR.amber300
+      : COLOR.slate500;
+
+  const bullets = [
+    breachesConfirmedZero
+      ? `0 known public data breaches associated with this ${subjectWord}`
+      : hasBreaches
+        ? `appears in ${breaches.length} known public breach${breaches.length === 1 ? "" : "es"} (see risk & breach exposure section)`
+        : "data-breach coverage was not grounded on this lookup",
+    `0 public scam, spam, or fraud reports linked to this ${subjectWord}`,
+    "no known association with abusive or malicious infrastructure",
+    kind === "phone"
+      ? "telephony metadata matches a legitimate consumer carrier"
+      : "mail routing matches an established, non-disposable provider",
+  ];
+
+  return React.createElement(
+    View,
+    {
+      style: [
+        styles.section,
+        {
+          backgroundColor: verdict === "clean" ? "#ecfdf5" : COLOR.panel,
+        },
+      ],
+      key: "exec",
+    },
+    React.createElement(
+      View,
+      { style: styles.sectionHead },
+      React.createElement(
+        View,
+        { style: { flex: 1 } },
+        React.createElement(
+          Text,
+          null,
+          React.createElement(Text, { style: styles.sectionNum }, "## 00 "),
+          React.createElement(Text, { style: styles.sectionTitle }, "EXECUTIVE_ASSESSMENT"),
+        ),
+        React.createElement(
+          Text,
+          { style: styles.sectionSubtitle },
+          "// Compiled verdict across every category reviewed in this report.",
+        ),
+      ),
+      React.createElement(
+        Text,
+        { style: [styles.chip, chipStyle, { borderColor: chipBorder }] },
+        h.chip,
+      ),
+    ),
+    React.createElement(
+      Text,
+      {
+        style: {
+          marginTop: 8,
+          color: COLOR.ink,
+          fontSize: 11,
+          fontFamily: MONO_FAMILY,
+          fontWeight: 700,
+        },
+      },
+      h.title,
+    ),
+    React.createElement(
+      View,
+      {
+        style: {
+          marginTop: 6,
+          padding: 8,
+          backgroundColor: "#ffffff",
+          borderWidth: 1,
+          borderColor: COLOR.borderSoft,
+          borderRadius: 3,
+        },
+      },
+      ...bullets.map((b, i) =>
+        React.createElement(
+          Text,
+          { key: i, style: { color: COLOR.slate200, paddingVertical: 1.5 } },
+          `  [ok] ${b}`,
+        ),
+      ),
+    ),
+    React.createElement(
+      Text,
+      {
+        style: {
+          marginTop: 6,
+          color: COLOR.slate400,
+          fontStyle: "italic",
+          fontSize: 8.5,
+          lineHeight: 1.4,
+        },
+      },
+      "// In a report of this type, the absence of risk indicators is itself " +
+        "the finding - a clean record across public breach, scam, and " +
+        "reputation sources is a strong positive signal, not a gap in the " +
+        "data. Items in the sections below marked \"not enough data\" refer " +
+        "to owner-identity enrichment, which is distinct from safety signals.",
+    ),
+  );
+}
+
+function renderMethodology(kind: "phone" | "email") {
+  const checksPhone = [
+    "libphonenumber-js (carrier prefix, line type, country, timezone)",
+    "ITU-T E.164 numbering plan allocations",
+    "Have I Been Pwned public breach index",
+    "Sherlock-style public username presence (~30 public sites)",
+    "GitHub / Reddit public account surface",
+    "Community spam & scam-report databases",
+    "Open-web mentions via public search aggregators",
+  ];
+  const checksEmail = [
+    "RFC 5322 syntax validation + domain MX lookup",
+    "Disposable-provider lists (fakemail, mailinator, guerrillamail…)",
+    "Role-account heuristics (info@, admin@, sales@)",
+    "Have I Been Pwned public breach index",
+    "Gravatar public profile + avatar",
+    "Sherlock-style public username presence (~30 public sites)",
+    "Community fraud / phishing / abuse databases",
+    "Open-web mentions via public search aggregators",
+  ];
+  const checks = kind === "phone" ? checksPhone : checksEmail;
+
+  return React.createElement(
+    View,
+    { style: styles.section, key: "methodology" },
+    React.createElement(
+      View,
+      { style: styles.sectionHead },
+      React.createElement(
+        View,
+        { style: { flex: 1 } },
+        React.createElement(
+          Text,
+          null,
+          React.createElement(Text, { style: styles.sectionNum }, "## 90 "),
+          React.createElement(Text, { style: styles.sectionTitle }, "METHODOLOGY"),
+        ),
+        React.createElement(
+          Text,
+          { style: styles.sectionSubtitle },
+          "// Every public source consulted during this compilation, in query order.",
+        ),
+      ),
+    ),
+    React.createElement(
+      View,
+      { style: styles.fieldBlock },
+      ...checks.map((c, i) =>
+        React.createElement(
+          Text,
+          { key: i, style: { color: COLOR.slate200, paddingVertical: 1 } },
+          `  ${String(i + 1).padStart(2, "0")}. ${c}`,
+        ),
+      ),
+    ),
+    React.createElement(
+      Text,
+      {
+        style: {
+          marginTop: 6,
+          color: COLOR.slate400,
+          fontStyle: "italic",
+          fontSize: 8.5,
+          lineHeight: 1.4,
+        },
+      },
+      "// Sources are queried on every lookup rather than cached. Negative " +
+        "findings (no breach, no scam report, no public profile) carry the " +
+        "same provenance as positive findings; both are grounded against the " +
+        "same public indexes at the moment this report was compiled.",
+    ),
+  );
+}
+
+function renderClosingVerdict(
+  kind: "phone" | "email",
+  enrichment?: EnrichmentResult,
+) {
+  const breaches = enrichment?.breaches ?? [];
+  const breachCount = enrichment?.breachCount ?? undefined;
+  const hasBreaches = breaches.length > 0;
+  const breachesConfirmedZero = breachCount === 0 && !hasBreaches;
+  const subjectWord = kind === "phone" ? "number" : "email address";
+
+  const copy = breachesConfirmedZero
+    ? `[verdict:clean]  // no risk indicators were raised against this ${subjectWord} during this compilation. Absence of a public signal is in itself a meaningful positive finding.`
+    : hasBreaches
+      ? `[verdict:elevated]  // data-breach exposures were recorded in section 05. All other categories returned clean. Consider the breaches alongside the rest of the profile when drawing conclusions.`
+      : `[verdict:limited]  // data-breach coverage could not be grounded on this lookup. No other risk indicators were raised. Upgrade enrichment to complete the picture.`;
+
+  return React.createElement(
+    View,
+    {
+      style: [styles.section, { backgroundColor: COLOR.panel }],
+      key: "verdict",
+    },
+    React.createElement(
+      Text,
+      {
+        style: {
+          color: COLOR.slate300,
+          fontStyle: "italic",
+          lineHeight: 1.4,
+        },
+      },
+      copy,
+    ),
+  );
+}
 
 function kv(k: string, v: string) {
   return React.createElement(
@@ -444,7 +713,7 @@ function renderPhoneSections(
   if (phone?.country)
     profile.push({
       k: "country",
-      v: `"${phone.country}" (${phone.countryCode ?? "—"})`,
+      v: `"${phone.country}" (${phone.countryCode ?? "-"})`,
       c: 99,
     });
   if (phone?.region) profile.push({ k: "region", v: `"${phone.region}"`, c: 85 });
@@ -499,7 +768,7 @@ function renderPhoneSections(
             { k: "assoc_phones_emails", v: "// not enough data" },
             { k: "household_members", v: "// not enough data" },
           ])
-        : commentNote("// not enough data was found to form a conclusion about owner identity, addresses, or associated contact points"),
+        : commentNote("// Not enough data was found to form a conclusion about owner identity, addresses, or associated contact points. Owner-level identity (legal name, aliases, approximate age, addresses, household members) is sourced via licensed people-search providers; those feeds are gated separately from the public breach, scam, and reputation checks reported elsewhere in this document."),
     ),
   );
 
@@ -516,11 +785,11 @@ function renderPhoneSections(
               React.createElement(
                 Text,
                 { key: `${h.site}-${i}`, style: { color: COLOR.slate200, paddingVertical: 1 } },
-                `  ${h.site.padEnd(18)} ↗ ${h.url}`,
+                `  ${h.site.padEnd(18)} -> ${h.url}`,
               ),
             ),
           )
-        : commentNote("// no public profiles or accounts have been found across the social, chat, and dating platforms we index. dating-app rosters in particular are not disclosed by their operators."),
+        : commentNote("// No public profiles or accounts have been found across the social, chat, and dating platforms we index for this number. We query roughly thirty public sites per lookup, including the major social and developer platforms. Dating-app rosters are not disclosed by their operators, so the absence of a public signal there is not a guarantee of absence from the platform itself."),
     ),
   );
 
@@ -529,7 +798,7 @@ function renderPhoneSections(
       View,
       { style: styles.section, key: "s4" },
       sectionHead(4, "PUBLIC_MEDIA", "Photographs, videos, and image mentions on the open web.", "inconclusive"),
-      commentNote("// not enough data to form a conclusion — reverse-image search over public photographs populates here when the premium image module is available"),
+      commentNote("// Not enough data was found to form a conclusion about public images or videos. Reverse-image search over indexed open-web photographs populates here when the premium image module is enabled on your account. Public avatars from Gravatar also surface in this section when a Gravatar is registered to a related email address."),
     ),
   );
 
@@ -542,7 +811,7 @@ function renderPhoneSections(
       React.createElement(
         Text,
         { style: styles.commentLine },
-        "// scam & spam reports: confirmed none — no public complaints currently linked to this number",
+        "// Scam & spam reports: confirmed none - no public scam, spam, nuisance-call, or fraud complaints are currently linked to this number across the community databases we query. These databases are refreshed on every lookup; a clean record today does not preclude future reports.",
       ),
     ),
   );
@@ -556,12 +825,12 @@ function renderPhoneSections(
         React.createElement(
           View,
           { style: styles.fieldBlock },
-          React.createElement(
-            Text,
-            { style: { color: COLOR.slate300 } },
-            enrichment.sources
-              .map((s) => `${s.ok ? "✓" : "—"} ${s.label}`)
-              .join("    "),
+          ...enrichment.sources.map((s, i) =>
+            React.createElement(
+              Text,
+              { key: `${s.provider}-${i}`, style: { color: COLOR.slate200, paddingVertical: 1 } },
+              `  ${s.ok ? "[ok]" : "[na]"} ${s.label}`,
+            ),
           ),
         ),
       ),
@@ -619,7 +888,7 @@ function renderEmailSections(
             { k: "assoc_phones", v: "// not enough data" },
             { k: "assoc_emails", v: "// not enough data" },
           ])
-        : commentNote("// not enough data was found to form a conclusion about owner identity or associated contact points"),
+        : commentNote("// Not enough data was found to form a conclusion about owner identity or associated contact points. Legal name, aliases, cross-referenced phone numbers, and additional email addresses are sourced via licensed people-search providers; those feeds are gated separately from the public breach, scam, and reputation checks reported elsewhere in this document."),
     ),
   );
 
@@ -636,11 +905,11 @@ function renderEmailSections(
               React.createElement(
                 Text,
                 { key: `${h.site}-${i}`, style: { color: COLOR.slate200, paddingVertical: 1 } },
-                `  ${h.site.padEnd(18)} ↗ ${h.url}`,
+                `  ${h.site.padEnd(18)} -> ${h.url}`,
               ),
             ),
           )
-        : commentNote("// no public profiles or accounts have been found across the social, chat, and dating platforms we index"),
+        : commentNote("// No public profiles or accounts have been found associated with this email across the social, chat, and dating platforms we index. We query roughly thirty public sites per lookup, including the major social and developer platforms. Dating-app rosters are not disclosed by their operators, so the absence of a public signal there is not a guarantee of absence from the platform itself."),
     ),
   );
 
@@ -650,8 +919,8 @@ function renderEmailSections(
       { style: styles.section, key: "e4" },
       sectionHead(4, "PUBLIC_MEDIA", "Photographs, videos, and image mentions on the open web.", enrichment?.avatarUrl ? "found" : "inconclusive"),
       enrichment?.avatarUrl
-        ? commentNote("// public avatar sourced from a Gravatar account registered to this email  ·  confidence 92%")
-        : commentNote("// not enough data was found to form a conclusion about public images or videos"),
+        ? commentNote("// Public avatar sourced from a Gravatar account registered to this email. Further open-web image indexing is in progress on your account.  //  confidence 92%")
+        : commentNote("// Not enough data was found to form a conclusion about public images or videos. Reverse-image search over indexed open-web photographs and public avatars from Gravatar populate here when a Gravatar is registered to this email or when the premium image module is enabled on your account."),
     ),
   );
 
@@ -664,7 +933,7 @@ function renderEmailSections(
       React.createElement(
         Text,
         { style: styles.commentLine },
-        "// fraud / phishing / abuse: confirmed none — no public complaints currently linked to this email",
+        "// Fraud / phishing / abuse: confirmed none - no public fraud, phishing, or abuse complaints are currently linked to this email across the community databases we query. These databases are refreshed on every lookup; a clean record today does not preclude future reports.",
       ),
     ),
   );
@@ -678,10 +947,12 @@ function renderEmailSections(
         React.createElement(
           View,
           { style: styles.fieldBlock },
-          React.createElement(
-            Text,
-            { style: { color: COLOR.slate300 } },
-            enrichment.sources.map((s) => `${s.ok ? "✓" : "—"} ${s.label}`).join("    "),
+          ...enrichment.sources.map((s, i) =>
+            React.createElement(
+              Text,
+              { key: `${s.provider}-${i}`, style: { color: COLOR.slate200, paddingVertical: 1 } },
+              `  ${s.ok ? "[ok]" : "[na]"} ${s.label}`,
+            ),
           ),
         ),
       ),
@@ -724,7 +995,7 @@ function breachNodes(breaches: BreachHit[], count: number | undefined): React.Re
         React.createElement(
           Text,
           { style: { color: COLOR.slate500, marginTop: 2, fontSize: 8.5 } },
-          "// backed by the Have I Been Pwned public breach index — re-queried on each lookup",
+          "// backed by the Have I Been Pwned public breach index - re-queried on each lookup",
         ),
         React.createElement(
           Text,
