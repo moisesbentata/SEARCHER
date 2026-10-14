@@ -62,22 +62,15 @@ export function Stage4Paywall({
           <Check text="The report may contain surprising information. Please be prepared for unexpected results." />
           <Check>
             <span>
-              Get a{" "}
-              <strong>
-                {brand.trialDurationDays}-day trial for just {brand.currencySymbol}
-                {brand.trialPrice.toFixed(2)}
-              </strong>
-              . After trial,{" "}
-              <strong>
-                we&apos;ll charge {brand.currencySymbol}
-                {brand.monthlyPrice} every {brand.billingCycleDays} days until you cancel
-              </strong>
-              .
+              Get a {brand.trialDurationDays}-day trial for just {brand.currencySymbol}
+              {brand.trialPrice.toFixed(2)}. After trial, we&apos;ll charge{" "}
+              {brand.currencySymbol}
+              {brand.monthlyPrice} every {brand.billingCycleDays} days until
+              you cancel.
             </span>
           </Check>
         </ul>
 
-        <PressStrip />
         <TrustpilotCard />
         <FaqAccordion />
 
@@ -179,32 +172,11 @@ function SocialProofCard() {
   );
 }
 
-function PressStrip() {
-  return (
-    <div className="mt-8 border-y border-ink-900/5 py-5">
-      <div className="flex flex-wrap items-center justify-around gap-x-6 gap-y-3 text-lg font-black uppercase tracking-wider text-ink-400">
-        <span className="italic">Entrepreneur</span>
-        <span className="rounded bg-ink-900/[0.06] px-2 py-0.5 tracking-[0.35em]">WIRED</span>
-        <span>msn</span>
-        <span className="tracking-[0.15em]">BBC</span>
-      </div>
-      <div className="mt-4 text-center text-2xl font-serif tracking-wider text-ink-400">
-        THE GLOBE AND MAIL
-      </div>
-    </div>
-  );
-}
-
 function TrustpilotCard() {
   return (
     <div className="mt-6">
       <div className="rounded-xl border border-ink-900/5 bg-white p-4 shadow-sm">
-        <div className="flex gap-1">
-          {[0, 1, 2, 3].map((i) => (
-            <span key={i} className="grid h-6 w-6 place-items-center rounded-sm bg-emerald-500 text-white">★</span>
-          ))}
-          <span className="grid h-6 w-6 place-items-center rounded-sm bg-ink-900/10 text-white">★</span>
-        </div>
+        <TrustpilotStars value={4.5} />
         <div className="mt-3 text-lg font-extrabold text-ink-900">Great, delivered as promised</div>
         <p className="mt-1 line-clamp-3 text-sm text-ink-600">
           Fast, accurate, and worth the price. Found the owner of an unknown number that had been calling my partner. Cancel was quick.
@@ -214,12 +186,40 @@ function TrustpilotCard() {
         </div>
       </div>
       <div className="mt-3 text-center text-sm text-ink-500">
-        Rated <strong>3.8</strong> / 5 · <span className="underline">44,562 reviews</span>
+        Rated <strong>4.5</strong> / 5 · <span className="underline">44,562 reviews</span>
       </div>
       <div className="mt-1 flex items-center justify-center gap-2 text-sm text-ink-700">
         <span className="text-emerald-500">★</span>
         <span className="font-semibold">Trustpilot</span>
       </div>
+    </div>
+  );
+}
+
+function TrustpilotStars({ value }: { value: number }) {
+  // Render 5 cells; each cell is either full, half, or empty based on `value`.
+  const cells: ("full" | "half" | "empty")[] = [];
+  for (let i = 0; i < 5; i++) {
+    if (value >= i + 1) cells.push("full");
+    else if (value >= i + 0.5) cells.push("half");
+    else cells.push("empty");
+  }
+  return (
+    <div className="flex gap-1">
+      {cells.map((state, i) => (
+        <span
+          key={i}
+          className="relative grid h-6 w-6 place-items-center overflow-hidden rounded-sm bg-ink-900/10 text-white"
+        >
+          {state !== "empty" ? (
+            <span
+              className="absolute inset-y-0 left-0 bg-emerald-500"
+              style={{ width: state === "full" ? "100%" : "50%" }}
+            />
+          ) : null}
+          <span className="relative">★</span>
+        </span>
+      ))}
     </div>
   );
 }
