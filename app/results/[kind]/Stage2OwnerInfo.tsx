@@ -10,7 +10,7 @@ import { DatingAppSwipe } from "@/components/DatingAppSwipe";
 // ("Current or Past Profiles"). When this row is the actively-loading row,
 // a small blurred image swipe plays inline next to the item name.
 const SWIPE_PHONE_SECTION = 2;
-const SWIPE_PHONE_ITEM = 5;
+const SWIPE_PHONE_ITEM = 1;
 const SWIPE_LOGO_A = "/dating-logos/finaldating1.webp";
 const SWIPE_LOGO_B = "/dating-logos/finaldating2.webp";
 
@@ -53,11 +53,11 @@ const PHONE_SECTIONS: Section[] = [
     title: "Scanning App Activity",
     items: [
       "Account History",
+      "Current or Past Profiles",
       "Saved Preferences",
       "Archived Photos or Videos",
       "Linked Contacts",
       "Recent Comments",
-      "Current or Past Profiles",
     ],
   },
   {
@@ -211,8 +211,10 @@ const PHONE_TICK_ORDER: number[][] = [
   [0, 3, 5, 2, 4, 1],
   // s2 Scanning Online Posts — last: Active or Inactive Accounts (5)
   [0, 2, 4, 1, 3, 5],
-  // s3 Scanning App Activity — last: Current or Past Profiles (5)
-  [0, 2, 4, 3, 1, 5],
+  // s3 Scanning App Activity — Current or Past Profiles sits second in
+  // the visual list (index 1) but still ticks LAST so it gets the dramatic
+  // 8.6s wait at the end of the section.
+  [0, 3, 5, 4, 2, 1],
   // s4 Searching Chat Apps — last two: Images (2), Linked Accounts (3)
   [0, 1, 4, 5, 2, 3],
   // s5 Searching Social Media — last two: Recent Photos and Videos (2),
