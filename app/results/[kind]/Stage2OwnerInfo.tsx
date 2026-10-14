@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { CyclingAvatar } from "@/components/CyclingAvatar";
 import { StripedProgressBar } from "@/components/StripedProgressBar";
 import { DatingAppSwipe } from "@/components/DatingAppSwipe";
@@ -512,9 +513,9 @@ export function Stage2OwnerInfo({
 }
 
 function formatQuery(kind: "phone" | "email", q: string) {
-  if (kind === "phone") {
-    const digits = q.replace(/[^\d]/g, "");
-    return digits.length > 10 ? digits.slice(-9).replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "$1 $2 $3 $4") : q;
-  }
-  return q;
+  if (kind !== "phone") return q;
+  const parsed = parsePhoneNumberFromString(q);
+  if (parsed) return parsed.formatInternational(); // e.g. "+34 675 74 01 19"
+  // Fallback: at least surface the "+" prefix if the raw string already carries one.
+  return q.trim().startsWith("+") ? q : `+${q.replace(/[^\d\s]/g, "")}`;
 }
