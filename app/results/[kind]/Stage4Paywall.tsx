@@ -15,7 +15,7 @@ export function Stage4Paywall({
   onContinue: () => void;
 }) {
   return (
-    <section className="min-h-[calc(100vh-4rem)] bg-white pb-24">
+    <section className="min-h-[calc(100vh-4rem)] bg-white pb-10">
       <SmallAccountBar email={email} />
       <TopBanner />
 
@@ -62,17 +62,6 @@ export function Stage4Paywall({
         </div>
       </div>
 
-      {/* Sticky bottom CTA */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-ink-900/5 bg-white p-4 shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.08)]">
-        <div className="mx-auto max-w-md">
-          <button
-            onClick={onContinue}
-            className="w-full rounded-xl bg-accent-600 py-4 text-lg font-semibold text-white shadow-sm hover:bg-accent-700"
-          >
-            Get My Report
-          </button>
-        </div>
-      </div>
     </section>
   );
 }
