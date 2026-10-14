@@ -22,16 +22,15 @@ export function Stage5Payment({
   }
 
   return (
-    <section className="min-h-[calc(100vh-4rem)] bg-white pb-24">
-      <SmallAccountBar email={email} />
+    <section className="min-h-[calc(100vh-4rem)] bg-white pb-10">
       <TopBanner />
 
-      <div className="mx-auto max-w-md px-5 pt-6 sm:px-6">
-        <h2 className="text-2xl font-extrabold tracking-tight text-ink-900">
+      <div className="mx-auto max-w-md px-5 pt-3 sm:px-6 sm:pt-6">
+        <h2 className="text-lg font-extrabold tracking-tight text-ink-900 sm:text-2xl">
           Your Summary
         </h2>
 
-        <ul className="mt-4 divide-y divide-ink-900/5 rounded-2xl border border-ink-900/5 bg-white">
+        <ul className="mt-2 divide-y divide-ink-900/5 rounded-2xl border border-ink-900/5 bg-white sm:mt-4">
           <Row
             icon={<IconDoc />}
             label="Discovered Data"
@@ -42,21 +41,21 @@ export function Stage5Payment({
           <Row icon={<IconSearch />} label="20+ Additional Lookups" value="Included" tone="brand" />
         </ul>
 
-        <div className="mt-4 flex items-baseline justify-between border-b border-ink-900/5 pb-4">
-          <div className="text-2xl font-extrabold tracking-tight text-ink-900">
+        <div className="mt-3 flex items-baseline justify-between border-b border-ink-900/5 pb-3 sm:mt-4 sm:pb-4">
+          <div className="text-lg font-extrabold tracking-tight text-ink-900 sm:text-2xl">
             Total Due:
           </div>
-          <div className="text-2xl font-extrabold tracking-tight text-ink-900">
+          <div className="text-lg font-extrabold tracking-tight text-ink-900 sm:text-2xl">
             {brand.currencySymbol}
             {brand.trialPrice.toFixed(2)}
           </div>
         </div>
 
-        <div className="mt-6 text-center text-xs font-bold uppercase tracking-widest text-ink-500">
+        <div className="mt-3 text-center text-[10px] font-bold uppercase tracking-widest text-ink-500 sm:mt-6 sm:text-xs">
           Choose your payment method
         </div>
 
-        <div className="mt-4 space-y-3">
+        <div className="mt-2 space-y-2 sm:mt-4 sm:space-y-3">
           <PayButton method="paypal" selected={selected} onClick={() => pay("paypal")}>
             <span className="text-lg font-bold italic">
               <span className="text-[#003087]">Pay</span>
@@ -138,14 +137,14 @@ function Row({
   tone?: "brand";
 }) {
   return (
-    <li className="flex items-center justify-between px-4 py-3">
-      <div className="flex items-center gap-3">
-        <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-100 text-brand-700">
+    <li className="flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-3">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-brand-100 text-brand-700 sm:h-9 sm:w-9 sm:rounded-lg">
           {icon}
         </span>
-        <span className="text-base font-medium text-ink-900">{label}</span>
+        <span className="text-sm font-medium text-ink-900 sm:text-base">{label}</span>
       </div>
-      <span className={`text-base font-semibold ${tone === "brand" ? "text-brand-700" : "text-ink-900"}`}>
+      <span className={`text-sm font-semibold sm:text-base ${tone === "brand" ? "text-brand-700" : "text-ink-900"}`}>
         {value}
       </span>
     </li>
@@ -175,13 +174,13 @@ function PayButton({
     <button
       onClick={onClick}
       disabled={!!disabled}
-      className={`flex h-14 w-full items-center justify-center rounded-xl shadow-sm transition ${bg} ${
+      className={`flex h-11 w-full items-center justify-center rounded-xl shadow-sm transition sm:h-14 ${bg} ${
         disabled ? "opacity-50" : ""
       }`}
     >
       {busy ? (
-        <span className="inline-flex items-center gap-2 text-lg font-semibold text-white">
-          <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+        <span className="inline-flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white sm:h-5 sm:w-5" />
           Processing…
         </span>
       ) : (
@@ -193,26 +192,9 @@ function PayButton({
 
 function TopBanner() {
   return (
-    <div className="border-y border-ink-900/5 bg-white py-3 text-center text-base font-bold text-brand-700">
+    <div className="border-y border-ink-900/5 bg-white py-1.5 text-center text-sm font-bold text-brand-700 sm:py-3 sm:text-base">
       Download now for {brand.currencySymbol}
       {brand.trialPrice.toFixed(2)}!
-    </div>
-  );
-}
-
-function SmallAccountBar({ email }: { email: string }) {
-  const initial = (email[0] ?? "U").toUpperCase();
-  const label = email.length > 18 ? email.slice(0, 15) + "…" : email;
-  return (
-    <div className="border-b border-ink-900/5 bg-ink-900/[0.03]">
-      <div className="mx-auto flex max-w-6xl items-center justify-end px-5 py-2 text-xs">
-        <span className="inline-flex items-center gap-2 rounded-full border border-ink-900/10 bg-white px-2 py-1">
-          <span className="grid h-5 w-5 place-items-center rounded-full bg-ink-900/[0.06] text-[10px] font-bold text-ink-800">
-            {initial}
-          </span>
-          <span className="text-ink-700">{label}</span>
-        </span>
-      </div>
     </div>
   );
 }
