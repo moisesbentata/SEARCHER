@@ -18,6 +18,7 @@ export function requireStripe(): Stripe {
 
 export const stripeConfig = {
   priceId: process.env.STRIPE_PRICE_ID ?? "",
+  trialPriceId: process.env.STRIPE_TRIAL_PRICE_ID ?? "",
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
   publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "",
 };

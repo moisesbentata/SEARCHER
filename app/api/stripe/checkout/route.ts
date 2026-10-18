@@ -49,12 +49,23 @@ export async function POST(req: Request) {
     h.get("origin") ??
     `https://${brand.domain}`;
 
+  // Paid-trial pattern. The $29.99 recurring Price is the subscription itself.
+  // The $1 one-off Price (STRIPE_TRIAL_PRICE_ID) is attached as an invoice item
+  // on the FIRST invoice via `add_invoice_items`, which Stripe collects at
+  // checkout even though trial_period_days keeps the subscription free until
+  // day 5. Net effect: customer pays $1 today, $29.99 on day 5, then $29.99
+  // every 28 days thereafter.
+  const addInvoiceItems = stripeConfig.trialPriceId
+    ? [{ price: stripeConfig.trialPriceId, quantity: 1 }]
+    : undefined;
+
   const checkout = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: stripeConfig.priceId, quantity: 1 }],
     subscription_data: {
       trial_period_days: brand.trialDurationDays,
+      ...(addInvoiceItems ? { add_invoice_items: addInvoiceItems } : {}),
       metadata: { accountId: account.id, kind, query },
     },
     // Hosted-page lets Stripe decide which methods to show per region/device.
