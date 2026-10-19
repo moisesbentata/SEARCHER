@@ -20,9 +20,11 @@ export function Stage5Payment({
   onPaid: (method: string) => void;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   async function pay(method: string) {
     setSelected(method);
+    setErrorMsg(null);
     track({
       type: "AddPaymentInfo",
       email,
@@ -46,21 +48,35 @@ export function Stage5Payment({
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ kind, query, email }),
         });
-        const data = await r.json();
+        let data: { ok?: boolean; url?: string; error?: string } = {};
+        try {
+          data = await r.json();
+        } catch {
+          data = {};
+        }
         if (data?.ok && data.url) {
           window.location.href = data.url;
           return;
         }
-        // Fall through to simulated flow on failure so the UX doesn't
-        // dead-end mid-payment during a Stripe outage.
-        console.error("[stripe:checkout] failed, falling back", data);
+        // Surface the error so we can diagnose instead of silently
+        // falling back to the simulated flow.
+        const detail = data?.error ? `: ${data.error}` : "";
+        setErrorMsg(
+          `Payment setup failed (HTTP ${r.status}${detail}). Try again, or email ${brand.supportEmail} if the issue persists.`,
+        );
+        setSelected(null);
+        return;
       } catch (err) {
-        console.error("[stripe:checkout] network error, falling back", err);
+        setErrorMsg(
+          `Network error reaching the payment service. Check your connection and try again.`,
+        );
+        setSelected(null);
+        return;
       }
     }
 
-    // Simulated-payment flow (used when Stripe is dormant and during the
-    // Meta-validation phase before real money moves).
+    // Dormant-Stripe fallback — only runs when NEXT_PUBLIC_STRIPE_ENABLED is
+    // not set (e.g. local dev or Meta-validation phase before Stripe keys).
     setTimeout(() => onPaid(method), 900);
   }
 
@@ -127,6 +143,15 @@ export function Stage5Payment({
             </span>
           </PayButton>
         </div>
+
+        {errorMsg ? (
+          <div
+            role="alert"
+            className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800"
+          >
+            {errorMsg}
+          </div>
+        ) : null}
 
         <div className="mt-8">
           <div className="text-xs font-bold uppercase tracking-widest text-ink-500">
