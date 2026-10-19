@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getCurrentSession } from "@/lib/session";
 import { requireStripe, stripeConfig, isStripeConfigured } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { brand } from "@/lib/brand";
+import { isValidEmail, normalizeEmail } from "@/lib/auth";
 import { headers } from "next/headers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const Body = z.object({
+  kind: z.enum(["phone", "email"]).default("phone"),
+  query: z.string().max(254).default(""),
+  email: z.string().min(3).max(254).optional(),
+});
 
 export async function POST(req: Request) {
   if (!isStripeConfigured()) {
@@ -16,17 +24,37 @@ export async function POST(req: Request) {
     );
   }
 
-  const session = await getCurrentSession();
-  if (!session) {
-    return NextResponse.json({ ok: false, error: "unauthenticated" }, { status: 401 });
+  let parsed;
+  try {
+    parsed = Body.parse(await req.json());
+  } catch {
+    return NextResponse.json({ ok: false, error: "bad_request" }, { status: 400 });
   }
 
-  const body = await req.json().catch(() => ({}));
-  const kind: "phone" | "email" = body?.kind === "email" ? "email" : "phone";
-  const query: string = typeof body?.query === "string" ? body.query : "";
+  // Prefer the logged-in session when present. Fall back to the email the
+  // user typed on Stage 3 — that email already identifies them for the funnel
+  // and lets Stripe render a pre-filled Checkout. If neither exists we can't
+  // create a subscription.
+  const session = await getCurrentSession();
+  let account = session?.account ?? null;
+
+  if (!account) {
+    const emailRaw = parsed.email;
+    if (!emailRaw || !isValidEmail(emailRaw)) {
+      return NextResponse.json(
+        { ok: false, error: "email_required" },
+        { status: 400 },
+      );
+    }
+    const email = normalizeEmail(emailRaw);
+    account = await prisma.account.upsert({
+      where: { email },
+      update: {},
+      create: { email },
+    });
+  }
 
   const stripe = requireStripe();
-  const account = session.account;
 
   // Create or reuse the Stripe customer so the subscription + billing history
   // live under one record.
@@ -58,6 +86,9 @@ export async function POST(req: Request) {
   const addInvoiceItems = stripeConfig.trialPriceId
     ? [{ price: stripeConfig.trialPriceId, quantity: 1 }]
     : undefined;
+
+  const kind = parsed.kind;
+  const query = parsed.query;
 
   const checkout = await stripe.checkout.sessions.create({
     mode: "subscription",

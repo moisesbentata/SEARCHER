@@ -37,14 +37,14 @@ export function Stage5Payment({
     });
 
     if (STRIPE_ENABLED) {
-      // Real payment: redirect to Stripe Checkout. The server session
-      // uses our authed account; Stripe shows every enabled payment
-      // method on one page regardless of which button they clicked.
+      // Real payment: redirect to Stripe Checkout. We pass the Stage 3 email
+      // so the server can create or reuse an Account without the user having
+      // completed OTP login (we don't require login during the paid funnel).
       try {
         const r = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ kind, query }),
+          body: JSON.stringify({ kind, query, email }),
         });
         const data = await r.json();
         if (data?.ok && data.url) {
