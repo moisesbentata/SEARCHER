@@ -26,7 +26,7 @@ export function Stage3EmailCapture({
   }
 
   return (
-    <section className="mx-auto min-h-[calc(100vh-4rem)] max-w-md px-5 py-8 sm:px-6">
+    <section className="mx-auto min-h-[75vh] max-w-md px-5 py-8 sm:px-6">
       {/* Blurred dashboard-style preview behind a floating modal */}
       <div className="relative">
         <div

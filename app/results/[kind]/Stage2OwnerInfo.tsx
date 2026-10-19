@@ -410,7 +410,7 @@ export function Stage2OwnerInfo({
   const isSuccess = section.title.startsWith("Success");
 
   return (
-    <section className="mx-auto min-h-[calc(100vh-4rem)] max-w-md px-5 py-8 sm:px-6">
+    <section className="mx-auto min-h-[75vh] max-w-md px-5 py-8 sm:px-6">
       {/* Preload the swipe images so they're cached well before Section 3 */}
       {kind === "phone" ? (
         <>
