@@ -48,7 +48,7 @@ export function Stage5Payment({
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ kind, query, email }),
         });
-        let data: { ok?: boolean; url?: string; error?: string } = {};
+        let data: { ok?: boolean; url?: string; error?: string; message?: string } = {};
         try {
           data = await r.json();
         } catch {
@@ -60,7 +60,11 @@ export function Stage5Payment({
         }
         // Surface the error so we can diagnose instead of silently
         // falling back to the simulated flow.
-        const detail = data?.error ? `: ${data.error}` : "";
+        const detail = data?.message
+          ? `: ${data.message}`
+          : data?.error
+            ? `: ${data.error}`
+            : "";
         setErrorMsg(
           `Payment setup failed (HTTP ${r.status}${detail}). Try again, or email ${brand.supportEmail} if the issue persists.`,
         );
