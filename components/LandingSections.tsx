@@ -518,18 +518,18 @@ function FAQ() {
     },
     {
       q: `What can I look up with ${brand.name}?`,
-      a: `${brand.name} offers four lookup tools. Phone lookup identifies the owner, carrier, and line type behind a phone number. Email lookup surfaces names, social profiles, and accounts tied to an email address. Photo lookup finds public profiles and web mentions of a face or image. VIN lookup decodes a vehicle identification number to reveal make, model, history, and registration details. You can use any or all of them from a single subscription.`,
+      a: `${brand.name} offers four lookup tools. Phone lookup identifies the owner, carrier, and line type behind a phone number. Email lookup surfaces names, social profiles, and accounts tied to an email address. Photo lookup finds public profiles and web mentions of a face or image. VIN lookup decodes a vehicle identification number to reveal make, model, history, and registration details. You can use any or all of them from a single membership.`,
     },
     {
       q: `Is ${brand.name} legitimate?`,
-      a: `Yes. ${brand.name} is a legitimate subscription service. We only access and aggregate information that is already publicly available — we don't hack, track, or surveil anyone. ${brand.name} is not a consumer reporting agency and cannot be used for employment, tenant, credit, or insurance decisions governed by the Fair Credit Reporting Act (FCRA). Our results are meant to help you make informed personal decisions.`,
+      a: `Yes. ${brand.name} is a legitimate service. We only access and aggregate information that is already publicly available — we don't hack, track, or surveil anyone. ${brand.name} is not a consumer reporting agency and cannot be used for employment, tenant, credit, or insurance decisions governed by the Fair Credit Reporting Act (FCRA). Our results are meant to help you make informed personal decisions.`,
     },
     {
       q: `How much does ${brand.name} cost?`,
-      a: `Start with a ${brand.trialDurationDays}-day trial for ${brand.currencySymbol}${brand.trialPrice.toFixed(2)}, which includes lookup credits. After the trial, your subscription renews at ${brand.currencySymbol}${brand.monthlyPrice} per ${brand.billingCycleDays} days until you cancel. One subscription gives you access to all lookup tools. You can cancel anytime with a single click.`,
+      a: `Start with a ${brand.trialDurationDays}-day trial for ${brand.currencySymbol}${brand.trialPrice.toFixed(2)}, which includes lookup credits. After the trial, your membership renews at ${brand.currencySymbol}${brand.monthlyPrice} per ${brand.billingCycleDays} days until you cancel. One membership gives you access to all lookup tools. You can cancel anytime with a single click.`,
     },
     {
-      q: `How do I cancel my ${brand.name} subscription?`,
+      q: `How do I cancel my ${brand.name} membership?`,
       a: `You can cancel any time in one click — no phone calls or emails required. Log in, go to the Cancellation Portal, and confirm. Your plan stops renewing immediately, you keep access until the end of the current billing period, and we email you a confirmation for your records.`,
     },
   ];
