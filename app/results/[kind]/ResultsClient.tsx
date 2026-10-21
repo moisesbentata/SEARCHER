@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { Stage1PhoneMap } from "./Stage1PhoneMap";
 import { Stage2OwnerInfo } from "./Stage2OwnerInfo";
 import { Stage3EmailCapture } from "./Stage3EmailCapture";
-import { Stage4Paywall } from "./Stage4Paywall";
 import { Stage5Payment } from "./Stage5Payment";
 import { Stage6Report } from "./Stage6Report";
 import type { PhoneLookupResult } from "@/lib/phone";
@@ -18,8 +17,7 @@ type Stage =
   | "phoneMap" // stage 1, phone only
   | "owner" // stage 2
   | "emailCapture" // stage 3
-  | "paywall" // stage 4
-  | "payment" // stage 5
+  | "payment" // combined paywall + summary (formerly stages 4 + 5)
   | "success"; // stage 6
 
 export function ResultsClient({
@@ -155,16 +153,8 @@ export function ResultsClient({
           displayDate={today}
           onContinue={(e) => {
             setCaptured(e);
-            setStage("paywall");
+            setStage("payment");
           }}
-        />
-      ) : null}
-
-      {stage === "paywall" ? (
-        <Stage4Paywall
-          query={query}
-          email={captured}
-          onContinue={() => setStage("payment")}
         />
       ) : null}
 
@@ -219,7 +209,6 @@ export function ResultsClient({
        * "DEV SHORTCUT" to find and nuke.
        * ============================================================ */}
       {stage !== "emailCapture" &&
-      stage !== "paywall" &&
       stage !== "payment" &&
       stage !== "success" ? (
         <button

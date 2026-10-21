@@ -38,6 +38,14 @@ export function Stage5Payment({
   async function pay(method: string) {
     setSelected(method);
     setErrorMsg(null);
+    // Fire the three paywall-moment events on the single CTA click so Meta
+    // has a clean funnel: InitiateCheckout → AddPaymentInfo → StartTrial.
+    track({
+      type: "InitiateCheckout",
+      email,
+      value: brand.trialPrice,
+      currency: brand.currency,
+    });
     track({
       type: "AddPaymentInfo",
       email,
@@ -87,18 +95,21 @@ export function Stage5Payment({
       }
     }
 
-    // Dormant-Stripe fallback (local dev / Meta-validation phase).
     setTimeout(() => onPaid(method), 900);
   }
 
   return (
-    // pb-40 reserves space below the content so nothing is covered by the
-    // fixed bottom CTA (its own height + safe-area padding).
     <section className="min-h-[calc(100vh-4rem)] bg-white pb-40">
       <TopBanner />
 
       <div className="mx-auto max-w-md px-5 pt-4 sm:px-6 sm:pt-6">
-        <ResultsReadyCallout query={query} />
+        <h1 className="text-center text-3xl font-extrabold tracking-tight text-ink-900">
+          Your Report is Ready!
+        </h1>
+
+        <div className="mt-4">
+          <ResultsReadyCallout query={query} />
+        </div>
 
         <h2 className="mt-5 text-2xl font-extrabold tracking-tight text-ink-900">
           Your Summary
@@ -133,45 +144,48 @@ export function Stage5Payment({
           </div>
         ) : null}
 
+        {/* === Below-the-fold marketing: social proof, trust, checks, FAQ === */}
         <div className="mt-16">
-          <div className="text-xs font-bold uppercase tracking-widest text-ink-500">
-            Details
+          <SocialProofCard />
+
+          <ul className="mt-6 space-y-3">
+            <Check text="Search any phone number to retrieve information about the owner" />
+            <Check text="The phone owner will NOT be notified about your search" />
+            <Check text="The report may contain surprising information. Please be prepared for unexpected results." />
+            <Check>
+              <span>
+                Get a {brand.trialDurationDays}-day trial for just {brand.currencySymbol}
+                {brand.trialPrice.toFixed(2)}. After trial, we&apos;ll charge{" "}
+                {brand.currencySymbol}
+                {brand.monthlyPrice} every {brand.billingCycleDays} days until
+                you cancel.
+              </span>
+            </Check>
+          </ul>
+
+          <TrustpilotCard />
+          <FaqAccordion />
+
+          <div className="mt-8 rounded-2xl border border-brand-500/20 bg-brand-50 p-5 text-sm text-brand-900">
+            <div className="font-semibold">Cancel anytime</div>
+            <p className="mt-1 text-brand-800">
+              One click from your account settings — no phone call, no email
+              required.
+            </p>
           </div>
-          <div className="mt-3 flex items-start gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 4h16v16H4z" />
-                <path d="M8 12h.01M12 12h.01M16 12h.01" />
-              </svg>
-            </span>
-            <div>
-              <div className="text-base font-semibold text-ink-900">
-                Comprehensive Phone Lookups
-              </div>
-              <p className="mt-0.5 text-sm text-ink-600">
-                Search any phone number to retrieve information about the owner.
-                Report for: <strong>{query}</strong>
-              </p>
-            </div>
-          </div>
-          <p className="mt-4 text-sm text-ink-600">
-            Rest assured, the phone owner will NOT be notified about your
-            search.
+
+          <p className="mt-6 text-xs leading-relaxed text-ink-500">
+            Recurring subscription: you will be charged {brand.currencySymbol}
+            {brand.trialPrice.toFixed(2)} today for a{" "}
+            {brand.trialDurationDays}-day trial. After the trial ends, your
+            subscription renews at {brand.currencySymbol}
+            {brand.monthlyPrice} every {brand.billingCycleDays} days unless you
+            cancel. You can cancel any time from your account settings.
           </p>
         </div>
-
-        <p className="mt-6 text-xs leading-relaxed text-ink-500">
-          Recurring subscription: you will be charged {brand.currencySymbol}
-          {brand.trialPrice.toFixed(2)} today for a{" "}
-          {brand.trialDurationDays}-day trial. After the trial ends, your
-          subscription renews at {brand.currencySymbol}
-          {brand.monthlyPrice} every {brand.billingCycleDays} days unless you
-          cancel. You can cancel any time from your account settings.
-        </p>
       </div>
 
-      {/* Fixed bottom CTA — persistent across page scroll. Includes a safe
-          area inset so the button isn't hidden by iOS gesture bars. */}
+      {/* Fixed bottom CTA — persistent across page scroll. */}
       <div
         className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-900/5 bg-white/95 backdrop-blur-sm"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
@@ -297,19 +311,173 @@ function TopBanner() {
   );
 }
 
+function Check({
+  text,
+  children,
+}: {
+  text?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <li className="flex items-start gap-3">
+      <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-brand-100">
+        <svg viewBox="0 0 24 24" className="h-4 w-4 text-brand-700" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      </span>
+      <span className="text-[15px] leading-snug text-ink-800">
+        {children ?? text}
+      </span>
+    </li>
+  );
+}
+
+function SocialProofCard() {
+  const initials = ["TJ", "AK", "RS", "ME", "JD"];
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-ink-900/5 bg-white px-4 py-3 shadow-sm">
+      <div className="text-sm font-semibold leading-tight text-ink-800">
+        Over 9,127 phone numbers
+        <br />
+        looked up today
+      </div>
+      <div className="flex items-center">
+        <div className="flex -space-x-2">
+          {initials.map((n, i) => (
+            <span
+              key={n}
+              className="grid h-8 w-8 place-items-center rounded-full bg-ink-900/[0.06] text-[11px] font-semibold text-ink-700 ring-2 ring-white"
+              style={{ zIndex: 10 - i }}
+            >
+              {n}
+            </span>
+          ))}
+        </div>
+        <span className="ml-2 text-[11px] font-semibold text-ink-500">
+          + 9.1k more
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function TrustpilotCard() {
+  return (
+    <div className="mt-6">
+      <div className="rounded-xl border border-ink-900/5 bg-white p-4 shadow-sm">
+        <TrustpilotStars value={4.5} />
+        <div className="mt-3 text-lg font-extrabold text-ink-900">Great, delivered as promised</div>
+        <p className="mt-1 line-clamp-3 text-sm text-ink-600">
+          Fast, accurate, and worth the price. Found the owner of an unknown number that had been calling my partner. Cancel was quick.
+        </p>
+        <div className="mt-3 text-xs text-ink-500">
+          <span className="font-semibold">M Murphy</span>, 3 days ago
+        </div>
+      </div>
+      <div className="mt-3 text-center text-sm text-ink-500">
+        Rated <strong>4.5</strong> / 5 · <span className="underline">22,514 reviews</span>
+      </div>
+      <div className="mt-1 flex items-center justify-center gap-2 text-sm text-ink-700">
+        <span className="text-emerald-500">★</span>
+        <span className="font-semibold">Trustpilot</span>
+      </div>
+    </div>
+  );
+}
+
+function TrustpilotStars({ value }: { value: number }) {
+  const cells: ("full" | "half" | "empty")[] = [];
+  for (let i = 0; i < 5; i++) {
+    if (value >= i + 1) cells.push("full");
+    else if (value >= i + 0.5) cells.push("half");
+    else cells.push("empty");
+  }
+  return (
+    <div className="flex gap-1">
+      {cells.map((state, i) => (
+        <span
+          key={i}
+          className="relative grid h-6 w-6 place-items-center overflow-hidden rounded-sm bg-ink-900/10 text-white"
+        >
+          {state !== "empty" ? (
+            <span
+              className="absolute inset-y-0 left-0 bg-emerald-500"
+              style={{ width: state === "full" ? "100%" : "50%" }}
+            />
+          ) : null}
+          <span className="relative">★</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function FaqAccordion() {
+  const items = [
+    {
+      q: "Is it free to use?",
+      a: `${brand.name} offers a ${brand.trialDurationDays}-day trial for ${brand.currencySymbol}${brand.trialPrice.toFixed(2)}. After the trial the membership renews at ${brand.currencySymbol}${brand.monthlyPrice} every ${brand.billingCycleDays} days. Cancel any time.`,
+    },
+    {
+      q: "How do I cancel my membership?",
+      a: `Log in and open your Account Settings — one click cancels. You can also email ${brand.supportEmail} and we'll cancel within 24 hours.`,
+    },
+    {
+      q: "What are acceptable uses? (And what's not allowed?)",
+      a: `${brand.name} is for personal informational use. It is NOT a consumer reporting agency. Do not use it for decisions covered by the FCRA — employment, credit, housing, insurance, or benefits eligibility.`,
+    },
+    {
+      q: "What can I find with a reverse phone lookup?",
+      a: "Owner name, addresses on record, linked emails and phones, social and dating profiles, and spam or scam reports — depending on what public data is available.",
+    },
+    {
+      q: "How accurate is the information provided by a reverse phone lookup?",
+      a: "Number metadata (country, carrier, region) is highly accurate. Owner information is best-effort based on public and open-web data and may be incomplete or outdated.",
+    },
+  ];
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <div className="mt-8 rounded-2xl bg-ink-900/[0.03] p-5">
+      <h2 className="text-center text-2xl font-extrabold tracking-tight text-ink-900">FAQ</h2>
+      <div className="mt-4 divide-y divide-ink-900/5">
+        {items.map((item, i) => {
+          const isOpen = open === i;
+          return (
+            <button
+              key={item.q}
+              onClick={() => setOpen(isOpen ? null : i)}
+              className="flex w-full items-center justify-between gap-3 py-3 text-left"
+            >
+              <div>
+                <div className="text-base font-semibold text-ink-900">{item.q}</div>
+                {isOpen ? (
+                  <p className="mt-1 text-sm text-ink-600">{item.a}</p>
+                ) : null}
+              </div>
+              <svg
+                viewBox="0 0 24 24"
+                className={`h-5 w-5 shrink-0 text-ink-400 transition-transform ${isOpen ? "rotate-90" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m9 6 6 6-6 6" />
+              </svg>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function IconDoc() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
       <path d="M14 2v6h6" />
-    </svg>
-  );
-}
-function IconUser() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 21c0-4 4-7 8-7s8 3 8 7" />
     </svg>
   );
 }
