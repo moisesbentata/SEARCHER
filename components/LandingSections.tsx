@@ -312,11 +312,11 @@ function WorldwideCoverage() {
 /* ------------------------------------------------------------------ */
 function WhyPeopleChoose() {
   const points = [
-    "Identify Anyone, Anywhere. Phone number, email, photo, or VIN — whatever you have, we help put a name and context behind it.",
+    "Identify Anyone, Anywhere. Phone number or email — whatever you have, we help put a name and context behind it.",
     "Reconnect with People You've Lost Touch With. Find updated information for old friends, relatives, or former colleagues, even if their contact details have changed.",
     "Verify Online Identities Before You Trust Them. Check dating matches, online sellers, and new contacts before sharing personal information.",
     "Spot Scams, Spam, and Suspicious Activity. Suspicious call, shady email, fake profile, or questionable listing? Run a check before you engage.",
-    "Monitor Your Own Digital Footprint. Search your own phone, email, or photo to see what's publicly exposed — and where.",
+    "Monitor Your Own Digital Footprint. Search your own phone or email to see what's publicly exposed — and where.",
     "Protect Your Family Online and Offline. Vet roommates, dates, coaches, and anyone who enters your family's life.",
   ];
   return (
@@ -510,15 +510,15 @@ function FAQ() {
   const items = [
     {
       q: `What is ${brand.name}?`,
-      a: `${brand.name} is a lookup platform that helps you identify the people, contacts, and items in your life using publicly available information. With four tools — phone lookup, email lookup, photo lookup, and VIN lookup — you can find the identity or history behind nearly any contact point in seconds.`,
+      a: `${brand.name} is a lookup platform that helps you identify the people and contacts in your life using publicly available information. With two tools — phone lookup and email lookup — you can find the identity or history behind nearly any phone number or email address in seconds.`,
     },
     {
       q: `How does ${brand.name} work?`,
-      a: `Enter what you have — a phone number, email address, photo, or vehicle identification number — into the search widget. ${brand.name} scans public records, social media, and open-source intelligence (OSINT) from sources around the world and compiles a profile of everything linked to that input. Sign in to view the full report.`,
+      a: `Enter what you have — a phone number or email address — into the search widget. ${brand.name} scans public records, social media, and open-source intelligence (OSINT) from sources around the world and compiles a profile of everything linked to that input. Sign in to view the full report.`,
     },
     {
       q: `What can I look up with ${brand.name}?`,
-      a: `${brand.name} offers four lookup tools. Phone lookup identifies the owner, carrier, and line type behind a phone number. Email lookup surfaces names, social profiles, and accounts tied to an email address. Photo lookup finds public profiles and web mentions of a face or image. VIN lookup decodes a vehicle identification number to reveal make, model, history, and registration details. You can use any or all of them from a single membership.`,
+      a: `${brand.name} offers two lookup tools. Phone lookup identifies the owner, carrier, and line type behind a phone number. Email lookup surfaces names, social profiles, and accounts tied to an email address. You can use either or both from a single membership.`,
     },
     {
       q: `Is ${brand.name} legitimate?`,
