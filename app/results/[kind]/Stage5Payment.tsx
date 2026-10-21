@@ -88,12 +88,12 @@ export function Stage5Payment({
     <section className="min-h-[calc(100vh-4rem)] bg-white pb-10">
       <TopBanner />
 
-      <div className="mx-auto max-w-md px-5 pt-3 sm:px-6 sm:pt-6">
-        <h2 className="text-lg font-extrabold tracking-tight text-ink-900 sm:text-2xl">
+      <div className="mx-auto max-w-md px-5 pt-5 sm:px-6 sm:pt-6">
+        <h2 className="text-2xl font-extrabold tracking-tight text-ink-900">
           Your Summary
         </h2>
 
-        <ul className="mt-2 divide-y divide-ink-900/5 rounded-2xl border border-ink-900/5 bg-white sm:mt-4">
+        <ul className="mt-4 divide-y divide-ink-900/5 rounded-2xl border border-ink-900/5 bg-white">
           <Row
             icon={<IconDoc />}
             label="Discovered Data"
@@ -104,11 +104,11 @@ export function Stage5Payment({
           <Row icon={<IconSearch />} label="20+ Additional Lookups" value="Included" tone="brand" />
         </ul>
 
-        <div className="mt-3 flex items-baseline justify-between border-b border-ink-900/5 pb-3 sm:mt-4 sm:pb-4">
-          <div className="text-lg font-extrabold tracking-tight text-ink-900 sm:text-2xl">
+        <div className="mt-5 flex items-baseline justify-between border-b border-ink-900/5 pb-4">
+          <div className="text-2xl font-extrabold tracking-tight text-ink-900">
             Total Due:
           </div>
-          <div className="text-lg font-extrabold tracking-tight text-ink-900 sm:text-2xl">
+          <div className="text-2xl font-extrabold tracking-tight text-ink-900">
             {brand.currencySymbol}
             {brand.trialPrice.toFixed(2)}
           </div>
@@ -212,14 +212,14 @@ function Row({
   tone?: "brand";
 }) {
   return (
-    <li className="flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-3">
-      <div className="flex items-center gap-2 sm:gap-3">
-        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-brand-100 text-brand-700 sm:h-9 sm:w-9 sm:rounded-lg">
+    <li className="flex items-center justify-between px-4 py-4 sm:px-5 sm:py-4">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700 sm:h-11 sm:w-11">
           {icon}
         </span>
-        <span className="text-sm font-medium text-ink-900 sm:text-base">{label}</span>
+        <span className="text-base font-medium text-ink-900 sm:text-lg">{label}</span>
       </div>
-      <span className={`text-sm font-semibold sm:text-base ${tone === "brand" ? "text-brand-700" : "text-ink-900"}`}>
+      <span className={`text-base font-semibold sm:text-lg ${tone === "brand" ? "text-brand-700" : "text-ink-900"}`}>
         {value}
       </span>
     </li>
@@ -242,14 +242,16 @@ function PayButton({
   const bg =
     method === "paypal"
       ? "bg-[#ffc439]"
-      : method === "card" || method === "checkout"
+      : method === "card"
         ? "bg-accent-600 hover:bg-accent-700"
         : "bg-black hover:bg-ink-800";
+  const height =
+    method === "checkout" ? "h-16 sm:h-[72px]" : "h-11 sm:h-14";
   return (
     <button
       onClick={onClick}
       disabled={!!disabled}
-      className={`flex h-11 w-full items-center justify-center rounded-xl shadow-sm transition sm:h-14 ${bg} ${
+      className={`flex w-full items-center justify-center rounded-xl shadow-sm transition ${height} ${bg} ${
         disabled ? "opacity-50" : ""
       }`}
     >
