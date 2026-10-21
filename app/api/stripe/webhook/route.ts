@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { requireStripe, stripeConfig, isStripeConfigured } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
+import { brand } from "@/lib/brand";
 import { SubscriptionStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
@@ -36,16 +37,7 @@ export async function POST(req: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const s = event.data.object as Stripe.Checkout.Session;
-        const accountId = s.client_reference_id ?? s.metadata?.accountId;
-        if (accountId && s.subscription) {
-          await prisma.account.update({
-            where: { id: accountId },
-            data: {
-              stripeSubscriptionId: String(s.subscription),
-              stripeCustomerId: s.customer ? String(s.customer) : undefined,
-            },
-          });
-        }
+        await handleCheckoutCompleted(s);
         break;
       }
 
@@ -79,6 +71,67 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ ok: true });
+}
+
+/**
+ * Our Checkout session is in `payment` mode and charges the $1 trial fee.
+ * After it completes we create the actual subscription with a 5-day trial,
+ * using the payment method the customer saved during Checkout. Stripe will
+ * then auto-charge $29.99 every 28 days starting on day 5.
+ */
+async function handleCheckoutCompleted(s: Stripe.Checkout.Session) {
+  const stripe = requireStripe();
+  const accountId = s.client_reference_id ?? s.metadata?.accountId;
+  if (!accountId) return;
+
+  const customerId = s.customer ? String(s.customer) : null;
+  if (!customerId) return;
+
+  // Pull the payment method off the payment intent so we can use it as the
+  // subscription's default payment method.
+  const paymentIntentId =
+    typeof s.payment_intent === "string" ? s.payment_intent : s.payment_intent?.id;
+  let paymentMethodId: string | null = null;
+  if (paymentIntentId) {
+    const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+    paymentMethodId =
+      typeof pi.payment_method === "string"
+        ? pi.payment_method
+        : pi.payment_method?.id ?? null;
+  }
+
+  const flow = s.metadata?.flow;
+  if (flow === "trial_fee" && stripeConfig.priceId) {
+    // Create the recurring subscription with a 5-day trial. This is the
+    // "second step" of our paid-trial pattern — customer already paid the $1
+    // via Checkout, now Stripe starts the trial clock and schedules the first
+    // $29.99 charge for day 5.
+    const sub = await stripe.subscriptions.create({
+      customer: customerId,
+      items: [{ price: stripeConfig.priceId, quantity: 1 }],
+      trial_period_days: brand.trialDurationDays,
+      ...(paymentMethodId ? { default_payment_method: paymentMethodId } : {}),
+      metadata: {
+        accountId,
+        kind: s.metadata?.kind ?? "",
+        query: s.metadata?.query ?? "",
+      },
+    });
+    await syncSubscription(sub);
+    return;
+  }
+
+  // Fallback: direct subscription-mode checkout (not used today but kept for
+  // forwards-compat with Dashboard-created sessions).
+  if (s.subscription) {
+    await prisma.account.update({
+      where: { id: accountId },
+      data: {
+        stripeSubscriptionId: String(s.subscription),
+        stripeCustomerId: customerId,
+      },
+    });
+  }
 }
 
 async function syncSubscription(sub: Stripe.Subscription) {

@@ -32,9 +32,7 @@ export async function POST(req: Request) {
   }
 
   // Prefer the logged-in session when present. Fall back to the email the
-  // user typed on Stage 3 — that email already identifies them for the funnel
-  // and lets Stripe render a pre-filled Checkout. If neither exists we can't
-  // create a subscription.
+  // user typed on Stage 3 — the paid funnel doesn't require OTP login.
   const session = await getCurrentSession();
   let account = session?.account ?? null;
 
@@ -54,8 +52,19 @@ export async function POST(req: Request) {
     });
   }
 
-  const stripe = requireStripe();
+  // Paid trial requires both prices. Fail fast if the trial price isn't set.
+  if (!stripeConfig.trialPriceId) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "trial_price_missing",
+        message: "STRIPE_TRIAL_PRICE_ID env var is not set",
+      },
+      { status: 500 },
+    );
+  }
 
+  const stripe = requireStripe();
   const kind = parsed.kind;
   const query = parsed.query;
 
@@ -81,42 +90,47 @@ export async function POST(req: Request) {
       h.get("origin") ??
       `https://${brand.domain}`;
 
-    // Paid-trial pattern. The $29.99 recurring Price is the subscription
-    // itself. The $1 one-off Price (STRIPE_TRIAL_PRICE_ID) is attached as an
-    // invoice item on the FIRST invoice via `add_invoice_items`, which Stripe
-    // collects at checkout even though trial_period_days keeps the
-    // subscription free until day 5. Net effect: customer pays $1 today,
-    // $29.99 on day 5, then $29.99 every 28 days thereafter.
-    const addInvoiceItems = stripeConfig.trialPriceId
-      ? [{ price: stripeConfig.trialPriceId, quantity: 1 }]
-      : undefined;
-
+    // "$1 trial fee → 5-day free access → then $29.99/28d" is implemented as a
+    // one-time payment session that collects + saves the card. The webhook
+    // handler then creates the subscription with trial_period_days so Stripe
+    // takes over the recurring charges automatically from day 5 onwards.
+    //
+    // Stripe's hosted Checkout in `subscription` mode does NOT support mixing
+    // a one-off fee with the recurring price (add_invoice_items is a
+    // subscriptions.create param, not a Checkout param), so this two-step
+    // pattern is the standard workaround used by every $1-trial subscription
+    // product on Stripe.
     const checkout = await stripe.checkout.sessions.create({
-      mode: "subscription",
+      mode: "payment",
       customer: customerId,
-      line_items: [{ price: stripeConfig.priceId, quantity: 1 }],
-      subscription_data: {
-        trial_period_days: brand.trialDurationDays,
-        ...(addInvoiceItems ? { add_invoice_items: addInvoiceItems } : {}),
-        metadata: { accountId: account.id, kind, query },
+      line_items: [{ price: stripeConfig.trialPriceId, quantity: 1 }],
+      payment_intent_data: {
+        // Save the card so we can bill off-session when the trial ends.
+        setup_future_usage: "off_session",
+        metadata: {
+          accountId: account.id,
+          kind,
+          query,
+          flow: "trial_fee",
+        },
       },
       // Hosted-page lets Stripe decide which methods to show per region/device.
-      // Methods are enabled in Dashboard → Settings → Payment methods.
-      payment_method_collection: "always",
       allow_promotion_codes: true,
       billing_address_collection: "auto",
       client_reference_id: account.id,
-      metadata: { accountId: account.id, kind, query },
+      // Metadata on the session itself so the webhook can route on `flow`.
+      metadata: {
+        accountId: account.id,
+        kind,
+        query,
+        flow: "trial_fee",
+      },
       success_url: `${origin}/results/${kind}?paid=1&session_id={CHECKOUT_SESSION_ID}&q=${encodeURIComponent(query)}`,
       cancel_url: `${origin}/results/${kind}?paid=0&q=${encodeURIComponent(query)}`,
     });
 
     return NextResponse.json({ ok: true, url: checkout.url });
   } catch (err) {
-    // Return Stripe/Prisma errors to the client so we can see what Stripe
-    // actually rejected instead of a generic 500. The returned message is
-    // developer-facing; the frontend already wraps it in a user-friendly
-    // "payment setup failed" message.
     const anyErr = err as {
       message?: string;
       type?: string;
