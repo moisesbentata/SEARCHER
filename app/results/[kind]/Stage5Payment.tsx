@@ -97,25 +97,24 @@ export function Stage5Payment({
     <section className="min-h-[calc(100vh-4rem)] bg-white pb-40">
       <TopBanner />
 
-      <div className="mx-auto max-w-md px-5 pt-5 sm:px-6 sm:pt-6">
+      <div className="mx-auto max-w-md px-5 pt-4 sm:px-6 sm:pt-6">
         <ResultsReadyCallout query={query} />
 
-        <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-ink-900">
+        <h2 className="mt-5 text-2xl font-extrabold tracking-tight text-ink-900">
           Your Summary
         </h2>
 
-        <ul className="mt-4 divide-y divide-ink-900/5 rounded-2xl border border-ink-900/5 bg-white">
+        <ul className="mt-3 divide-y divide-ink-900/5 rounded-2xl border border-ink-900/5 bg-white">
           <Row
             icon={<IconDoc />}
-            label="Discovered Data"
+            label="Owner Report"
             value={`${brand.currencySymbol}${brand.trialPrice.toFixed(2)}`}
           />
-          <Row icon={<IconUser />} label="Owner Report" value="Included" tone="brand" />
           <Row icon={<IconGlobe />} label="Discovered Social Media" value="Included" tone="brand" />
           <Row icon={<IconSearch />} label="20+ Additional Lookups" value="Included" tone="brand" />
         </ul>
 
-        <div className="mt-5 flex items-baseline justify-between border-b border-ink-900/5 pb-4">
+        <div className="mt-4 flex items-baseline justify-between border-b border-ink-900/5 pb-4">
           <div className="text-2xl font-extrabold tracking-tight text-ink-900">
             Total Due:
           </div>
@@ -134,7 +133,7 @@ export function Stage5Payment({
           </div>
         ) : null}
 
-        <div className="mt-8">
+        <div className="mt-16">
           <div className="text-xs font-bold uppercase tracking-widest text-ink-500">
             Details
           </div>
@@ -202,17 +201,14 @@ function CheckoutButton({ busy, onClick }: { busy: boolean; onClick: () => void 
         </span>
       ) : (
         <>
-          <span className="flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
-            Continue to Secure Checkout
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
-          </span>
-          <span className="flex items-center gap-1 text-[10px] font-medium text-white/60">
-            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <span className="flex items-center gap-2.5 text-xl font-bold text-white sm:text-2xl">
+            <svg viewBox="0 0 24 24" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="11" width="16" height="10" rx="2" />
               <path d="M8 11V7a4 4 0 0 1 8 0v4" />
             </svg>
+            Unlock Report
+          </span>
+          <span className="text-[10px] font-medium text-white/60">
             Powered by Stripe
           </span>
         </>
@@ -228,37 +224,36 @@ function ResultsReadyCallout({ query }: { query: string }) {
     year: "numeric",
   });
   return (
-    <div className="relative h-[220px] overflow-hidden rounded-2xl border border-ink-900/5 bg-white shadow-sm">
+    <div className="relative h-[170px] overflow-hidden rounded-2xl border border-ink-900/5 bg-white shadow-sm">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 select-none p-5"
+        className="pointer-events-none absolute inset-0 select-none p-4"
       >
-        <div className="flex items-start gap-4 blur-[7px]">
+        <div className="flex items-start gap-3 blur-[7px]">
           <CyclingAvatar intervalMs={1400} />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-3/4 rounded bg-ink-900/10" />
-            <div className="h-4 w-1/2 rounded bg-ink-900/10" />
-            <div className="mt-2 flex gap-2">
-              <span className="inline-block h-5 w-12 rounded-full bg-sky-300/80" />
-              <span className="inline-block h-5 w-12 rounded-full bg-emerald-400/80" />
-              <span className="inline-block h-5 w-12 rounded-full bg-rose-400/80" />
+            <div className="h-3.5 w-3/4 rounded bg-ink-900/10" />
+            <div className="h-3.5 w-1/2 rounded bg-ink-900/10" />
+            <div className="mt-1 flex gap-2">
+              <span className="inline-block h-4 w-10 rounded-full bg-sky-300/80" />
+              <span className="inline-block h-4 w-10 rounded-full bg-emerald-400/80" />
+              <span className="inline-block h-4 w-10 rounded-full bg-rose-400/80" />
             </div>
           </div>
         </div>
-        <div className="mt-5 space-y-2 blur-[7px]">
-          <div className="h-3 w-full rounded bg-ink-900/10" />
-          <div className="h-3 w-5/6 rounded bg-ink-900/10" />
-          <div className="h-3 w-4/6 rounded bg-ink-900/10" />
+        <div className="mt-4 space-y-2 blur-[7px]">
+          <div className="h-2.5 w-full rounded bg-ink-900/10" />
+          <div className="h-2.5 w-5/6 rounded bg-ink-900/10" />
         </div>
       </div>
-      <div className="absolute inset-x-6 top-1/2 -translate-y-1/2 rounded-xl border border-ink-900/10 bg-white px-5 py-3.5 text-center shadow-xl">
-        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-ink-500">
+      <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 rounded-xl border border-ink-900/10 bg-white px-4 py-3 text-center shadow-xl">
+        <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-500">
           Results Are Ready
         </div>
-        <div className="mt-1 truncate text-xl font-extrabold tracking-tight text-ink-900">
+        <div className="mt-1 truncate text-lg font-extrabold tracking-tight text-ink-900">
           {query}
         </div>
-        <div className="mt-0.5 text-xs text-ink-500">
+        <div className="mt-0.5 text-[11px] text-ink-500">
           Latest report as of{" "}
           <span className="font-semibold text-brand-700">{date}</span>
         </div>
@@ -279,9 +274,9 @@ function Row({
   tone?: "brand";
 }) {
   return (
-    <li className="flex items-center justify-between px-4 py-4 sm:px-5 sm:py-4">
+    <li className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5">
       <div className="flex items-center gap-3 sm:gap-4">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700 sm:h-11 sm:w-11">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700 sm:h-10 sm:w-10">
           {icon}
         </span>
         <span className="text-base font-medium text-ink-900 sm:text-lg">{label}</span>
