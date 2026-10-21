@@ -114,38 +114,41 @@ export function Stage5Payment({
           </div>
         </div>
 
-        <div className="mt-3 text-center text-[10px] font-bold uppercase tracking-widest text-ink-500 sm:mt-6 sm:text-xs">
-          Choose your payment method
-        </div>
+        <div className="mt-4 sm:mt-6">
+          <PayButton
+            method="checkout"
+            selected={selected}
+            onClick={() => pay("checkout")}
+          >
+            <span className="flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
+              Continue to Secure Checkout
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </span>
+          </PayButton>
 
-        <div className="mt-2 space-y-2 sm:mt-4 sm:space-y-3">
-          <PayButton method="paypal" selected={selected} onClick={() => pay("paypal")}>
-            <span className="text-lg font-bold italic">
+          <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-ink-500">
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="4" y="11" width="16" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+            </svg>
+            <span>Powered by Stripe</span>
+          </div>
+
+          <div className="mt-2 flex items-center justify-center gap-2 opacity-60 grayscale">
+            <AppleLogoDark />
+            <GoogleG />
+            <span className="text-[11px] font-bold italic">
               <span className="text-[#003087]">Pay</span>
               <span className="text-[#0079c1]">Pal</span>
             </span>
-          </PayButton>
-          <PayButton method="gpay" selected={selected} onClick={() => pay("gpay")}>
-            <span className="flex items-center gap-2 text-lg font-semibold text-white">
-              <GoogleG />
-              Pay
-            </span>
-          </PayButton>
-          <PayButton method="applepay" selected={selected} onClick={() => pay("applepay")}>
-            <span className="flex items-center gap-1 text-lg font-semibold text-white">
-              Buy with <AppleLogo />
-              <span>Pay</span>
-            </span>
-          </PayButton>
-          <PayButton method="card" selected={selected} onClick={() => pay("card")}>
-            <span className="flex items-center gap-2 text-lg font-semibold text-white">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="6" width="20" height="14" rx="3" />
-                <path d="M2 11h20" />
-              </svg>
-              Credit or debit card
-            </span>
-          </PayButton>
+            <svg viewBox="0 0 24 24" className="h-4 w-4 text-ink-700" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="6" width="20" height="14" rx="3" />
+              <path d="M2 11h20" />
+            </svg>
+            <span className="text-[11px] font-semibold text-ink-700">Link</span>
+          </div>
         </div>
 
         {errorMsg ? (
@@ -239,7 +242,7 @@ function PayButton({
   const bg =
     method === "paypal"
       ? "bg-[#ffc439]"
-      : method === "card"
+      : method === "card" || method === "checkout"
         ? "bg-accent-600 hover:bg-accent-700"
         : "bg-black hover:bg-ink-800";
   return (
@@ -316,6 +319,14 @@ function GoogleG() {
 function AppleLogo() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="white" aria-hidden>
+      <path d="M17.5 12.5c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.8-3.5.8-.7 0-1.9-.8-3.1-.8-1.6 0-3.1.9-3.9 2.4-1.7 2.9-.4 7.2 1.2 9.5.8 1.1 1.7 2.4 3 2.4 1.2 0 1.7-.8 3.2-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.5-1-2.5-4Zm-2.4-7.1c.7-.8 1.1-2 1-3.1-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.9-1 3 1.1.1 2.1-.5 2.8-1.3Z" />
+    </svg>
+  );
+}
+
+function AppleLogoDark() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 text-ink-700" fill="currentColor" aria-hidden>
       <path d="M17.5 12.5c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.8-3.5.8-.7 0-1.9-.8-3.1-.8-1.6 0-3.1.9-3.9 2.4-1.7 2.9-.4 7.2 1.2 9.5.8 1.1 1.7 2.4 3 2.4 1.2 0 1.7-.8 3.2-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.5-1-2.5-4Zm-2.4-7.1c.7-.8 1.1-2 1-3.1-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.9-1 3 1.1.1 2.1-.5 2.8-1.3Z" />
     </svg>
   );
