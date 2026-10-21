@@ -22,6 +22,15 @@ export function Stage3EmailCapture({
     e.preventDefault();
     if (!canContinue) return;
     track({ type: "Lead", email });
+    // Persist for the header pill + post-payment OTP gate.
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem("tc_pending_email", email);
+        window.dispatchEvent(new StorageEvent("storage", { key: "tc_pending_email" }));
+      } catch {
+        /* ignore */
+      }
+    }
     onContinue(email);
   }
 

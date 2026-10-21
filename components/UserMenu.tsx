@@ -12,11 +12,25 @@ type Me = {
   subscriptionStatus: string;
 };
 
+const PENDING_EMAIL_KEY = "tc_pending_email";
+
+function readPendingEmail(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const v = window.localStorage.getItem(PENDING_EMAIL_KEY);
+    return v && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
 export function UserMenu() {
   const [me, setMe] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [autoSend, setAutoSend] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -37,10 +51,29 @@ export function UserMenu() {
     refresh();
   }, [refresh]);
 
+  // Mirror localStorage into state so the pill updates immediately after
+  // Stage 3 writes the captured email.
+  useEffect(() => {
+    setPendingEmail(readPendingEmail());
+    function onStorage(e: StorageEvent) {
+      if (e.key === PENDING_EMAIL_KEY || e.key === null) {
+        setPendingEmail(readPendingEmail());
+      }
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   async function handleLogout() {
     setMenuOpen(false);
     await fetch("/api/auth/logout", { method: "POST" });
     setMe(null);
+    try {
+      window.localStorage.removeItem(PENDING_EMAIL_KEY);
+      setPendingEmail(null);
+    } catch {
+      /* ignore */
+    }
     refresh();
   }
 
@@ -51,18 +84,42 @@ export function UserMenu() {
   }
 
   if (!me) {
+    const hasPending = !!pendingEmail;
+    const initial = (pendingEmail?.[0] ?? "?").toUpperCase();
     return (
       <>
-        <button
-          type="button"
-          onClick={() => setLoginOpen(true)}
-          className="text-sm font-semibold text-ink-700 hover:text-ink-900"
-        >
-          Sign in
-        </button>
+        {hasPending ? (
+          <button
+            type="button"
+            onClick={() => {
+              setAutoSend(true);
+              setLoginOpen(true);
+            }}
+            className="flex items-center gap-2 rounded-full border border-ink-900/10 bg-white px-2 py-1 text-sm font-semibold text-ink-800 hover:border-ink-900/20"
+            title={`Verify ${pendingEmail}`}
+          >
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-brand-700 text-xs font-bold text-white">
+              {initial}
+            </span>
+            <span className="hidden max-w-[180px] truncate sm:inline">{pendingEmail}</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setAutoSend(false);
+              setLoginOpen(true);
+            }}
+            className="text-sm font-semibold text-ink-700 hover:text-ink-900"
+          >
+            Sign in
+          </button>
+        )}
         <LoginDialog
           open={loginOpen}
           onClose={() => setLoginOpen(false)}
+          initialEmail={pendingEmail ?? undefined}
+          autoSend={autoSend}
           onSuccess={() => {
             setLoginOpen(false);
             refresh();

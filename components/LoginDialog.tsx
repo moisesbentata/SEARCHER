@@ -8,11 +8,25 @@ type Props = {
   onClose: () => void;
   onSuccess?: (email: string) => void;
   initialEmail?: string;
+  // When true, skip the email-input stage and immediately send a code to
+  // initialEmail — used for the post-payment OTP gate and the header "email
+  // pill" shortcut where we already know who the user is.
+  autoSend?: boolean;
+  // When true, hide the close (X) button so the dialog can't be dismissed —
+  // used for the post-payment OTP gate.
+  dismissible?: boolean;
 };
 
 type Stage = "email" | "code" | "success";
 
-export function LoginDialog({ open, onClose, onSuccess, initialEmail }: Props) {
+export function LoginDialog({
+  open,
+  onClose,
+  onSuccess,
+  initialEmail,
+  autoSend,
+  dismissible = true,
+}: Props) {
   const [stage, setStage] = useState<Stage>("email");
   const [email, setEmail] = useState(initialEmail ?? "");
   const [code, setCode] = useState("");
@@ -24,15 +38,25 @@ export function LoginDialog({ open, onClose, onSuccess, initialEmail }: Props) {
   const codeInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+    const seed = initialEmail ?? "";
+    setEmail(seed);
+    setCode("");
+    setError(null);
+    setLoading(false);
+    setResendCooldown(0);
+    // When autoSend is set we skip the email-input stage and immediately
+    // fire off the code to the known email.
+    if (autoSend && seed && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(seed)) {
+      setStage("code");
+      void sendCode(seed);
+      setResendCooldown(30);
+    } else {
       setStage("email");
-      setCode("");
-      setError(null);
-      setLoading(false);
-      setResendCooldown(0);
       setTimeout(() => emailInputRef.current?.focus(), 50);
     }
-  }, [open]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, autoSend, initialEmail]);
 
   useEffect(() => {
     if (stage === "code") {
@@ -134,7 +158,7 @@ export function LoginDialog({ open, onClose, onSuccess, initialEmail }: Props) {
       // when it opens; on sm+ keep it dead-centre.
       className="fixed inset-x-0 top-0 z-50 flex h-screen h-[100dvh] items-start justify-center overflow-y-auto bg-ink-900/50 px-4 pb-4 pt-6 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (dismissible && e.target === e.currentTarget) onClose();
       }}
       role="dialog"
       aria-modal="true"
@@ -150,16 +174,18 @@ export function LoginDialog({ open, onClose, onSuccess, initialEmail }: Props) {
               {stage === "success" && "You're in"}
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="rounded-lg p-1 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
-          </button>
+          {dismissible ? (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="rounded-lg p-1 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          ) : null}
         </div>
 
         {stage === "email" && (

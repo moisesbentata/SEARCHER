@@ -12,6 +12,7 @@ import type { PhoneLookupResult } from "@/lib/phone";
 import type { EmailLookupResult } from "@/lib/email";
 import { track } from "@/lib/track";
 import { brand } from "@/lib/brand";
+import { LoginDialog } from "@/components/LoginDialog";
 
 type Stage =
   | "phoneMap" // stage 1, phone only
@@ -41,7 +42,44 @@ export function ResultsClient({
   const [stage, setStage] = useState<Stage>(initialStage);
   const [phone, setPhone] = useState<PhoneLookupResult | null>(null);
   const [email, setEmail] = useState<EmailLookupResult | null>(null);
-  const [captured, setCaptured] = useState<string>("");
+  const [captured, setCaptured] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    try {
+      return window.localStorage.getItem("tc_pending_email") ?? "";
+    } catch {
+      return "";
+    }
+  });
+
+  // Post-payment session gate: once we're in the success stage, confirm the
+  // user has a real logged-in session. If not, we open the OTP dialog
+  // pre-filled with the captured email and block the report until they
+  // verify. Keeps Stage 6 behind an email-ownership check without adding
+  // friction during the paid funnel itself.
+  const [needsVerify, setNeedsVerify] = useState(false);
+  const [verifyChecked, setVerifyChecked] = useState(false);
+
+  useEffect(() => {
+    if (stage !== "success") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/me", { cache: "no-store" });
+        if (cancelled) return;
+        if (!res.ok) {
+          setNeedsVerify(true);
+        } else {
+          const body = await res.json().catch(() => ({}));
+          setNeedsVerify(!body?.account);
+        }
+      } finally {
+        if (!cancelled) setVerifyChecked(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [stage]);
 
   // Fire the Purchase event once we reach the success stage.
   // Deduped against the server-side webhook via a shared transaction id.
@@ -139,12 +177,37 @@ export function ResultsClient({
         />
       ) : null}
 
-      {stage === "success" ? (
+      {stage === "success" && verifyChecked && !needsVerify ? (
         kind === "phone" && phone ? (
           <Stage6Report kind="phone" query={query} phone={phone} email={null} />
         ) : email ? (
           <Stage6Report kind="email" query={query} phone={null} email={email} />
         ) : null
+      ) : null}
+
+      {stage === "success" && verifyChecked && needsVerify ? (
+        <>
+          <div className="min-h-[calc(100vh-4rem)] bg-white">
+            <div className="mx-auto max-w-md px-5 pt-16 text-center">
+              <h2 className="text-2xl font-extrabold tracking-tight text-ink-900">
+                One last step
+              </h2>
+              <p className="mt-2 text-sm text-ink-600">
+                Verify the email on your account to unlock your report.
+              </p>
+            </div>
+          </div>
+          <LoginDialog
+            open
+            onClose={() => {
+              /* non-dismissible */
+            }}
+            initialEmail={captured || undefined}
+            autoSend={!!captured}
+            dismissible={false}
+            onSuccess={() => setNeedsVerify(false)}
+          />
+        </>
       ) : null}
 
       {/* ============================================================ *

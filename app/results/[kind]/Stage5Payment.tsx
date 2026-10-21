@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { brand } from "@/lib/brand";
 import { track } from "@/lib/track";
+import { CyclingAvatar } from "@/components/CyclingAvatar";
 
 const STRIPE_ENABLED =
   process.env.NEXT_PUBLIC_STRIPE_ENABLED === "1" ||
@@ -22,6 +23,18 @@ export function Stage5Payment({
   const [selected, setSelected] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Persist the email so the header can show the account pill in place of
+  // "Sign in" and so the post-payment OTP gate can pre-fill it.
+  useEffect(() => {
+    if (!email || typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem("tc_pending_email", email);
+      window.dispatchEvent(new StorageEvent("storage", { key: "tc_pending_email" }));
+    } catch {
+      /* ignore */
+    }
+  }, [email]);
+
   async function pay(method: string) {
     setSelected(method);
     setErrorMsg(null);
@@ -39,9 +52,6 @@ export function Stage5Payment({
     });
 
     if (STRIPE_ENABLED) {
-      // Real payment: redirect to Stripe Checkout. We pass the Stage 3 email
-      // so the server can create or reuse an Account without the user having
-      // completed OTP login (we don't require login during the paid funnel).
       try {
         const r = await fetch("/api/stripe/checkout", {
           method: "POST",
@@ -58,8 +68,6 @@ export function Stage5Payment({
           window.location.href = data.url;
           return;
         }
-        // Surface the error so we can diagnose instead of silently
-        // falling back to the simulated flow.
         const detail = data?.message
           ? `: ${data.message}`
           : data?.error
@@ -70,7 +78,7 @@ export function Stage5Payment({
         );
         setSelected(null);
         return;
-      } catch (err) {
+      } catch {
         setErrorMsg(
           `Network error reaching the payment service. Check your connection and try again.`,
         );
@@ -79,17 +87,20 @@ export function Stage5Payment({
       }
     }
 
-    // Dormant-Stripe fallback — only runs when NEXT_PUBLIC_STRIPE_ENABLED is
-    // not set (e.g. local dev or Meta-validation phase before Stripe keys).
+    // Dormant-Stripe fallback (local dev / Meta-validation phase).
     setTimeout(() => onPaid(method), 900);
   }
 
   return (
-    <section className="min-h-[calc(100vh-4rem)] bg-white pb-10">
+    // pb-40 reserves space below the content so nothing is covered by the
+    // fixed bottom CTA (its own height + safe-area padding).
+    <section className="min-h-[calc(100vh-4rem)] bg-white pb-40">
       <TopBanner />
 
       <div className="mx-auto max-w-md px-5 pt-5 sm:px-6 sm:pt-6">
-        <h2 className="text-2xl font-extrabold tracking-tight text-ink-900">
+        <ResultsReadyCallout query={query} />
+
+        <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-ink-900">
           Your Summary
         </h2>
 
@@ -114,47 +125,10 @@ export function Stage5Payment({
           </div>
         </div>
 
-        <div className="mt-4 sm:mt-6">
-          <PayButton
-            method="checkout"
-            selected={selected}
-            onClick={() => pay("checkout")}
-          >
-            <span className="flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
-              Continue to Secure Checkout
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M13 5l7 7-7 7" />
-              </svg>
-            </span>
-          </PayButton>
-
-          <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-ink-500">
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="4" y="11" width="16" height="10" rx="2" />
-              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-            </svg>
-            <span>Powered by Stripe</span>
-          </div>
-
-          <div className="mt-2 flex items-center justify-center gap-2 opacity-60 grayscale">
-            <AppleLogoDark />
-            <GoogleG />
-            <span className="text-[11px] font-bold italic">
-              <span className="text-[#003087]">Pay</span>
-              <span className="text-[#0079c1]">Pal</span>
-            </span>
-            <svg viewBox="0 0 24 24" className="h-4 w-4 text-ink-700" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="6" width="20" height="14" rx="3" />
-              <path d="M2 11h20" />
-            </svg>
-            <span className="text-[11px] font-semibold text-ink-700">Link</span>
-          </div>
-        </div>
-
         {errorMsg ? (
           <div
             role="alert"
-            className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800"
+            className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800"
           >
             {errorMsg}
           </div>
@@ -196,7 +170,100 @@ export function Stage5Payment({
           cancel. You can cancel any time from your account settings.
         </p>
       </div>
+
+      {/* Fixed bottom CTA — persistent across page scroll. Includes a safe
+          area inset so the button isn't hidden by iOS gesture bars. */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-900/5 bg-white/95 backdrop-blur-sm"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="mx-auto max-w-md px-5 pb-3 pt-3 sm:px-6 sm:pb-4 sm:pt-4">
+          <CheckoutButton
+            busy={!!selected}
+            onClick={() => pay("checkout")}
+          />
+        </div>
+      </div>
     </section>
+  );
+}
+
+function CheckoutButton({ busy, onClick }: { busy: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={busy}
+      className="flex h-[76px] w-full flex-col items-center justify-center gap-1 rounded-xl bg-black px-4 shadow-lg transition hover:bg-ink-800 active:translate-y-px disabled:opacity-70 sm:h-[80px]"
+    >
+      {busy ? (
+        <span className="inline-flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white sm:h-5 sm:w-5" />
+          Processing…
+        </span>
+      ) : (
+        <>
+          <span className="flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
+            Continue to Secure Checkout
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </span>
+          <span className="flex items-center gap-1 text-[10px] font-medium text-white/60">
+            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="4" y="11" width="16" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+            </svg>
+            Powered by Stripe
+          </span>
+        </>
+      )}
+    </button>
+  );
+}
+
+function ResultsReadyCallout({ query }: { query: string }) {
+  const date = new Date().toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  return (
+    <div className="relative h-[220px] overflow-hidden rounded-2xl border border-ink-900/5 bg-white shadow-sm">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 select-none p-5"
+      >
+        <div className="flex items-start gap-4 blur-[7px]">
+          <CyclingAvatar intervalMs={1400} />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-3/4 rounded bg-ink-900/10" />
+            <div className="h-4 w-1/2 rounded bg-ink-900/10" />
+            <div className="mt-2 flex gap-2">
+              <span className="inline-block h-5 w-12 rounded-full bg-sky-300/80" />
+              <span className="inline-block h-5 w-12 rounded-full bg-emerald-400/80" />
+              <span className="inline-block h-5 w-12 rounded-full bg-rose-400/80" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-5 space-y-2 blur-[7px]">
+          <div className="h-3 w-full rounded bg-ink-900/10" />
+          <div className="h-3 w-5/6 rounded bg-ink-900/10" />
+          <div className="h-3 w-4/6 rounded bg-ink-900/10" />
+        </div>
+      </div>
+      <div className="absolute inset-x-6 top-1/2 -translate-y-1/2 rounded-xl border border-ink-900/10 bg-white px-5 py-3.5 text-center shadow-xl">
+        <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-ink-500">
+          Results Are Ready
+        </div>
+        <div className="mt-1 truncate text-xl font-extrabold tracking-tight text-ink-900">
+          {query}
+        </div>
+        <div className="mt-0.5 text-xs text-ink-500">
+          Latest report as of{" "}
+          <span className="font-semibold text-brand-700">{date}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -223,47 +290,6 @@ function Row({
         {value}
       </span>
     </li>
-  );
-}
-
-function PayButton({
-  method,
-  selected,
-  onClick,
-  children,
-}: {
-  method: string;
-  selected: string | null;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  const busy = selected === method;
-  const disabled = selected && !busy;
-  const bg =
-    method === "paypal"
-      ? "bg-[#ffc439]"
-      : method === "card"
-        ? "bg-accent-600 hover:bg-accent-700"
-        : "bg-black hover:bg-ink-800";
-  const height =
-    method === "checkout" ? "h-16 sm:h-[72px]" : "h-11 sm:h-14";
-  return (
-    <button
-      onClick={onClick}
-      disabled={!!disabled}
-      className={`flex w-full items-center justify-center rounded-xl shadow-sm transition ${height} ${bg} ${
-        disabled ? "opacity-50" : ""
-      }`}
-    >
-      {busy ? (
-        <span className="inline-flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white sm:h-5 sm:w-5" />
-          Processing…
-        </span>
-      ) : (
-        children
-      )}
-    </button>
   );
 }
 
@@ -305,31 +331,6 @@ function IconSearch() {
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="7" />
       <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
-function GoogleG() {
-  return (
-    <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden>
-      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-    </svg>
-  );
-}
-function AppleLogo() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="white" aria-hidden>
-      <path d="M17.5 12.5c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.8-3.5.8-.7 0-1.9-.8-3.1-.8-1.6 0-3.1.9-3.9 2.4-1.7 2.9-.4 7.2 1.2 9.5.8 1.1 1.7 2.4 3 2.4 1.2 0 1.7-.8 3.2-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.5-1-2.5-4Zm-2.4-7.1c.7-.8 1.1-2 1-3.1-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.9-1 3 1.1.1 2.1-.5 2.8-1.3Z" />
-    </svg>
-  );
-}
-
-function AppleLogoDark() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4 text-ink-700" fill="currentColor" aria-hidden>
-      <path d="M17.5 12.5c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.8-3.5.8-.7 0-1.9-.8-3.1-.8-1.6 0-3.1.9-3.9 2.4-1.7 2.9-.4 7.2 1.2 9.5.8 1.1 1.7 2.4 3 2.4 1.2 0 1.7-.8 3.2-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.5-1-2.5-4Zm-2.4-7.1c.7-.8 1.1-2 1-3.1-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.9-1 3 1.1.1 2.1-.5 2.8-1.3Z" />
     </svg>
   );
 }

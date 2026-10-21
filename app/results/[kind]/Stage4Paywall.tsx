@@ -17,7 +17,6 @@ export function Stage4Paywall({
 }) {
   return (
     <section className="min-h-[calc(100vh-4rem)] bg-white pb-10">
-      <SmallAccountBar email={email} />
       <TopBanner />
 
       <div className="mx-auto max-w-md px-5 pt-6 sm:px-6">
