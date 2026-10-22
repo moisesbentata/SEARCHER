@@ -156,7 +156,7 @@ export function SearchEntry({
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(ellipse 70% 60% at 35% 40%, rgba(14,165,233,0.14) 0%, rgba(56,189,248,0.08) 40%, transparent 75%)",
+            "radial-gradient(ellipse 70% 60% at 35% 40%, rgba(31,38,232,0.14) 0%, rgba(95,106,255,0.08) 40%, transparent 75%)",
         }}
       />
       <div className="mx-auto max-w-6xl px-5 pt-10 pb-14 sm:px-6 lg:pt-16 lg:pb-20">
@@ -165,7 +165,7 @@ export function SearchEntry({
       <h1 className="text-left text-5xl font-extrabold tracking-tight text-ink-900 sm:text-5xl lg:text-6xl">
         {title}
         <br />
-        <span className="bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-logo-500 to-logo-800 bg-clip-text text-transparent">
           {titleHighlight}
         </span>
       </h1>
@@ -180,12 +180,12 @@ export function SearchEntry({
           const content = (
             <span
               className={`relative block px-3 pb-2 font-semibold transition ${
-                active ? "text-accent-600" : "text-ink-500 hover:text-ink-900"
+                active ? "text-logo-600" : "text-ink-500 hover:text-ink-900"
               }`}
             >
               {t.label}
               {active ? (
-                <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-accent-600" />
+                <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-logo-600" />
               ) : null}
             </span>
           );
@@ -209,7 +209,7 @@ export function SearchEntry({
         {kind === "phone" ? (
           <div className="relative">
             <div
-              className={`flex items-stretch overflow-hidden rounded-xl bg-ink-900/[0.04] focus-within:ring-2 focus-within:ring-brand-500 ${
+              className={`flex items-stretch overflow-hidden rounded-xl bg-ink-900/[0.04] focus-within:ring-2 focus-within:ring-logo-500 ${
                 error ? "ring-2 ring-rose-400 focus-within:ring-rose-500" : ""
               }`}
             >
@@ -261,7 +261,7 @@ export function SearchEntry({
                     value={countryQuery}
                     onChange={(e) => setCountryQuery(e.target.value)}
                     // text-base (16px) prevents iOS Safari from zooming in on focus.
-                    className="w-full rounded-lg bg-ink-900/[0.04] px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full rounded-lg bg-ink-900/[0.04] px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-logo-500"
                   />
                 </div>
                 <ul role="listbox" className="max-h-[calc(60vh-56px)] overflow-y-auto py-1">
@@ -271,7 +271,7 @@ export function SearchEntry({
                         type="button"
                         onClick={() => selectCountry(c.code)}
                         className={`flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-ink-900/[0.04] ${
-                          c.code === countryCode ? "bg-brand-50 text-brand-800" : ""
+                          c.code === countryCode ? "bg-logo-50 text-logo-800" : ""
                         }`}
                       >
                         <span className="flex items-center gap-2">
@@ -290,7 +290,7 @@ export function SearchEntry({
 
         {kind === "email" ? (
           <label
-            className={`block cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-brand-500 ${
+            className={`block cursor-text rounded-xl bg-ink-900/[0.04] px-4 py-3 focus-within:ring-2 focus-within:ring-logo-500 ${
               error ? "ring-2 ring-rose-400 focus-within:ring-rose-500" : ""
             }`}
           >
@@ -338,7 +338,7 @@ export function SearchEntry({
         <button
           type="submit"
           disabled={submitting}
-          className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-accent-600 py-4 text-lg font-semibold text-white shadow-sm transition hover:bg-accent-700 active:translate-y-px disabled:opacity-60"
+          className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-logo-600 py-4 text-lg font-semibold text-white shadow-sm transition hover:bg-logo-700 active:translate-y-px disabled:opacity-60"
         >
           {submitting ? (
             <>

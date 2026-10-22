@@ -40,6 +40,23 @@ const config: Config = {
           400: "#6b7691",
           300: "#98a2b8",
         },
+        // Deep electric blue sampled from the TraceCheck logo.
+        // Scoped to the LANDING PAGE ONLY — SearchEntry, HeroIllustration,
+        // LandingSections, WorldCoverageMap. Post-search stages keep the
+        // original `brand` (sky) and `accent` (royal) scales so this swap
+        // can be reverted file-by-file without touching the rest of the app.
+        logo: {
+          50: "#eef0ff",
+          100: "#dfe2ff",
+          200: "#bfc5ff",
+          300: "#949cff",
+          400: "#5f6aff",
+          500: "#2a37ec",
+          600: "#1f26e8",
+          700: "#1a1fbd",
+          800: "#191c93",
+          900: "#1a1d6e",
+        },
       },
       fontFamily: {
         sans: [

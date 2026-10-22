@@ -163,7 +163,7 @@ function UncoverSection() {
               className="rounded-3xl border border-ink-900/5 bg-white p-6 shadow-sm"
             >
               <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-brand-100 text-brand-700">
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-logo-100 text-logo-700">
                   {group.icon}
                 </span>
                 <h3 className="text-xl font-extrabold tracking-tight text-ink-900">
@@ -230,7 +230,7 @@ function StatsVerifying() {
           <span className="block text-3xl font-bold sm:text-3xl lg:text-4xl">
             You&apos;re Not Overthinking,
           </span>
-          <span className="mt-1 block bg-gradient-to-r from-brand-500 to-brand-800 bg-clip-text pb-2 text-5xl font-extrabold leading-[1.15] text-transparent sm:text-5xl lg:text-6xl">
+          <span className="mt-1 block bg-gradient-to-r from-logo-500 to-logo-800 bg-clip-text pb-2 text-5xl font-extrabold leading-[1.15] text-transparent sm:text-5xl lg:text-6xl">
             You&apos;re Verifying
           </span>
         </h2>
@@ -324,7 +324,7 @@ function WhyPeopleChoose() {
       <div className="mx-auto max-w-5xl px-5 py-14 sm:px-6 sm:py-20">
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
           Why People
-          <br className="sm:hidden" /> Choose <span className="text-brand-700">{brand.name}</span>
+          <br className="sm:hidden" /> Choose <span className="text-logo-700">{brand.name}</span>
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-base text-ink-500">
           Most first interactions today happen through a phone, inbox, or screen. Knowing who
@@ -387,7 +387,7 @@ function UseCases() {
   return (
     <section className="bg-white">
       <div className="mx-auto max-w-5xl px-5 py-14 sm:px-6 sm:py-20">
-        <div className="text-xs font-bold uppercase tracking-widest text-brand-700">Extras</div>
+        <div className="text-xs font-bold uppercase tracking-widest text-logo-700">Extras</div>
         <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
           Additional Use Cases
         </h2>
@@ -397,7 +397,7 @@ function UseCases() {
               key={c}
               className="flex items-start gap-3 rounded-xl border border-ink-900/5 bg-white p-4"
             >
-              <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-brand-100 text-brand-700">
+              <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-logo-100 text-logo-700">
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
@@ -475,19 +475,19 @@ function AccuracyBlock() {
     <section className="bg-white">
       <div className="mx-auto max-w-5xl px-5 py-14 sm:px-6 sm:py-20">
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-2xl border border-brand-500/20 bg-brand-50 p-6">
-            <div className="text-4xl font-black text-brand-700">97.5% Data Accuracy</div>
-            <p className="mt-2 text-sm text-brand-900/80">
+          <div className="rounded-2xl border border-logo-500/20 bg-logo-50 p-6">
+            <div className="text-4xl font-black text-logo-700">97.5% Data Accuracy</div>
+            <p className="mt-2 text-sm text-logo-900/80">
               Every report is powered by public data sources. Results may vary by number.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div>
-                <div className="text-sm font-bold text-brand-900">Carrier Data</div>
-                <p className="text-xs text-brand-900/70">Operator and line-type data from telecom numbering sources.</p>
+                <div className="text-sm font-bold text-logo-900">Carrier Data</div>
+                <p className="text-xs text-logo-900/70">Operator and line-type data from telecom numbering sources.</p>
               </div>
               <div>
-                <div className="text-sm font-bold text-brand-900">Public Records</div>
-                <p className="text-xs text-brand-900/70">Government and court records made public by law, where available.</p>
+                <div className="text-sm font-bold text-logo-900">Public Records</div>
+                <p className="text-xs text-logo-900/70">Government and court records made public by law, where available.</p>
               </div>
             </div>
           </div>
@@ -537,7 +537,7 @@ function FAQ() {
     <section className="bg-ink-900/[0.03]">
       <div className="mx-auto max-w-3xl px-5 py-14 sm:px-6 sm:py-20">
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
-          Frequently Asked <span className="text-brand-700">Questions</span>
+          Frequently Asked <span className="text-logo-700">Questions</span>
         </h2>
         <div className="mt-8 divide-y divide-ink-900/10 rounded-2xl border border-ink-900/5 bg-white shadow-sm">
           {items.map((item) => (
@@ -572,7 +572,7 @@ function BottomCta() {
         </p>
         <Link
           href="/reverse-phone-lookup"
-          className="mt-6 inline-flex items-center rounded-xl bg-accent-500 px-8 py-4 text-base font-semibold text-white shadow-sm hover:bg-accent-400"
+          className="mt-6 inline-flex items-center rounded-xl bg-logo-600 px-8 py-4 text-base font-semibold text-white shadow-sm hover:bg-logo-700"
         >
           Run a lookup
         </Link>

@@ -303,7 +303,7 @@ export function WorldCoverageMap() {
               <path
                 key={p.id}
                 d={p.d}
-                fill={active ? "#0284c7" : "#e0f2fe"}
+                fill={active ? "#1f26e8" : "#dfe2ff"}
                 stroke="#ffffff"
                 strokeWidth={0.6}
                 style={{
@@ -340,11 +340,11 @@ export function WorldCoverageMap() {
             className="pointer-events-none absolute z-10 max-w-[46%] animate-fade-in rounded-xl border border-ink-900/10 bg-white px-3 py-2 text-center shadow-lg sm:max-w-[180px] sm:px-4"
             style={{ ...horizontal, ...vertical }}
           >
-            <div className="text-xs font-semibold text-brand-700 sm:text-sm">
+            <div className="text-xs font-semibold text-logo-700 sm:text-sm">
               {region.name}
             </div>
             <div className="text-[11px] text-ink-500 sm:text-xs">
-              Coverage: <span className="font-bold text-brand-700">{region.coverage}</span>
+              Coverage: <span className="font-bold text-logo-700">{region.coverage}</span>
             </div>
           </div>
         );

@@ -13,24 +13,24 @@ export function HeroIllustration() {
     >
       <defs>
         <radialGradient id="bgBlob" cx="50%" cy="45%" r="60%">
-          <stop offset="0%" stopColor="#e0f2fe" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#e0f2fe" stopOpacity="0" />
+          <stop offset="0%" stopColor="#eef0ff" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#eef0ff" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="cardEdge" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#e2e8f0" />
           <stop offset="100%" stopColor="#cbd5e1" />
         </linearGradient>
         <linearGradient id="activeEdge" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#38bdf8" />
-          <stop offset="100%" stopColor="#0284c7" />
+          <stop offset="0%" stopColor="#5f6aff" />
+          <stop offset="100%" stopColor="#1f26e8" />
         </linearGradient>
         <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#38bdf8" />
-          <stop offset="100%" stopColor="#0369a1" />
+          <stop offset="0%" stopColor="#5f6aff" />
+          <stop offset="100%" stopColor="#1a1fbd" />
         </linearGradient>
         <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0ea5e9" />
-          <stop offset="100%" stopColor="#075985" />
+          <stop offset="0%" stopColor="#2a37ec" />
+          <stop offset="100%" stopColor="#191c93" />
         </linearGradient>
       </defs>
 
@@ -44,8 +44,8 @@ export function HeroIllustration() {
         rx="230"
         ry="200"
         fill="none"
-        stroke="#7dd3fc"
-        strokeOpacity="0.35"
+        stroke="#949cff"
+        strokeOpacity="0.4"
         strokeWidth="1.5"
         strokeDasharray="4 6"
       />
@@ -62,8 +62,8 @@ export function HeroIllustration() {
           stroke="#e2e8f0"
           strokeWidth="1.5"
         />
-        <circle cx="42" cy="30" r="12" fill="none" stroke="#0ea5e9" strokeWidth="3" />
-        <line x1="51" y1="39" x2="60" y2="48" stroke="#0ea5e9" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="42" cy="30" r="12" fill="none" stroke="#1f26e8" strokeWidth="3" />
+        <line x1="51" y1="39" x2="60" y2="48" stroke="#1f26e8" strokeWidth="3" strokeLinecap="round" />
         <rect x="80" y="25" width="220" height="10" rx="5" fill="#e2e8f0" />
       </g>
 
@@ -90,13 +90,13 @@ export function HeroIllustration() {
         />
 
         {/* Avatar circle */}
-        <circle cx="185" cy="330" r="30" fill="#e0f2fe" />
+        <circle cx="185" cy="330" r="30" fill="#eef0ff" />
         {/* User silhouette head */}
-        <circle cx="185" cy="321" r="9" fill="#0284c7" />
+        <circle cx="185" cy="321" r="9" fill="#1f26e8" />
         {/* User silhouette shoulders */}
         <path
           d="M167 350 a18 18 0 0 1 36 0 z"
-          fill="#0284c7"
+          fill="#1f26e8"
         />
 
         {/* Phone badge on avatar */}
@@ -106,7 +106,7 @@ export function HeroIllustration() {
         </g>
 
         {/* Lines */}
-        <rect x="230" y="305" width="180" height="10" rx="5" fill="#38bdf8" />
+        <rect x="230" y="305" width="180" height="10" rx="5" fill="#5f6aff" />
         <rect x="230" y="325" width="200" height="7" rx="3.5" fill="#e2e8f0" />
         <rect x="230" y="340" width="160" height="7" rx="3.5" fill="#e2e8f0" />
 
@@ -115,7 +115,7 @@ export function HeroIllustration() {
           {/* Sparkle rays — 5 short strokes evenly fanned around the top of
               the badge, all starting just outside the circle and extending
               outward for a clean "shine" burst */}
-          <g stroke="#38bdf8" strokeWidth="2.6" strokeLinecap="round">
+          <g stroke="#5f6aff" strokeWidth="2.6" strokeLinecap="round">
             {/* straight up */}
             <line x1="30" y1="-2" x2="30" y2="-13" />
             {/* upper-right diagonal */}
@@ -142,7 +142,7 @@ export function HeroIllustration() {
       {/* Magnifying glass — bottom left */}
       <g transform="translate(50, 380)">
         <circle cx="60" cy="60" r="46" fill="white" stroke="url(#glass)" strokeWidth="9" />
-        <circle cx="60" cy="60" r="34" fill="#f0f9ff" fillOpacity="0.7" />
+        <circle cx="60" cy="60" r="34" fill="#eef0ff" fillOpacity="0.7" />
         <rect
           x="92"
           y="92"
