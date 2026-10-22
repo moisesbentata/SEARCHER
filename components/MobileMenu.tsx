@@ -48,13 +48,18 @@ export function MobileMenu() {
     }
   }
 
-  const signedIn = !!me && !loading;
+  const signedIn = !!me;
 
   return (
     <div className="relative md:hidden">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          // Re-check the session each time the menu is opened so a sign-in
+          // that happened after mount flips Sign-out from grey to red.
+          if (!open) void refresh();
+          setOpen((v) => !v);
+        }}
         className="grid h-9 w-9 place-items-center rounded-lg text-ink-700"
         aria-label="Menu"
         aria-haspopup="menu"
@@ -90,9 +95,10 @@ export function MobileMenu() {
               disabled={!signedIn || signingOut}
               aria-disabled={!signedIn}
               title={signedIn ? "Sign out" : "Sign in first to use this"}
+              style={signedIn ? { color: "#dc2626" } : undefined}
               className={`w-full rounded-lg px-3 py-2 text-left text-sm font-semibold transition ${
                 signedIn
-                  ? "text-rose-600 hover:bg-rose-50 active:bg-rose-100"
+                  ? "hover:bg-rose-50 active:bg-rose-100"
                   : "cursor-not-allowed text-ink-400"
               }`}
               role="menuitem"
