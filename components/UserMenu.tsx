@@ -170,7 +170,8 @@ export function UserMenu() {
             <button
               type="button"
               onClick={handleLogout}
-              className="w-full rounded-lg px-3 py-2 text-left text-sm text-ink-800 hover:bg-ink-900/5"
+              style={{ color: "#dc2626" }}
+              className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-rose-50 active:bg-rose-100"
               role="menuitem"
             >
               Sign out

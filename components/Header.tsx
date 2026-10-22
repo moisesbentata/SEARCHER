@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { brand } from "@/lib/brand";
 import { UserMenu } from "@/components/UserMenu";
-import { MobileMenu } from "@/components/MobileMenu";
 
 export function Header() {
   return (
@@ -33,7 +32,6 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <UserMenu />
-          <MobileMenu />
         </div>
       </div>
     </header>
