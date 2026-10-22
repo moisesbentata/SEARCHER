@@ -213,7 +213,7 @@ function CheckoutButton({ busy, onClick }: { busy: boolean; onClick: () => void 
       {!busy ? (
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 animate-cta-shimmer bg-gradient-to-r from-transparent via-white/12 to-transparent"
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 animate-cta-shimmer bg-gradient-to-r from-transparent via-white/15 to-transparent"
         />
       ) : null}
 
