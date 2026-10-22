@@ -252,7 +252,7 @@ function ResultsReadyCallout({ query }: { query: string }) {
     year: "numeric",
   });
   return (
-    <div className="relative h-[220px] overflow-hidden rounded-2xl border border-ink-900/5 bg-white shadow-sm">
+    <div className="relative h-[170px] overflow-hidden rounded-2xl border border-ink-900/5 bg-white shadow-sm">
       {/* Blurred profile mockup behind the "Results Are Ready" callout: a
           dark avatar top-left, colored dating-app pills bottom-centre, and
           an Instagram-looking gradient tile bottom-right. Reads as a rich
@@ -262,33 +262,33 @@ function ResultsReadyCallout({ query }: { query: string }) {
         className="pointer-events-none absolute inset-0 select-none"
       >
         {/* Avatar + name hint, top-left */}
-        <div className="absolute left-5 top-5 flex items-start gap-3 blur-[7px]">
-          <span className="block h-12 w-12 rounded-full bg-gradient-to-br from-ink-900 to-ink-700" />
-          <span className="mt-2 inline-block h-3.5 w-28 rounded bg-ink-900/40" />
+        <div className="absolute left-4 top-3 flex items-start gap-2.5 blur-[7px]">
+          <span className="block h-10 w-10 rounded-full bg-gradient-to-br from-ink-900 to-ink-700" />
+          <span className="mt-1.5 inline-block h-3 w-24 rounded bg-ink-900/40" />
         </div>
 
         {/* Colored dating-app / social pills, bottom-centre */}
-        <div className="absolute inset-x-0 bottom-14 flex justify-center gap-2.5 blur-[8px]">
-          <span className="inline-block h-6 w-14 rounded-full bg-sky-400/80" />
-          <span className="inline-block h-6 w-14 rounded-full bg-emerald-500/80" />
-          <span className="inline-block h-6 w-14 rounded-full bg-rose-500/80" />
+        <div className="absolute inset-x-0 bottom-3 flex justify-center gap-2 blur-[8px]">
+          <span className="inline-block h-5 w-12 rounded-full bg-sky-400/80" />
+          <span className="inline-block h-5 w-12 rounded-full bg-emerald-500/80" />
+          <span className="inline-block h-5 w-12 rounded-full bg-rose-500/80" />
         </div>
 
         {/* Instagram-style gradient tile, bottom-right */}
-        <div className="absolute bottom-5 right-5 blur-[6px]">
-          <span className="relative block h-11 w-11 rounded-[12px] bg-gradient-to-br from-amber-400 via-rose-500 to-fuchsia-600 shadow-md">
+        <div className="absolute bottom-3 right-4 blur-[6px]">
+          <span className="relative block h-9 w-9 rounded-[10px] bg-gradient-to-br from-amber-400 via-rose-500 to-fuchsia-600 shadow-md">
             <span className="absolute inset-[22%] rounded-full border-2 border-white/80" />
-            <span className="absolute right-[18%] top-[18%] h-1.5 w-1.5 rounded-full bg-white" />
+            <span className="absolute right-[18%] top-[18%] h-1 w-1 rounded-full bg-white" />
           </span>
         </div>
       </div>
 
       {/* Centered Results Are Ready card */}
-      <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 rounded-xl border border-ink-900/10 bg-white px-4 py-3.5 text-center shadow-xl">
+      <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 rounded-xl border border-ink-900/10 bg-white px-4 py-3 text-center shadow-xl">
         <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-500">
           Results Are Ready
         </div>
-        <div className="mt-1 truncate text-xl font-extrabold tracking-tight text-ink-900">
+        <div className="mt-1 truncate text-lg font-extrabold tracking-tight text-ink-900">
           {query}
         </div>
         <div className="mt-0.5 text-[11px] text-ink-500">
