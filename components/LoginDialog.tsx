@@ -221,8 +221,11 @@ export function LoginDialog({
 
         {stage === "code" && (
           <form onSubmit={handleVerify} noValidate>
-            <p className="mb-4 text-sm text-ink-600">
+            <p className="mb-1 text-sm text-ink-600">
               We sent a 6-digit code to <strong className="text-ink-900">{email}</strong>. It expires in 10 minutes.
+            </p>
+            <p className="mb-4 text-xs text-ink-500">
+              Can&apos;t find it? Check your spam or promotions folder.
             </p>
             <label htmlFor="login-code" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-700">
               Code
