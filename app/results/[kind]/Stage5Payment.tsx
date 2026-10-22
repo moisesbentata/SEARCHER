@@ -144,9 +144,12 @@ export function Stage5Payment({
           </div>
         ) : null}
 
-        {/* === Below-the-fold marketing: social proof, trust, checks, FAQ === */}
+        {/* === Below-the-fold marketing: trust, checks, FAQ === */}
         <div className="mt-8">
-          <SocialProofCard />
+          <LiveLookupPill />
+          <div className="mt-2">
+            <TrustpilotCard />
+          </div>
 
           <ul className="mt-6 space-y-3">
             <Check text="Search any phone number to retrieve information about the owner" />
@@ -163,7 +166,6 @@ export function Stage5Payment({
             </Check>
           </ul>
 
-          <TrustpilotCard />
           <FaqAccordion />
 
           <div className="mt-8 rounded-2xl border border-brand-500/20 bg-brand-50 p-5 text-sm text-brand-900">
@@ -344,34 +346,14 @@ function Check({
   );
 }
 
-function SocialProofCard() {
-  // Single-letter initials with Gmail-style colored backgrounds. Reads as
-  // real user avatars, not placeholder chips.
-  const people: Array<{ letter: string; bg: string }> = [
-    { letter: "T", bg: "bg-rose-500" },
-    { letter: "A", bg: "bg-amber-500" },
-    { letter: "R", bg: "bg-emerald-500" },
-    { letter: "M", bg: "bg-sky-500" },
-    { letter: "J", bg: "bg-violet-500" },
-  ];
+function LiveLookupPill() {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-ink-900/5 bg-white px-4 py-3 shadow-sm">
-      <div className="text-sm font-semibold text-ink-800">
-        441+ lookups today
-      </div>
-      <div className="flex items-center">
-        <div className="flex -space-x-2">
-          {people.map((p, i) => (
-            <span
-              key={p.letter + i}
-              className={`grid h-8 w-8 place-items-center rounded-full text-sm font-semibold text-white ring-2 ring-white ${p.bg}`}
-              style={{ zIndex: 10 - i }}
-            >
-              {p.letter}
-            </span>
-          ))}
-        </div>
-      </div>
+    <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-ink-500">
+      <span className="relative inline-flex h-1.5 w-1.5">
+        <span className="absolute inset-0 animate-ping rounded-full bg-emerald-500 opacity-75" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+      </span>
+      441+ lookups today
     </div>
   );
 }
