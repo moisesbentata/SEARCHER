@@ -333,29 +333,32 @@ function Check({
 }
 
 function SocialProofCard() {
-  const initials = ["TJ", "AK", "RS", "ME", "JD"];
+  // Single-letter initials with Gmail-style colored backgrounds. Reads as
+  // real user avatars, not placeholder chips.
+  const people: Array<{ letter: string; bg: string }> = [
+    { letter: "T", bg: "bg-rose-500" },
+    { letter: "A", bg: "bg-amber-500" },
+    { letter: "R", bg: "bg-emerald-500" },
+    { letter: "M", bg: "bg-sky-500" },
+    { letter: "J", bg: "bg-violet-500" },
+  ];
   return (
     <div className="flex items-center justify-between gap-4 rounded-xl border border-ink-900/5 bg-white px-4 py-3 shadow-sm">
-      <div className="text-sm font-semibold leading-tight text-ink-800">
-        Over 9,127 phone numbers
-        <br />
-        looked up today
+      <div className="text-sm font-semibold text-ink-800">
+        441+ lookups today
       </div>
       <div className="flex items-center">
         <div className="flex -space-x-2">
-          {initials.map((n, i) => (
+          {people.map((p, i) => (
             <span
-              key={n}
-              className="grid h-8 w-8 place-items-center rounded-full bg-ink-900/[0.06] text-[11px] font-semibold text-ink-700 ring-2 ring-white"
+              key={p.letter + i}
+              className={`grid h-8 w-8 place-items-center rounded-full text-sm font-semibold text-white ring-2 ring-white ${p.bg}`}
               style={{ zIndex: 10 - i }}
             >
-              {n}
+              {p.letter}
             </span>
           ))}
         </div>
-        <span className="ml-2 text-[11px] font-semibold text-ink-500">
-          + 9.1k more
-        </span>
       </div>
     </div>
   );
