@@ -117,12 +117,7 @@ export function Stage6Report(props: Props) {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatTile
-              label="Sources"
-              value={String(sourceCount(enrichment))}
-            />
-            <StatTile label="Compile time" value={`${compileTime()}s`} />
+          <div className="mt-6 grid grid-cols-2 gap-3">
             <StatTile label="Status" value="OK" good />
             <StatTile
               label="Scope"
@@ -1333,19 +1328,6 @@ function formatDocStamp(d: Date): string {
     `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}` +
     ` ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`
   );
-}
-
-function sourceCount(enrichment?: EnrichmentResult): number {
-  return enrichment?.sources?.length ?? 4;
-}
-
-function compileTime(): string {
-  // Deterministic-ish per-page-load, between 2.3s and 4.6s so the "compiled
-  // in X.YZs" line in the header doesn't change every re-render in a way
-  // that feels fake. Honest-ish because the server really did spend ~3s
-  // across its enrichment calls.
-  const base = 2.3 + ((Date.now() % 1000) / 1000) * 2.3;
-  return base.toFixed(2);
 }
 
 function safeHost(u: string): string {
