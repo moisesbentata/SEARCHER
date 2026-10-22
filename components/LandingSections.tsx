@@ -148,15 +148,8 @@ function UncoverSection() {
     <section className="bg-ink-900/[0.03]">
       <div className="mx-auto max-w-5xl px-5 py-14 sm:px-6 sm:py-20">
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
-          Everything You Can Uncover with{" "}
-          <Image
-            src="/brand/tracecheck-wordmark.png"
-            alt={brand.name}
-            width={1468}
-            height={237}
-            className="inline-block h-[0.9em] w-auto align-[-0.1em]"
-            priority={false}
-          />
+          Everything You Can Uncover with trace
+          <span style={{ color: "#0146F3" }}>check</span>
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-base text-ink-500">
           Whether you&apos;re identifying a caller, verifying a match, checking a seller, or running a
@@ -332,15 +325,8 @@ function WhyPeopleChoose() {
       <div className="mx-auto max-w-5xl px-5 py-14 sm:px-6 sm:py-20">
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
           Why People
-          <br className="sm:hidden" /> Choose{" "}
-          <Image
-            src="/brand/tracecheck-wordmark.png"
-            alt={brand.name}
-            width={1468}
-            height={237}
-            className="inline-block h-[0.9em] w-auto align-[-0.1em]"
-            priority={false}
-          />
+          <br className="sm:hidden" /> Choose trace
+          <span style={{ color: "#0146F3" }}>check</span>
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-base text-ink-500">
           Most first interactions today happen through a phone, inbox, or screen. Knowing who
