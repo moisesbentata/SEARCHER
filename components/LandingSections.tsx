@@ -355,15 +355,18 @@ function WhyPeopleChoose() {
 }
 
 function NumberBadge({ n }: { n: number }) {
-  // Purple → orange → yellow gradient ring, matching the reference
+  // Blue → purple → pink gradient ring. Blue dominates the first half of
+  // the stroke (matching the landing palette), then rolls through purple
+  // into a hot magenta so the ring reads as a vivid gradient rather than
+  // a flat band.
   return (
     <span className="relative inline-grid h-12 w-12 place-items-center text-lg font-bold text-ink-900">
       <svg viewBox="0 0 48 48" className="absolute inset-0" aria-hidden>
         <defs>
           <linearGradient id={`ring${n}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#7c3aed" />
-            <stop offset="55%" stopColor="#f97316" />
-            <stop offset="100%" stopColor="#facc15" />
+            <stop offset="0%" stopColor="#0039FF" />
+            <stop offset="55%" stopColor="#8b5cf6" />
+            <stop offset="100%" stopColor="#ec4899" />
           </linearGradient>
         </defs>
         <circle cx="24" cy="24" r="22" fill="none" stroke={`url(#ring${n})`} strokeWidth="2.5" />
