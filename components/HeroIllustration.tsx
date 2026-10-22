@@ -21,16 +21,19 @@ export function HeroIllustration() {
           <stop offset="100%" stopColor="#cbd5e1" />
         </linearGradient>
         <linearGradient id="activeEdge" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#5f6aff" />
-          <stop offset="100%" stopColor="#1f26e8" />
+          <stop offset="0%" stopColor="#949cff" />
+          <stop offset="50%" stopColor="#1f26e8" />
+          <stop offset="100%" stopColor="#1a1d6e" />
         </linearGradient>
         <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#5f6aff" />
-          <stop offset="100%" stopColor="#1a1fbd" />
+          <stop offset="0%" stopColor="#949cff" />
+          <stop offset="50%" stopColor="#1f26e8" />
+          <stop offset="100%" stopColor="#1a1d6e" />
         </linearGradient>
         <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2a37ec" />
-          <stop offset="100%" stopColor="#191c93" />
+          <stop offset="0%" stopColor="#949cff" />
+          <stop offset="50%" stopColor="#1f26e8" />
+          <stop offset="100%" stopColor="#1a1d6e" />
         </linearGradient>
       </defs>
 

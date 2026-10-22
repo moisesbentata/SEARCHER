@@ -165,7 +165,7 @@ export function SearchEntry({
       <h1 className="text-left text-5xl font-extrabold tracking-tight text-ink-900 sm:text-5xl lg:text-6xl">
         {title}
         <br />
-        <span className="bg-gradient-to-r from-logo-500 to-logo-800 bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-logo-300 via-logo-600 to-logo-900 bg-clip-text text-transparent">
           {titleHighlight}
         </span>
       </h1>

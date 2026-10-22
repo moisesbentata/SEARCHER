@@ -230,7 +230,7 @@ function StatsVerifying() {
           <span className="block text-3xl font-bold sm:text-3xl lg:text-4xl">
             You&apos;re Not Overthinking,
           </span>
-          <span className="mt-1 block bg-gradient-to-r from-logo-500 to-logo-800 bg-clip-text pb-2 text-5xl font-extrabold leading-[1.15] text-transparent sm:text-5xl lg:text-6xl">
+          <span className="mt-1 block bg-gradient-to-r from-logo-300 via-logo-600 to-logo-900 bg-clip-text pb-2 text-5xl font-extrabold leading-[1.15] text-transparent sm:text-5xl lg:text-6xl">
             You&apos;re Verifying
           </span>
         </h2>
