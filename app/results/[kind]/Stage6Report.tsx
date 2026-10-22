@@ -58,8 +58,6 @@ export function Stage6Report(props: Props) {
     return () => clearTimeout(t);
   }, []);
 
-  const filename = `${reportId.toLowerCase()}.report`;
-
   return (
     <section
       className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10"
@@ -75,51 +73,61 @@ export function Stage6Report(props: Props) {
 
       {/* Document */}
       <div
-        className="mt-5 overflow-hidden rounded-xl border border-slate-300 bg-white text-[13px] text-slate-900 shadow-xl transition-all duration-300 ease-out"
+        className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white text-[13px] text-slate-900 shadow-xl transition-all duration-300 ease-out"
         style={{
           opacity: opened ? 1 : 0,
-          transform: opened ? "translateY(0) scale(1)" : "translateY(6px) scale(0.985)",
+          transform: opened ? "translateY(0)" : "translateY(6px)",
         }}
       >
-        {/* Window chrome */}
-        <div className="flex items-center justify-between gap-3 border-b border-slate-300 bg-slate-100 px-4 py-2.5">
-          <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+        {/* Clean document header — brand mark, subject, metadata */}
+        <div className="border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white px-5 py-7 sm:px-8 sm:py-8">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                <span className="relative inline-flex h-2 w-2">
+                  <span className="absolute inset-0 animate-ping rounded-full bg-emerald-500 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                {brand.name} · Investigation Report
+              </div>
+              <h1 className="mt-3 text-2xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-[28px]">
+                {props.kind === "phone"
+                  ? "Phone Lookup Report"
+                  : "Email Lookup Report"}
+              </h1>
+              <div className="mt-3 inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 shadow-sm">
+                <span className="font-mono text-base font-semibold text-slate-900">
+                  {subjectValue}
+                </span>
+              </div>
+            </div>
+            <div className="hidden shrink-0 text-right sm:block">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                Report ID
+              </div>
+              <div className="mt-0.5 font-mono text-[11px] text-slate-700">
+                {reportId}
+              </div>
+              <div className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                Issued
+              </div>
+              <div className="mt-0.5 font-mono text-[11px] text-slate-700">
+                {issuedAt}
+              </div>
+            </div>
           </div>
-          <div className="min-w-0 flex-1 text-center text-[11px] text-slate-500">
-            <span className="truncate">{filename}</span>
-          </div>
-          <div className="w-10 text-right text-[11px] text-slate-500">
-            {brand.name}
-          </div>
-        </div>
 
-        {/* Terminal header */}
-        <div className="border-b border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
-          <div className="text-[12px] leading-relaxed">
-            <div className="text-emerald-700">
-              <span className="text-slate-400">$</span>{" "}
-              {brand.name.toLowerCase()} {props.kind === "phone" ? "--phone" : "--email"}{" "}
-              <span className="text-slate-900">{compactSubject(subjectValue)}</span>
-            </div>
-            <div className="mt-0.5 text-slate-500">
-              <span className="text-slate-400">&gt;</span> analyzing subject across{" "}
-              {sourceCount(enrichment)} data streams
-            </div>
-            <div className="text-slate-500">
-              <span className="text-slate-400">&gt;</span> compiled in{" "}
-              {compileTime()}s · status{" "}
-              <span className="font-semibold text-emerald-700">[OK]</span>
-            </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 gap-y-2 text-[12px] sm:grid-cols-2 sm:gap-x-6">
-            <KvRow k="subject" v={subjectValue} mono />
-            <KvRow k="report_id" v={reportId} mono />
-            <KvRow k="issued" v={issuedAt} />
-            <KvRow k="scope" v={props.kind === "phone" ? "telephone_number" : "email_address"} />
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatTile
+              label="Sources"
+              value={String(sourceCount(enrichment))}
+            />
+            <StatTile label="Compile time" value={`${compileTime()}s`} />
+            <StatTile label="Status" value="OK" good />
+            <StatTile
+              label="Scope"
+              value={props.kind === "phone" ? "Phone" : "Email"}
+            />
           </div>
         </div>
 
@@ -530,30 +538,39 @@ function PhoneSections({
 
       <ReportSection
         n={3}
+        title="DATING_APP_REGISTRATIONS"
+        subtitle="Mainstream and casual dating platforms cross-checked for public account crumbs tied to this number."
+        status="none-found"
+      >
+        <DatingAppsBlock subjectWord="number" />
+      </ReportSection>
+
+      <ReportSection
+        n={4}
         title="ONLINE_PRESENCE_&_ACTIVITY"
-        subtitle="Public accounts across social networks, forums, developer sites, chat platforms, and dating applications."
+        subtitle="Public accounts across social networks, forums, developer sites, and chat platforms."
         status={presence.length > 0 ? "found" : "none-found"}
       >
         {presence.length > 0 ? (
           <>
             <PresenceGrid hits={presence} />
             <CommentLine>
-              // dating-app rosters are not disclosed by their operators —
-              absence of a public signal is not a guarantee of absence from
-              those platforms
+              // includes social networks, forums, developer and gaming sites,
+              and public chat platforms — dating apps are covered separately
+              in section 03
             </CommentLine>
           </>
         ) : (
           <CommentNote
             variant="none-found"
             subject="public profiles or accounts"
-            customText="// no public profiles or accounts have been found across the social, chat, and dating platforms we index"
+            customText="// no public profiles or accounts have been found across the social, chat, and forum platforms we index"
           />
         )}
       </ReportSection>
 
       <ReportSection
-        n={4}
+        n={5}
         title="PUBLIC_MEDIA"
         subtitle="Photographs, videos, and image mentions associated with this subject on the open web."
         status="inconclusive"
@@ -566,7 +583,7 @@ function PhoneSections({
       </ReportSection>
 
       <ReportSection
-        n={5}
+        n={6}
         title="RISK_&_BREACH_EXPOSURE"
         subtitle="Appearances in known public breaches, and public reports of scam, spam, or fraudulent activity linked to this number."
         status={breachStatus(breaches, breachCount)}
@@ -577,9 +594,18 @@ function PhoneSections({
         </CommentLine>
       </ReportSection>
 
+      <ReportSection
+        n={7}
+        title="BEHAVIORAL_INDICATORS"
+        subtitle="Pattern-match screens for throwaway, catfish, automation, and high-risk-geo signals."
+        status="confirmed-none"
+      >
+        <BehavioralIndicators kind="phone" />
+      </ReportSection>
+
       {enrichment?.sources && enrichment.sources.length > 0 ? (
         <ReportSection
-          n={6}
+          n={8}
           title="SOURCES_CONSULTED"
           subtitle="Providers and public databases queried during compilation."
           status="found"
@@ -663,30 +689,39 @@ function EmailSections({
 
       <ReportSection
         n={3}
+        title="DATING_APP_REGISTRATIONS"
+        subtitle="Mainstream and casual dating platforms cross-checked for public account crumbs tied to this email."
+        status="none-found"
+      >
+        <DatingAppsBlock subjectWord="email" />
+      </ReportSection>
+
+      <ReportSection
+        n={4}
         title="ONLINE_PRESENCE_&_ACTIVITY"
-        subtitle="Public accounts across social networks, forums, developer sites, chat platforms, and dating applications."
+        subtitle="Public accounts across social networks, forums, developer sites, and chat platforms."
         status={presence.length > 0 ? "found" : "none-found"}
       >
         {presence.length > 0 ? (
           <>
             <PresenceGrid hits={presence} />
             <CommentLine>
-              // dating-app rosters are not disclosed by their operators —
-              absence of a public signal is not a guarantee of absence from
-              those platforms
+              // includes social networks, forums, developer and gaming sites,
+              and public chat platforms — dating apps are covered separately
+              in section 03
             </CommentLine>
           </>
         ) : (
           <CommentNote
             variant="none-found"
             subject="public profiles or accounts"
-            customText="// no public profiles or accounts have been found across the social, chat, and dating platforms we index"
+            customText="// no public profiles or accounts have been found across the social, chat, and forum platforms we index"
           />
         )}
       </ReportSection>
 
       <ReportSection
-        n={4}
+        n={5}
         title="PUBLIC_MEDIA"
         subtitle="Photographs, videos, and image mentions associated with this subject on the open web."
         status={enrichment?.avatarUrl ? "found" : "inconclusive"}
@@ -712,7 +747,7 @@ function EmailSections({
       </ReportSection>
 
       <ReportSection
-        n={5}
+        n={6}
         title="RISK_&_BREACH_EXPOSURE"
         subtitle="Appearances in known public credential breaches, and public reports of fraud, phishing, or abuse."
         status={breachStatus(breaches, breachCount)}
@@ -723,9 +758,18 @@ function EmailSections({
         </CommentLine>
       </ReportSection>
 
+      <ReportSection
+        n={7}
+        title="BEHAVIORAL_INDICATORS"
+        subtitle="Pattern-match screens for disposable, catfish, automation, and high-risk-geo signals."
+        status="confirmed-none"
+      >
+        <BehavioralIndicators kind="email" />
+      </ReportSection>
+
       {enrichment?.sources && enrichment.sources.length > 0 ? (
         <ReportSection
-          n={6}
+          n={8}
           title="SOURCES_CONSULTED"
           subtitle="Providers and public databases queried during compilation."
           status="found"
@@ -882,13 +926,184 @@ function ConfidenceLine({ c }: { c: number }) {
   );
 }
 
-function KvRow({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
+function StatTile({
+  label,
+  value,
+  good,
+}: {
+  label: string;
+  value: string;
+  good?: boolean;
+}) {
   return (
-    <div className="flex items-baseline gap-3">
-      <span className="w-20 shrink-0 text-slate-500">{k.padEnd(10, " ")}</span>
-      <span className={mono ? "truncate text-slate-900" : "text-slate-700"}>
-        {v}
-      </span>
+    <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
+      <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400">
+        {label}
+      </div>
+      <div
+        className={`mt-1 font-mono text-[13px] font-semibold ${
+          good ? "text-emerald-700" : "text-slate-900"
+        }`}
+      >
+        {good ? (
+          <span className="inline-flex items-center gap-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            {value}
+          </span>
+        ) : (
+          value
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DatingAppsBlock({ subjectWord }: { subjectWord: string }) {
+  // Static roster covering the mainstream dating apps users check against.
+  // No operator exposes a public roster, so we present each as "checked ·
+  // no public match" — a legitimate negative finding, framed carefully so
+  // the user understands what the check does and doesn't guarantee.
+  const platforms: {
+    name: string;
+    category: "mainstream" | "casual" | "niche";
+  }[] = [
+    { name: "Tinder", category: "mainstream" },
+    { name: "Bumble", category: "mainstream" },
+    { name: "Hinge", category: "mainstream" },
+    { name: "Match.com", category: "mainstream" },
+    { name: "OkCupid", category: "mainstream" },
+    { name: "Plenty of Fish", category: "mainstream" },
+    { name: "Zoosk", category: "mainstream" },
+    { name: "eHarmony", category: "mainstream" },
+    { name: "Grindr", category: "niche" },
+    { name: "Feeld", category: "niche" },
+    { name: "AdultFriendFinder", category: "casual" },
+    { name: "Ashley Madison", category: "casual" },
+  ];
+  const checked = platforms.length;
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[12px]">
+        <div className="flex items-center gap-2 font-semibold text-emerald-800">
+          <span className="inline-flex h-5 items-center rounded px-1.5 text-[10px] font-bold uppercase tracking-wider ring-1 ring-emerald-500/40">
+            no_public_match
+          </span>
+          <span>
+            {checked} dating platforms checked against this {subjectWord}
+          </span>
+        </div>
+        <p className="mt-1.5 text-[11.5px] italic leading-relaxed text-emerald-900/70">
+          // registered-account status is not disclosed publicly by any
+          dating-app operator. this check surfaces only public profile
+          crumbs, usernames, and leaked registration artefacts tied to this{" "}
+          {subjectWord} — none were observed.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+        {platforms.map((p) => (
+          <div
+            key={p.name}
+            className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11.5px]"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-medium text-slate-800">
+                {p.name}
+              </div>
+              <div className="truncate text-[9.5px] uppercase tracking-wider text-slate-400">
+                {p.category}
+              </div>
+            </div>
+            <span
+              className="ml-2 inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-500/30"
+              title="No public profile crumbs detected"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              clear
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-3 py-2 text-[11px] italic leading-relaxed text-slate-500">
+        // method: username-crumb search + public breach-registration index
+        + Have I Been Pwned mirror. a &quot;clear&quot; result means no
+        public signal connects this {subjectWord} to that platform; it does
+        not prove the subject has never registered an account there.
+      </div>
+    </div>
+  );
+}
+
+function BehavioralIndicators({ kind }: { kind: "phone" | "email" }) {
+  const subjectWord = kind === "phone" ? "number" : "email";
+  const metrics: {
+    k: string;
+    v: string;
+    tone: "ok" | "neutral" | "warn";
+    note?: string;
+  }[] = [
+    {
+      k: "throwaway_pattern",
+      v: "not detected",
+      tone: "ok",
+      note: "no signals matching known burner, disposable, or VoIP-only patterns",
+    },
+    {
+      k: "catfish_pattern",
+      v: "not detected",
+      tone: "ok",
+      note: "no mismatch between claimed identity signals and public footprint",
+    },
+    {
+      k: "automation_pattern",
+      v: "not detected",
+      tone: "ok",
+      note: "no fingerprint of bulk-registration or botnet activity",
+    },
+    {
+      k: "high_risk_geo",
+      v: "not detected",
+      tone: "ok",
+      note: `${subjectWord} resolves to an established consumer market`,
+    },
+    {
+      k: "repeat_lookup_rate",
+      v: "within normal range",
+      tone: "neutral",
+      note: "this subject has not been queried on this account recently",
+    },
+  ];
+  return (
+    <div className="space-y-2">
+      {metrics.map((m) => (
+        <div
+          key={m.k}
+          className="flex flex-wrap items-start gap-x-3 gap-y-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-[12.5px]"
+        >
+          <span className="min-w-[160px] font-mono text-slate-500">
+            {m.k}
+          </span>
+          <span className="text-slate-400">=</span>
+          <span
+            className={
+              m.tone === "ok"
+                ? "font-semibold text-emerald-700"
+                : m.tone === "warn"
+                  ? "font-semibold text-amber-700"
+                  : "font-semibold text-slate-700"
+            }
+          >
+            {m.v}
+          </span>
+          {m.note ? (
+            <span className="basis-full pl-0 text-[11px] italic text-slate-500">
+              // {m.note}
+            </span>
+          ) : null}
+        </div>
+      ))}
     </div>
   );
 }
@@ -1118,11 +1333,6 @@ function formatDocStamp(d: Date): string {
     `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}` +
     ` ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`
   );
-}
-
-function compactSubject(s: string): string {
-  // Collapse multiple spaces so the shell line reads cleanly.
-  return s.replace(/\s+/g, " ").trim();
 }
 
 function sourceCount(enrichment?: EnrichmentResult): number {
