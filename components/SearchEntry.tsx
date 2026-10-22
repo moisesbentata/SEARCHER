@@ -21,7 +21,7 @@ type Kind = "phone" | "email" | "photo" | "vehicle" | "people";
 
 const TABS: { key: Kind; label: string; href: string; available: boolean }[] = [
   { key: "phone", label: "Phone", href: "/reverse-phone-lookup", available: true },
-  { key: "email", label: "Email", href: "/reverse-email-lookup", available: true },
+  { key: "email", label: "Email", href: "/reverse-email-lookup", available: false },
   { key: "photo", label: "Photo", href: "/reverse-image-lookup", available: false },
   { key: "vehicle", label: "Vehicle", href: "/vin-lookup", available: false },
   { key: "people", label: "People", href: "/people-lookup", available: false },

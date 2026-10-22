@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { brand } from "@/lib/brand";
 import { UserMenu } from "@/components/UserMenu";
+import { MobileMenu } from "@/components/MobileMenu";
 
 export function Header() {
   return (
@@ -22,9 +23,6 @@ export function Header() {
           <Link href="/reverse-phone-lookup" className="text-sm text-ink-700 hover:text-ink-900">
             Phone
           </Link>
-          <Link href="/reverse-email-lookup" className="text-sm text-ink-700 hover:text-ink-900">
-            Email
-          </Link>
           <Link href="/pricing" className="text-sm text-ink-700 hover:text-ink-900">
             Pricing
           </Link>
@@ -35,14 +33,7 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <UserMenu />
-          <button
-            className="grid h-9 w-9 place-items-center rounded-lg text-ink-700 md:hidden"
-            aria-label="Menu"
-          >
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 6h18M3 12h18M3 18h18" />
-            </svg>
-          </button>
+          <MobileMenu />
         </div>
       </div>
     </header>
