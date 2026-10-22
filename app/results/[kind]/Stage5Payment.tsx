@@ -382,7 +382,7 @@ function LiveLookupPill() {
 
 function TrustpilotCard() {
   return (
-    <div className="mt-6">
+    <div>
       <div className="rounded-xl border border-ink-900/5 bg-white p-4 shadow-sm">
         <TrustpilotStars value={4.5} />
         <div className="mt-3 text-lg font-extrabold text-ink-900">Great, delivered as promised</div>
