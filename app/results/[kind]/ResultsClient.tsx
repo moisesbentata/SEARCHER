@@ -57,6 +57,13 @@ export function ResultsClient({
   const [needsVerify, setNeedsVerify] = useState(false);
   const [verifyChecked, setVerifyChecked] = useState(false);
 
+  // Jump to the top of the viewport whenever we transition between stages
+  // so a long previous page doesn't leave the next one scrolled mid-way.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [stage]);
+
   useEffect(() => {
     if (stage !== "success") return;
     let cancelled = false;
