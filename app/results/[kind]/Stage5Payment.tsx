@@ -206,23 +206,35 @@ function CheckoutButton({ busy, onClick }: { busy: boolean; onClick: () => void 
     <button
       onClick={onClick}
       disabled={busy}
-      className="flex h-[76px] w-full flex-col items-center justify-center gap-1 rounded-xl bg-black px-4 shadow-lg transition hover:bg-ink-800 active:translate-y-px disabled:opacity-70 sm:h-[80px]"
+      className="relative flex h-[76px] w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-xl bg-black px-4 shadow-lg transition hover:bg-ink-800 active:translate-y-px disabled:opacity-70 sm:h-[80px]"
     >
+      {/* Subtle shimmer sweep — periodic nudge to catch the eye without
+          being distracting. Hidden during Processing. */}
+      {!busy ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 animate-cta-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        />
+      ) : null}
+
       {busy ? (
-        <span className="inline-flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
+        <span className="relative inline-flex items-center gap-2 text-base font-semibold text-white sm:text-lg">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white sm:h-5 sm:w-5" />
           Processing…
         </span>
       ) : (
         <>
-          <span className="flex items-center gap-2.5 text-xl font-bold text-white sm:text-2xl">
-            <svg viewBox="0 0 24 24" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+          <span className="relative flex items-center gap-2.5 text-xl font-bold text-white sm:text-2xl">
+            Unlock Report
+            <svg viewBox="0 0 24 24" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </span>
+          <span className="relative flex items-center gap-1 text-[10px] font-medium text-white/60">
+            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="11" width="16" height="10" rx="2" />
               <path d="M8 11V7a4 4 0 0 1 8 0v4" />
             </svg>
-            Unlock Report
-          </span>
-          <span className="text-[10px] font-medium text-white/60">
             Powered by Stripe
           </span>
         </>

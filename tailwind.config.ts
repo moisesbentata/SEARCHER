@@ -73,6 +73,12 @@ const config: Config = {
           "0%, 100%": { transform: "scale(1)" },
           "50%": { transform: "scale(1.03)" },
         },
+        // Diagonal highlight that sweeps across a dark CTA button. Pauses
+        // ~70% of each cycle so it's a periodic nudge, not a constant glow.
+        "cta-shimmer": {
+          "0%, 60%": { transform: "translateX(-120%) skewX(-15deg)" },
+          "100%": { transform: "translateX(120%) skewX(-15deg)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.45s ease-out both",
@@ -80,6 +86,7 @@ const config: Config = {
         "scan-line": "scan-line 2s linear infinite",
         "stripe-shift": "stripe-shift 1s linear infinite",
         "avatar-cycle": "avatar-cycle 1.6s ease-in-out infinite",
+        "cta-shimmer": "cta-shimmer 3.5s ease-in-out infinite",
       },
       backgroundImage: {
         "progress-stripes":
