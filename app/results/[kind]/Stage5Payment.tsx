@@ -145,7 +145,7 @@ export function Stage5Payment({
         ) : null}
 
         {/* === Below-the-fold marketing: social proof, trust, checks, FAQ === */}
-        <div className="mt-16">
+        <div className="mt-8">
           <SocialProofCard />
 
           <ul className="mt-6 space-y-3">
