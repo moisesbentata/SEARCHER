@@ -274,11 +274,23 @@ function ResultsReadyCallout({ query }: { query: string }) {
           <span className="inline-block h-5 w-12 rounded-full bg-rose-500/80" />
         </div>
 
-        {/* Instagram-style gradient tile, bottom-right */}
-        <div className="absolute bottom-3 right-4 blur-[6px]">
-          <span className="relative block h-9 w-9 rounded-[10px] bg-gradient-to-br from-amber-400 via-rose-500 to-fuchsia-600 shadow-md">
-            <span className="absolute inset-[22%] rounded-full border-2 border-white/80" />
-            <span className="absolute right-[18%] top-[18%] h-1 w-1 rounded-full bg-white" />
+        {/* Instagram-style app-icon tile, bottom-right. Reduced blur so the
+            square-outline + circle-lens + flash-dot combo survives and the
+            icon reads as Instagram instead of a generic pink blob. */}
+        <div className="absolute bottom-3 right-4 blur-[3.5px]">
+          <span
+            className="relative block h-10 w-10 rounded-[11px] shadow-md"
+            style={{
+              background:
+                "linear-gradient(45deg, #fdb94e 0%, #ee596e 35%, #c13584 65%, #833ab4 100%)",
+            }}
+          >
+            {/* Camera body — rounded square outline */}
+            <span className="absolute inset-[18%] rounded-[6px] border-[2.5px] border-white" />
+            {/* Lens — circle in the middle */}
+            <span className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-[2.5px] border-white" />
+            {/* Flash — tiny dot top-right */}
+            <span className="absolute right-[22%] top-[22%] h-[3px] w-[3px] rounded-full bg-white" />
           </span>
         </div>
       </div>
