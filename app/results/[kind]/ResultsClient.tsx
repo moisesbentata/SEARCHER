@@ -86,8 +86,11 @@ export function ResultsClient({
     };
   }, [stage]);
 
-  // Fire the Purchase event once we reach the success stage.
-  // Deduped against the server-side webhook via a shared transaction id.
+  // Fire the Purchase event once we reach the success stage. Uses the
+  // Stripe checkout session id as event_id so the server-side Purchase
+  // CAPI event fired from the Stripe webhook dedupes against this one in
+  // Meta — Meta merges two events with the same event_id regardless of
+  // which leg wins the race.
   useEffect(() => {
     if (stage !== "success") return;
     track({
@@ -96,6 +99,7 @@ export function ResultsClient({
       value: brand.trialPrice,
       currency: brand.currency,
       transaction_id: sessionId || undefined,
+      event_id: sessionId || undefined,
     });
   }, [stage, captured, sessionId]);
 

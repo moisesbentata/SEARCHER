@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentSession } from "@/lib/session";
 import { requireStripe, stripeConfig, isStripeConfigured } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { brand } from "@/lib/brand";
 import { isValidEmail, normalizeEmail } from "@/lib/auth";
+import { getClientIp, getUserAgent } from "@/lib/request-meta";
 import { headers } from "next/headers";
 
 export const runtime = "nodejs";
@@ -14,9 +15,14 @@ const Body = z.object({
   kind: z.enum(["phone", "email"]).default("phone"),
   query: z.string().max(254).default(""),
   email: z.string().min(3).max(254).optional(),
+  // Meta attribution cookies — captured on the client and relayed into
+  // Stripe metadata so the webhook can fire a Purchase CAPI event with
+  // the ad-click already attributed. Max 500 chars each per Stripe limit.
+  fbp: z.string().max(500).optional(),
+  fbc: z.string().max(500).optional(),
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   if (!isStripeConfigured()) {
     return NextResponse.json(
       { ok: false, error: "stripe_not_configured" },
@@ -100,6 +106,25 @@ export async function POST(req: Request) {
     // subscriptions.create param, not a Checkout param), so this two-step
     // pattern is the standard workaround used by every $1-trial subscription
     // product on Stripe.
+
+    // Capture everything the webhook will need to fire a server-side Meta
+    // Purchase event — IP, UA, Meta attribution cookies — and shove them
+    // into Stripe metadata. The webhook has no browser context of its own
+    // so this is the handoff.
+    const clientIp = getClientIp(req);
+    const clientUa = getUserAgent(req);
+    const metaMeta: Record<string, string> = {
+      accountId: account.id,
+      kind,
+      query,
+      flow: "trial_fee",
+      email: account.email,
+    };
+    if (clientIp) metaMeta.clientIp = clientIp.slice(0, 64);
+    if (clientUa) metaMeta.clientUa = clientUa.slice(0, 500);
+    if (parsed.fbp) metaMeta.fbp = parsed.fbp.slice(0, 500);
+    if (parsed.fbc) metaMeta.fbc = parsed.fbc.slice(0, 500);
+
     const checkout = await stripe.checkout.sessions.create({
       mode: "payment",
       customer: customerId,
@@ -118,13 +143,7 @@ export async function POST(req: Request) {
       allow_promotion_codes: true,
       billing_address_collection: "auto",
       client_reference_id: account.id,
-      // Metadata on the session itself so the webhook can route on `flow`.
-      metadata: {
-        accountId: account.id,
-        kind,
-        query,
-        flow: "trial_fee",
-      },
+      metadata: metaMeta,
       success_url: `${origin}/results/${kind}?paid=1&session_id={CHECKOUT_SESSION_ID}&q=${encodeURIComponent(query)}`,
       cancel_url: `${origin}/results/${kind}?paid=0&q=${encodeURIComponent(query)}`,
     });

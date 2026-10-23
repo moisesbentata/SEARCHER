@@ -9,6 +9,12 @@ const STRIPE_ENABLED =
   process.env.NEXT_PUBLIC_STRIPE_ENABLED === "1" ||
   !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
+function readCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  return m?.[1];
+}
+
 export function Stage5Payment({
   kind,
   query,
@@ -61,10 +67,15 @@ export function Stage5Payment({
 
     if (STRIPE_ENABLED) {
       try {
+        // Grab Meta's attribution cookies so the server-side Purchase CAPI
+        // event (fired from the Stripe webhook) can match the ad click. The
+        // webhook has no browser context of its own.
+        const fbp = readCookie("_fbp");
+        const fbc = readCookie("_fbc");
         const r = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ kind, query, email }),
+          body: JSON.stringify({ kind, query, email, fbp, fbc }),
         });
         let data: { ok?: boolean; url?: string; error?: string; message?: string } = {};
         try {

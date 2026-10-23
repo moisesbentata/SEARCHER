@@ -14,7 +14,7 @@ export type FunnelEvent =
   | { type: "InitiateCheckout"; email: string; value: number; currency: string }
   | { type: "AddPaymentInfo"; email: string; value: number; currency: string }
   | { type: "StartTrial"; email: string; value: number; currency: string }
-  | { type: "Purchase"; email: string; value: number; currency: string; transaction_id?: string }
+  | { type: "Purchase"; email: string; value: number; currency: string; transaction_id?: string; event_id?: string }
   | { type: "Subscribe"; email: string; value: number; currency: string };
 
 interface Fbq {
@@ -64,7 +64,12 @@ async function sendCapi(payload: Record<string, unknown>): Promise<void> {
 }
 
 export function track(event: FunnelEvent): string {
-  const event_id = newEventId();
+  // Callers can hand us a deterministic event_id (e.g. the Stripe session
+  // id for Purchase) so a server-side CAPI event using the same id dedupes
+  // against this client-side one in Meta. Otherwise fall back to a fresh
+  // UUID shared between the Pixel call and the CAPI relay below.
+  const explicitId = "event_id" in event ? event.event_id : undefined;
+  const event_id = explicitId ?? newEventId();
   if (!metaConfigured()) return event_id;
 
   const url = typeof window !== "undefined" ? window.location.href : undefined;

@@ -4,6 +4,7 @@ import { requireStripe, stripeConfig, isStripeConfigured } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { brand } from "@/lib/brand";
 import { SubscriptionStatus } from "@prisma/client";
+import { sendCapiEvent, isMetaConfigured } from "@/lib/meta";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -118,6 +119,11 @@ async function handleCheckoutCompleted(s: Stripe.Checkout.Session) {
       },
     });
     await syncSubscription(sub);
+    // Fire Purchase CAPI event. event_id = checkout session id so the
+    // client-side Purchase (which uses the same id) dedupes against this
+    // one in Meta — belt-and-braces attribution that survives closed tabs
+    // and ad blockers.
+    await fireTrialPurchaseCapi(s);
     return;
   }
 
@@ -160,6 +166,52 @@ async function syncSubscription(sub: Stripe.Subscription) {
         typeof trialEnd === "number" && trialEnd ? new Date(trialEnd * 1000) : undefined,
     },
   });
+}
+
+/**
+ * Fire a server-side Meta Purchase event for the $1 trial charge.
+ *
+ * Dedup contract with the client-side Pixel: both legs share event_id =
+ * checkout session id, so if the browser also fires Purchase on the
+ * `?paid=1` return URL, Meta merges them. If the browser never fires
+ * (closed tab, ad-blocker, iOS backgrounded), Meta still gets the
+ * conversion from here.
+ *
+ * Match quality is boosted by hashed email + the _fbp / _fbc cookies
+ * captured at Checkout creation time (relayed through session metadata).
+ */
+async function fireTrialPurchaseCapi(s: Stripe.Checkout.Session): Promise<void> {
+  if (!isMetaConfigured()) return;
+  const email = s.metadata?.email ?? s.customer_details?.email ?? "";
+  if (!email) return;
+  try {
+    const result = await sendCapiEvent({
+      event_name: "Purchase",
+      event_id: s.id,
+      event_time: Math.floor(Date.now() / 1000),
+      action_source: "website",
+      event_source_url: `https://${brand.domain}/results/${s.metadata?.kind ?? "phone"}?paid=1&session_id=${s.id}`,
+      user_data: {
+        email,
+        client_ip_address: s.metadata?.clientIp || undefined,
+        client_user_agent: s.metadata?.clientUa || undefined,
+        fbp: s.metadata?.fbp || undefined,
+        fbc: s.metadata?.fbc || undefined,
+        external_id: s.metadata?.accountId || undefined,
+      },
+      custom_data: {
+        value: brand.trialPrice,
+        currency: brand.currency,
+        content_ids: [s.id],
+        content_name: "trial_fee",
+      },
+    });
+    if (!result.ok) {
+      console.warn("[stripe:webhook] Purchase CAPI not ok", result.error);
+    }
+  } catch (err) {
+    console.warn("[stripe:webhook] Purchase CAPI threw", err);
+  }
 }
 
 async function lookupAccountIdByCustomer(customerId: string): Promise<string | null> {
