@@ -155,7 +155,7 @@ export function LoginDialog({
       // doesn't push the modal off the visible area. On mobile the card sits
       // near the top (pt-4) so the code input stays visible above the
       // on-screen keyboard when it opens; on sm+ the card centres normally.
-      className="fixed inset-x-0 top-0 z-50 flex h-screen h-[100dvh] items-start justify-center overflow-y-auto bg-ink-900/50 px-4 pb-4 pt-4 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-x-0 top-0 z-50 flex h-screen h-[100dvh] items-start justify-center overflow-y-auto bg-ink-900/50 px-4 pb-4 pt-24 backdrop-blur-sm sm:items-center sm:p-4 sm:pt-4"
       onClick={(e) => {
         if (dismissible && e.target === e.currentTarget) onClose();
       }}
