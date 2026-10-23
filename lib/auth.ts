@@ -48,11 +48,15 @@ export async function issueOtp(opts: {
   }
   const email = normalizeEmail(opts.rawEmail);
 
-  // Rate limits: 3 codes per hour per email, 10 per hour per IP.
+  // Rate limits: 10 codes per hour per email, 30 per hour per IP. Email
+  // limit is email-indexed so it never leaks whether the address exists;
+  // it just caps a single mailbox from being spammed with codes. The old
+  // 3/hr was far too tight — a user who tests the flow a couple of times
+  // during a session would hit it and then silently stop receiving mail.
   const hour = 60 * 60 * 1000;
   const perEmail = await hitRateLimit({
     key: `send:email:${email}`,
-    max: 3,
+    max: 10,
     windowMs: hour,
   });
   if (!perEmail.allowed) {
@@ -61,7 +65,7 @@ export async function issueOtp(opts: {
   if (opts.ipAddress) {
     const perIp = await hitRateLimit({
       key: `send:ip:${opts.ipAddress}`,
-      max: 10,
+      max: 30,
       windowMs: hour,
     });
     if (!perIp.allowed) {

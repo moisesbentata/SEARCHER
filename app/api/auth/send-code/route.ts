@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
     parsed = Body.parse(await req.json());
   } catch {
     // Opaque: return the same shape as success to avoid probing.
+    console.warn("[send-code] bad body");
     return NextResponse.json(OPAQUE_OK);
   }
 
@@ -28,15 +29,43 @@ export async function POST(req: NextRequest) {
     userAgent: ua,
   });
 
-  // Opaque: ALL outcomes except mail-infrastructure failure look identical
-  // to the client, so an attacker can't tell whether an email is registered,
-  // was rate-limited, or was accepted. Mail failure returns a 500 so we see
-  // deliverability issues in the UI during dev.
+  // Verbose server-side log so Vercel's function logs show the real
+  // outcome of every attempt. Client responses stay narrow on purpose.
+  if (result.ok) {
+    console.log("[send-code] ok", { email: parsed.email, ip });
+  } else {
+    console.warn("[send-code] not-ok", {
+      email: parsed.email,
+      ip,
+      reason: result.reason,
+      detail: "detail" in result ? result.detail : undefined,
+      resetAt: "resetAt" in result ? result.resetAt?.toISOString() : undefined,
+    });
+  }
+
+  // Mail-infrastructure failure: surface as 500 so the dialog shows a
+  // real error instead of pretending a code went out.
   if (!result.ok && result.reason === "MAIL_FAILED") {
     return NextResponse.json(
       { ok: false, reason: "MAIL_FAILED" },
       { status: 500 },
     );
   }
+
+  // Rate limit: email-indexed, so surfacing it does not leak whether the
+  // address is registered. Hitting the limit silently used to look
+  // identical to success, which meant a user who tested the flow a few
+  // times stopped getting codes with no explanation.
+  if (!result.ok && result.reason === "RATE_LIMITED") {
+    return NextResponse.json(
+      {
+        ok: false,
+        reason: "RATE_LIMITED",
+        resetAt: result.resetAt.toISOString(),
+      },
+      { status: 429 },
+    );
+  }
+
   return NextResponse.json(OPAQUE_OK);
 }

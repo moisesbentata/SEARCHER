@@ -85,6 +85,16 @@ export function LoginDialog({
         const body = await res.json().catch(() => ({}));
         if (body?.reason === "MAIL_FAILED") {
           setError("Couldn't send the code just now. Try again in a moment.");
+        } else if (body?.reason === "RATE_LIMITED") {
+          const resetAt = body?.resetAt ? new Date(body.resetAt) : null;
+          const mins = resetAt
+            ? Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 60000))
+            : null;
+          setError(
+            mins
+              ? `Too many codes sent to this email. Try again in ~${mins} minute${mins === 1 ? "" : "s"}.`
+              : "Too many codes sent to this email. Try again in a bit.",
+          );
         } else {
           setError("Something went wrong. Try again.");
         }
