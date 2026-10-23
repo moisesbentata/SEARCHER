@@ -152,11 +152,10 @@ export function LoginDialog({
   return (
     <div
       // h-[100dvh] uses the dynamic viewport height so iOS Safari's URL bar
-      // doesn't push the modal off the visible area. On mobile, bias the
-      // modal near the top on mobile so it isn't cut off by the Safari URL bar
-      // so the email/code input isn't hidden behind the on-screen keyboard
-      // when it opens; on sm+ keep it dead-centre.
-      className="fixed inset-x-0 top-0 z-50 flex h-screen h-[100dvh] items-start justify-center overflow-y-auto bg-ink-900/50 px-4 pb-4 pt-6 backdrop-blur-sm sm:items-center sm:p-4"
+      // doesn't push the modal off the visible area. On mobile the card sits
+      // near the top (pt-4) so the code input stays visible above the
+      // on-screen keyboard when it opens; on sm+ the card centres normally.
+      className="fixed inset-x-0 top-0 z-50 flex h-screen h-[100dvh] items-start justify-center overflow-y-auto bg-ink-900/50 px-4 pb-4 pt-4 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={(e) => {
         if (dismissible && e.target === e.currentTarget) onClose();
       }}
@@ -164,7 +163,7 @@ export function LoginDialog({
       aria-modal="true"
       aria-labelledby="login-title"
     >
-      <div className="my-auto w-full max-w-md rounded-2xl bg-white p-6 shadow-xl sm:p-7">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl sm:my-auto sm:p-7">
         <div className="mb-5 flex items-start justify-between">
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide text-brand-700">{brand.name}</div>
