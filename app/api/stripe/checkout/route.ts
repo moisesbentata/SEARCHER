@@ -76,8 +76,27 @@ export async function POST(req: NextRequest) {
 
   try {
     // Create or reuse the Stripe customer so the subscription + billing
-    // history live under one record.
+    // history live under one record. If we have a stored customer id but
+    // Stripe says the id is unknown (classic: test-mode id after switching
+    // to live keys, or an account that was deleted directly in Stripe),
+    // clear the stale id and mint a fresh one so the user doesn't get
+    // stuck at "No such customer".
     let customerId = account.stripeCustomerId;
+    if (customerId) {
+      try {
+        const existing = await stripe.customers.retrieve(customerId);
+        if ((existing as { deleted?: boolean }).deleted) {
+          customerId = null;
+        }
+      } catch (err) {
+        const anyErr = err as { code?: string; statusCode?: number };
+        if (anyErr?.code === "resource_missing" || anyErr?.statusCode === 404) {
+          customerId = null;
+        } else {
+          throw err;
+        }
+      }
+    }
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: account.email,
@@ -86,7 +105,12 @@ export async function POST(req: NextRequest) {
       customerId = customer.id;
       await prisma.account.update({
         where: { id: account.id },
-        data: { stripeCustomerId: customerId },
+        data: {
+          stripeCustomerId: customerId,
+          // Clear any lingering subscription id too — if the customer
+          // vanished, any associated subscription is stale as well.
+          stripeSubscriptionId: null,
+        },
       });
     }
 
