@@ -15,20 +15,7 @@ type AccountSummary = {
   hasStripeCustomer: boolean;
 };
 
-type LookupRow = {
-  id: string;
-  kind: "PHONE" | "EMAIL";
-  input: string;
-  createdAt: string;
-};
-
-export function AccountClient({
-  account,
-  lookups,
-}: {
-  account: AccountSummary;
-  lookups: LookupRow[];
-}) {
+export function AccountClient({ account }: { account: AccountSummary }) {
   const remaining = Math.max(0, account.quota - account.used);
 
   return (
@@ -59,24 +46,11 @@ export function AccountClient({
         />
       </div>
 
-      <div className="mt-10 flex items-end justify-between">
-        <h2 className="text-xl font-extrabold tracking-tight text-ink-900">Recent lookups</h2>
+      <div className="mt-6">
         <Link href="/" className="text-sm font-semibold text-accent-700 hover:underline">
           Run a new lookup →
         </Link>
       </div>
-
-      {lookups.length === 0 ? (
-        <div className="mt-4 rounded-xl border border-dashed border-ink-900/10 bg-white p-8 text-center text-sm text-ink-500">
-          No lookups yet. Head to the homepage to run your first search.
-        </div>
-      ) : (
-        <ul className="mt-4 divide-y divide-ink-900/5 overflow-hidden rounded-xl border border-ink-900/5 bg-white">
-          {lookups.map((l) => (
-            <LookupItem key={l.id} lookup={l} email={account.email} />
-          ))}
-        </ul>
-      )}
 
       <div className="mt-10 rounded-2xl border border-ink-900/5 bg-ink-900/[0.03] p-5 text-sm text-ink-700">
         Need help? Email{" "}
@@ -195,72 +169,6 @@ function SubscriptionCard({ account }: { account: AccountSummary }) {
         <div className="mt-3 text-sm text-rose-600">{portalError}</div>
       ) : null}
     </section>
-  );
-}
-
-function LookupItem({ lookup, email }: { lookup: LookupRow; email: string }) {
-  const [sending, setSending] = useState(false);
-  const [sentOk, setSentOk] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function resend() {
-    setSending(true);
-    setError(null);
-    setSentOk(false);
-    try {
-      const r = await fetch("/api/report/send-pdf", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          email,
-          subject: lookup.input,
-          kind: lookup.kind.toLowerCase(),
-        }),
-      });
-      const data = await r.json();
-      if (data?.ok) {
-        setSentOk(true);
-      } else {
-        setError(data?.message ?? "Couldn't send that report. Please try again.");
-      }
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
-      setSending(false);
-    }
-  }
-
-  const kindLabel = lookup.kind === "PHONE" ? "Phone" : "Email";
-  return (
-    <li className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-ink-500">
-          {kindLabel}
-          <span>·</span>
-          <span>
-            {new Date(lookup.createdAt).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
-        </div>
-        <div className="mt-0.5 truncate text-sm font-semibold text-ink-900">{lookup.input}</div>
-        {sentOk ? (
-          <div className="mt-0.5 text-xs text-emerald-700">Report sent to {email}</div>
-        ) : error ? (
-          <div className="mt-0.5 text-xs text-rose-600">{error}</div>
-        ) : null}
-      </div>
-      <button
-        type="button"
-        onClick={resend}
-        disabled={sending || sentOk}
-        className="shrink-0 rounded-lg border border-ink-900/10 bg-white px-3 py-1.5 text-xs font-semibold text-ink-800 hover:bg-ink-900/5 disabled:opacity-60"
-      >
-        {sending ? "Sending…" : sentOk ? "Sent" : "Resend PDF"}
-      </button>
-    </li>
   );
 }
 

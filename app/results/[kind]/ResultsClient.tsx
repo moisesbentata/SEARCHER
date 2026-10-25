@@ -57,6 +57,37 @@ export function ResultsClient({
   const [needsVerify, setNeedsVerify] = useState(false);
   const [verifyChecked, setVerifyChecked] = useState(false);
 
+  // Already-subscribed detection. If a logged-in user with an active or
+  // trialing subscription arrives via a fresh lookup, we skip the email
+  // capture and the paywall and drop them straight into Stage 6 — paying
+  // customers should never re-pay.
+  const [isPaidUser, setIsPaidUser] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/me", { cache: "no-store" });
+        if (cancelled || !res.ok) return;
+        const body = await res.json().catch(() => ({}));
+        const status: string | undefined = body?.account?.subscriptionStatus;
+        if (status === "TRIALING" || status === "ACTIVE") {
+          setIsPaidUser(true);
+          if (body?.account?.email) setCaptured(body.account.email);
+          // If we're already past the drama stages and about to hit a
+          // paywall, jump straight to success instead.
+          setStage((s) =>
+            s === "emailCapture" || s === "payment" ? "success" : s,
+          );
+        }
+      } catch {
+        /* best effort — fall back to normal paid-funnel */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Jump to the top of the viewport whenever we transition between stages
   // so a long previous page doesn't leave the next one scrolled mid-way.
   useEffect(() => {
@@ -154,7 +185,7 @@ export function ResultsClient({
         <Stage2OwnerInfo
           kind={kind}
           query={query}
-          onDone={() => setStage("emailCapture")}
+          onDone={() => setStage(isPaidUser ? "success" : "emailCapture")}
         />
       ) : null}
 

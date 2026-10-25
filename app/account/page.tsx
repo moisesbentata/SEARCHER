@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/session";
-import { prisma } from "@/lib/db";
 import { brand } from "@/lib/brand";
 import { AccountClient } from "./AccountClient";
 
@@ -18,11 +17,6 @@ export default async function AccountPage() {
   }
 
   const account = session.account;
-  const lookups = await prisma.lookup.findMany({
-    where: { accountId: account.id },
-    orderBy: { createdAt: "desc" },
-    take: 25,
-  });
 
   return (
     <AccountClient
@@ -36,12 +30,6 @@ export default async function AccountPage() {
         used: account.currentCycleLookupsUsed,
         hasStripeCustomer: !!account.stripeCustomerId,
       }}
-      lookups={lookups.map((l) => ({
-        id: l.id,
-        kind: l.kind,
-        input: l.input,
-        createdAt: l.createdAt.toISOString(),
-      }))}
     />
   );
 }
