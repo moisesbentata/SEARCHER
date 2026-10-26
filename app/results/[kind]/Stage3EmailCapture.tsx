@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { track } from "@/lib/track";
+import { rememberEmail, track } from "@/lib/track";
 
 export function Stage3EmailCapture({
   query,
@@ -21,6 +21,10 @@ export function Stage3EmailCapture({
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!canContinue) return;
+    // Seed Meta advanced matching with the hashed email before the Lead
+    // event fires so even the first conversion picks up the stronger
+    // match signal.
+    void rememberEmail(email);
     track({ type: "Lead", email });
     // Persist for the header pill + post-payment OTP gate.
     if (typeof window !== "undefined") {

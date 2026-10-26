@@ -30,6 +30,40 @@ declare global {
   }
 }
 
+/* ---------------- Manual Advanced Matching ----------------
+ * We hash the user's email client-side with SHA-256 and re-init the
+ * Pixel with it as `em`. From that call onwards, every fbq('track', …)
+ * includes the hash as advanced-matching data, which Meta uses to
+ * stitch the conversion to the ad clicker even when cookies are blocked
+ * or stripped by iOS ITP.
+ *
+ * Hash + re-init happens exactly once per unique email per page load
+ * (`hashedEmailFor` guards it), so repeated calls to `rememberEmail`
+ * with the same address are cheap no-ops.
+ */
+let hashedEmailFor: string | null = null;
+
+export async function rememberEmail(email: string): Promise<void> {
+  if (typeof window === "undefined" || !window.fbq) return;
+  if (!email) return;
+  const normalized = email.trim().toLowerCase();
+  if (!normalized || hashedEmailFor === normalized) return;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) return;
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+  if (!pixelId) return;
+  try {
+    const data = new TextEncoder().encode(normalized);
+    const buf = await crypto.subtle.digest("SHA-256", data);
+    const hash = Array.from(new Uint8Array(buf))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    window.fbq("init", pixelId, { em: hash });
+    hashedEmailFor = normalized;
+  } catch {
+    /* best-effort — fall back to cookie-only matching if hashing fails */
+  }
+}
+
 function newEventId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
@@ -71,6 +105,13 @@ export function track(event: FunnelEvent): string {
   const explicitId = "event_id" in event ? event.event_id : undefined;
   const event_id = explicitId ?? newEventId();
   if (!metaConfigured()) return event_id;
+
+  // If the event has an email, nudge Meta's advanced matching with the
+  // hash. Fire-and-forget; the fbq('track', …) that follows may miss
+  // this one call's AAM if the hash hasn't landed yet, but every event
+  // after it includes the hash via the re-init.
+  const eventEmail = "email" in event ? event.email : undefined;
+  if (eventEmail) void rememberEmail(eventEmail);
 
   const url = typeof window !== "undefined" ? window.location.href : undefined;
   const fbp = readCookie("_fbp");

@@ -9,7 +9,7 @@ import { Stage5Payment } from "./Stage5Payment";
 import { Stage6Report } from "./Stage6Report";
 import type { PhoneLookupResult } from "@/lib/phone";
 import type { EmailLookupResult } from "@/lib/email";
-import { track } from "@/lib/track";
+import { rememberEmail, track } from "@/lib/track";
 import { brand } from "@/lib/brand";
 import { LoginDialog } from "@/components/LoginDialog";
 
@@ -48,6 +48,14 @@ export function ResultsClient({
       return "";
     }
   });
+
+  // Seed Meta advanced matching the moment we know the viewer's email —
+  // from localStorage on mount, from the session detection below, or from
+  // the OTP dialog after post-payment verify. The hash + re-init in
+  // rememberEmail guards against double-work.
+  useEffect(() => {
+    if (captured) void rememberEmail(captured);
+  }, [captured]);
 
   // Post-payment session gate: once we're in the success stage, confirm the
   // user has a real logged-in session. If not, we open the OTP dialog
