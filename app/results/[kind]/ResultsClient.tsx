@@ -263,26 +263,6 @@ export function ResultsClient({
         </>
       ) : null}
 
-      {/* ============================================================ *
-       * DEV SHORTCUT — DELETE BEFORE LAUNCH
-       * ============================================================ *
-       * Floating fuchsia pill at bottom-right. Jumps straight past the
-       * loading/scanning stages to Stage 3 ("Your results are ready").
-       * No env gate — ship-blocker is the giant banner above. Grep for
-       * "DEV SHORTCUT" to find and nuke.
-       * ============================================================ */}
-      {stage !== "emailCapture" &&
-      stage !== "payment" &&
-      stage !== "success" ? (
-        <button
-          type="button"
-          onClick={() => setStage("emailCapture")}
-          className="fixed bottom-5 right-5 z-50 rounded-full bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-xl ring-2 ring-white hover:bg-fuchsia-500"
-          title="DEV ONLY — jump to Results Ready page"
-        >
-          ⚡ Skip to results ready
-        </button>
-      ) : null}
     </>
   );
 }
