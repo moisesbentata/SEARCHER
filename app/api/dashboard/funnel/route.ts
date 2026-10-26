@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentSession } from "@/lib/session";
-import { isAdminEmail } from "@/lib/admin";
+import { cookies } from "next/headers";
+import { DASHBOARD_COOKIE, isDashboardAuthed } from "@/lib/dashboard-auth";
 import { prisma } from "@/lib/db";
 import { FunnelStage } from "@prisma/client";
 
@@ -17,8 +17,8 @@ const RANGES: Record<string, number | null> = {
 type Row = { stage: FunnelStage; count: number };
 
 export async function GET(req: NextRequest) {
-  const session = await getCurrentSession();
-  if (!isAdminEmail(session?.account?.email)) {
+  const token = cookies().get(DASHBOARD_COOKIE)?.value;
+  if (!isDashboardAuthed(token)) {
     return NextResponse.json({ ok: false }, { status: 403 });
   }
 
