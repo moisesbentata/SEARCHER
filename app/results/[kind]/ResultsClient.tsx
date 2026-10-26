@@ -10,6 +10,7 @@ import { Stage6Report } from "./Stage6Report";
 import type { PhoneLookupResult } from "@/lib/phone";
 import type { EmailLookupResult } from "@/lib/email";
 import { rememberEmail, track } from "@/lib/track";
+import { logStage } from "@/lib/funnel";
 import { brand } from "@/lib/brand";
 import { LoginDialog } from "@/components/LoginDialog";
 
@@ -101,6 +102,18 @@ export function ResultsClient({
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.scrollTo({ top: 0, behavior: "auto" });
+  }, [stage]);
+
+  // Private funnel logger — one event per stage reached per session.
+  useEffect(() => {
+    if (stage === "phoneMap") logStage("RESULTS_LOAD", { kind });
+    if (stage === "owner") logStage("STAGE_OWNER", { kind });
+    if (stage === "emailCapture") logStage("STAGE_EMAIL", { kind });
+    if (stage === "payment")
+      logStage("STAGE_PAYMENT", { kind, email: captured });
+    if (stage === "success")
+      logStage("PAID", { kind, email: captured });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
 
   useEffect(() => {

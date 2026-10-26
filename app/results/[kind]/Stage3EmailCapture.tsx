@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { rememberEmail, track } from "@/lib/track";
+import { logStage } from "@/lib/funnel";
 
 export function Stage3EmailCapture({
   query,
@@ -26,6 +27,7 @@ export function Stage3EmailCapture({
     // match signal.
     void rememberEmail(email);
     track({ type: "Lead", email });
+    logStage("LEAD_SUBMIT", { email });
     // Persist for the header pill + post-payment OTP gate.
     if (typeof window !== "undefined") {
       try {

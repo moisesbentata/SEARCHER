@@ -104,3 +104,31 @@ model RateLimitBucket {
   resetAt   DateTime
   updatedAt DateTime @updatedAt
 }
+
+// Private funnel analytics — one row per stage reached per session.
+// Fed by /api/analytics/log. Read by the /dashboard page only. Not
+// shown to users and not used to drive any live behaviour.
+enum FunnelStage {
+  LANDING          // Any landing page view
+  SEARCH           // Search form submitted
+  RESULTS_LOAD     // Results page mounted
+  STAGE_OWNER      // Stage 2 owner-info reached
+  STAGE_EMAIL      // Stage 3 email-capture reached
+  LEAD_SUBMIT      // Stage 3 email submitted
+  STAGE_PAYMENT    // Stage 5 payment reached
+  PAY_CLICK        // Stage 5 Pay button clicked
+  PAID             // Stage 6 success reached
+}
+
+model FunnelEvent {
+  id        String      @id @default(cuid())
+  stage     FunnelStage
+  sessionId String?
+  email     String?
+  path      String?
+  kind      String?     // "phone" / "email" when relevant
+  createdAt DateTime    @default(now())
+
+  @@index([stage, createdAt])
+  @@index([sessionId])
+}

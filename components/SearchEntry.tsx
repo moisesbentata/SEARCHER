@@ -7,6 +7,7 @@ import { AsYouType, parsePhoneNumberFromString, type CountryCode } from "libphon
 import { countryList, countryEntry, detectCountryFromPrefix } from "@/lib/countries";
 import { HeroIllustration } from "@/components/HeroIllustration";
 import { track } from "@/lib/track";
+import { logStage } from "@/lib/funnel";
 
 // Format a raw national number string using libphonenumber-js's AsYouType,
 // keyed to the currently-selected country so the spacing follows local rules
@@ -139,6 +140,7 @@ export function SearchEntry({
         search_string: trimmed,
         content_category: kind,
       });
+      logStage("SEARCH", { kind });
     }
     const params = new URLSearchParams({ q: trimmed });
     if (kind === "phone") params.set("cc", countryCode);

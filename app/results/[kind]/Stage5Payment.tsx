@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { brand } from "@/lib/brand";
 import { track } from "@/lib/track";
+import { logStage } from "@/lib/funnel";
 import { CyclingAvatar } from "@/components/CyclingAvatar";
 
 const STRIPE_ENABLED =
@@ -44,6 +45,7 @@ export function Stage5Payment({
   async function pay(method: string) {
     setSelected(method);
     setErrorMsg(null);
+    logStage("PAY_CLICK", { email, kind });
     // Fire the three paywall-moment events on the single CTA click so Meta
     // has a clean funnel: InitiateCheckout → AddPaymentInfo → StartTrial.
     track({
