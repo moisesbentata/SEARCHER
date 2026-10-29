@@ -58,6 +58,14 @@ export async function POST(req: Request) {
         if (typeof subId === "string") {
           const sub = await stripe.subscriptions.retrieve(subId);
           await syncSubscription(sub);
+          // On successful recurring charge, fire a Purchase CAPI event
+          // with the real $29.99 so Meta's optimization sees actual LTV
+          // instead of just the $1 trial fee repeated. Guarded against
+          // the $0 trial-start invoice Stripe emits when the subscription
+          // is created (that one carries no money and shouldn't fire).
+          if (event.type === "invoice.payment_succeeded") {
+            await fireRecurringPurchaseCapi(inv, sub);
+          }
         }
         break;
       }
@@ -211,6 +219,81 @@ async function fireTrialPurchaseCapi(s: Stripe.Checkout.Session): Promise<void> 
     }
   } catch (err) {
     console.warn("[stripe:webhook] Purchase CAPI threw", err);
+  }
+}
+
+/**
+ * Fire a server-side Meta Purchase event for a recurring $29.99 charge.
+ *
+ * Uses the invoice id as event_id so each recurring charge is counted as
+ * its own Purchase (and so Stripe retries of the same invoice dedupe to
+ * one event). Pulls hashed email + attribution cookies off the Customer
+ * and Subscription metadata the trial flow stashed earlier.
+ *
+ * Skipped on $0 invoices (the subscription-start invoice Stripe emits
+ * when a trial begins) so we don't tell Meta a $0 Purchase happened.
+ */
+async function fireRecurringPurchaseCapi(
+  inv: Stripe.Invoice,
+  sub: Stripe.Subscription,
+): Promise<void> {
+  if (!isMetaConfigured()) return;
+  const amountPaid = typeof inv.amount_paid === "number" ? inv.amount_paid : 0;
+  if (amountPaid <= 0) return;
+
+  const stripe = requireStripe();
+  const customerId = String(sub.customer);
+  const accountId =
+    (sub.metadata && sub.metadata.accountId) ||
+    (await lookupAccountIdByCustomer(customerId));
+
+  // Resolve email: prefer the Stripe customer, fall back to our DB.
+  let email = inv.customer_email ?? "";
+  if (!email) {
+    try {
+      const cust = await stripe.customers.retrieve(customerId);
+      if (!(cust as { deleted?: boolean }).deleted) {
+        email = (cust as Stripe.Customer).email ?? "";
+      }
+    } catch {
+      /* best effort */
+    }
+  }
+  if (!email && accountId) {
+    const row = await prisma.account.findUnique({
+      where: { id: accountId },
+      select: { email: true },
+    });
+    email = row?.email ?? "";
+  }
+  if (!email) return;
+
+  const value = amountPaid / 100;
+  const currency = (inv.currency ?? brand.currency).toLowerCase();
+
+  try {
+    const result = await sendCapiEvent({
+      event_name: "Purchase",
+      event_id: inv.id ?? `inv_${sub.id}_${Date.now()}`,
+      event_time: Math.floor(Date.now() / 1000),
+      action_source: "website",
+      event_source_url: `https://${brand.domain}/`,
+      user_data: {
+        email,
+        external_id: accountId || undefined,
+      },
+      custom_data: {
+        value,
+        currency,
+        content_ids: [inv.id ?? sub.id],
+        content_name: "recurring_charge",
+      },
+    });
+    if (!result.ok) {
+      console.warn("[stripe:webhook] recurring Purchase CAPI not ok", result.error);
+    }
+  } catch (err) {
+    console.warn("[stripe:webhook] recurring Purchase CAPI threw", err);
   }
 }
 
